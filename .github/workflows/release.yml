@@ -75,13 +75,10 @@ jobs:
       # rather than trusting whichever CI run happened to precede it.
       - run: pnpm check
 
-      - uses: changesets/action@v1
-        with:
-          # Opens or updates the "Version Packages" PR; publishes once it merges.
-          publish: pnpm release
-          commit: 'chore: version packages'
-          title: 'chore: version packages'
+      # TEMPORARY: changesets swallows npm's error and crashes in
+      # isAlreadyPublishedError, so publish directly to see what npm says.
+      - run: pnpm -r publish --access public --no-git-checks
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
