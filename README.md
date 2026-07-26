@@ -237,7 +237,7 @@ invariant tests that exist because the failures they catch are silent.
 | `packages/react/test` | The `styles` engine, the keyboard behaviour of every overlay, the provider's attributes and tokens, the role/name/state contract of every control, and a server render of all of them |
 | `packages/core/test` | The spring integrator, and the custom properties the motion engine writes on every frame — the stylesheet reads exactly those names |
 | `packages/mcp/test` | The protocol handshake, notification handling, and that every answer comes from the generated catalog |
-| `apps/docs/test` | Every demo and doc page renders, every import line names a real export, every component is documented, and every `#/` link resolves |
+| `apps/docs/test` | Every demo and doc page renders, every import line names a real export, every component is documented, every `#/` link resolves, and every route is counted as a page of its own |
 | `test/` | The published export surface, the token set per theme, the shadcn registry's install graph, the generated `llms` files, the package manifests, the commit-message convention, the page each hash route is reported to analytics as, and that the retired spelling never comes back |
 
 A few of them are worth knowing about before making changes:
