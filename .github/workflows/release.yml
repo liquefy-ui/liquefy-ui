@@ -18,13 +18,13 @@ permissions:
 
 jobs:
   release:
-    name: Version or publish
+    name: Publish
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
-          # Changesets compares against the base branch to decide what to bump.
+          # `changeset publish` reads the tags to know what is already out.
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
@@ -35,6 +35,31 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
+
+      # Versions are decided on rc, by the Version workflow. A changeset that
+      # reaches main un-applied means rc was merged before its version pull
+      # request was — so the numbers about to be published are the previous
+      # release's. Stop here and say so, rather than publishing them again under
+      # the same version and letting `changeset publish` shrug it off as a no-op.
+      - name: Refuse to publish with changesets still pending
+        run: |
+          pending=$(find .changeset -name '*.md' ! -name 'README.md' | sort)
+          if [ -n "$pending" ]; then
+            {
+              echo '### Release stopped'
+              echo
+              echo 'These changesets have not been applied to a version yet:'
+              echo
+              echo '```'
+              echo "$pending"
+              echo '```'
+              echo
+              echo 'Merge the **chore: version packages** pull request into `rc` first,'
+              echo 'then merge `rc` into `main` again.'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::rc was merged before its version pull request; nothing published."
+            exit 1
+          fi
 
       # A release is the moment a red test matters most, so main is verified here
       # rather than trusting whichever CI run happened to precede it.
@@ -47,11 +72,11 @@ jobs:
       # OIDC token above for a short-lived credential and the registry attaches the
       # attestation. A token in the environment would let an OIDC failure fall back
       # to an unsigned publish instead of failing loudly.
+      #
+      # The guard above means there is never a changeset left for this to version,
+      # so it only ever publishes and pushes the tags.
       - uses: changesets/action@v1
         with:
-          # Opens or updates the "Version Packages" PR; publishes once it merges.
           publish: pnpm release
-          commit: 'chore: version packages'
-          title: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

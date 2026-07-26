@@ -240,9 +240,37 @@ A few of them are worth knowing about before making changes:
   one with an `i` where this one has an `e` — appears anywhere. The two used to
   coexist, and generated links went to the wrong one more than once.
 
+### Branches
+
+`rc` is where development happens. Branch from it, open a pull request back into
+it, and that is the whole loop for a change. `main` is the release branch and
+holds nothing that has not already been through `rc`.
+
+```
+feature/… ──▶ rc ──▶ main
+                     └── publishes to npm
+```
+
+Both branches take pull requests only — no direct pushes, no force pushes, no
+deletions — and both require the CI jobs below to be green before a merge.
+
+A release is a pull request from `rc` to `main`. What makes that safe to do at any
+time is the ordering rule: **versions are decided on `rc`, never on `main`.**
+
+| Where | Workflow | What it does |
+| --- | --- | --- |
+| push to `rc` | `version.yml` | Opens or updates the **chore: version packages** pull request, which applies the accumulated changesets. It has no npm credentials and no `id-token` permission, so it cannot publish. |
+| push to `main` | `release.yml` | Publishes whatever versions `rc` arrived carrying, with provenance. |
+
+So the release sequence is: merge the version pull request into `rc` first, then
+merge `rc` into `main`. Get that backwards and `release.yml` stops before
+publishing and says which changesets are still pending — the alternative is
+republishing the previous release's numbers, which npm accepts as a silent no-op.
+
 ### Continuous integration
 
-`.github/workflows/ci.yml` runs on every pull request and every push to `main`:
+`.github/workflows/ci.yml` runs on every pull request and every push to `rc` or
+`main`. All five are required before either branch will take a merge:
 
 | Job | What it answers |
 | --- | --- |
@@ -251,9 +279,6 @@ A few of them are worth knowing about before making changes:
 | Tests on Node 24 | Does the suite pass on the current release? |
 | Consumer install on Node 20.19 | Do the packed tarballs install with npm and render, on the version `engines` claims? |
 | Package manifests and types | Do `publint` and `@arethetypeswrong/cli` accept what npm would serve? |
-
-The Release workflow stops with an explanation while `NPM_TOKEN` is unset, so a
-push to `main` stays green until publishing is actually configured.
 
 ### Commits
 
@@ -303,16 +328,21 @@ Three things keep that working:
    file and every publish fails until the trusted publisher is updated on all four
    packages, at Settings → Trusted Publisher on each one.
 2. Settings → Actions → General → Workflow permissions has *Allow GitHub Actions
-   to create and approve pull requests* enabled. Changesets opens a Version
-   Packages pull request, and without this it fails with `GitHub Actions is not
-   permitted to create or approve pull requests`.
+   to create and approve pull requests* enabled. Changesets opens the version
+   pull request, and without this it fails with `GitHub Actions is not permitted
+   to create or approve pull requests`.
 3. Every package carries a `repository` field, which npm requires before it will
-   sign a publish with provenance. `test/metadata.test.mjs` keeps that true, along
-   with holding the three linked packages to a single version.
+   sign a publish with provenance. `test/metadata.test.mjs` keeps that true.
 
-The loop is: `pnpm changeset` per publishable change, push to `main`, Changesets
-opens or updates the Version Packages pull request, and merging it publishes
-every package.
+The loop is: `pnpm changeset` alongside the change, merge into `rc`, merge the
+**chore: version packages** pull request that `version.yml` raises, then open
+`rc → main`. Merging that publishes.
+
+Packages version independently. There was a `linked` group holding `core`, `icons`
+and `react` to one number, on the theory that a copied registry tree and the npm
+tree could otherwise disagree — but the registry pins only `core`, and derives that
+range from core's own manifest, so nothing was reading the alignment. All it did
+was republish two untouched packages every time the third changed.
 
 Publishing only works from CI, which is the point — a laptop has no OIDC identity
 the registry will trust. What is worth running locally is the rehearsal:

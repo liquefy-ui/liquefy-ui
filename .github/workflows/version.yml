@@ -1,0 +1,46 @@
+name: Version
+
+on:
+  push:
+    branches: [rc]
+  workflow_dispatch:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # rc is where changesets accumulate, so this is where they are turned into real
+  # version numbers. It only ever opens a pull request — nothing publishes from
+  # rc. Merging that pull request leaves rc carrying the versions and changelogs
+  # the next release will ship, which is what makes `rc -> main` a publish and
+  # nothing more.
+  version:
+    name: Version packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Changesets compares against the base branch to decide what to bump.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # No `publish` input on purpose: this job has no npm credentials and no
+      # id-token permission, so it cannot publish even by accident.
+      - uses: changesets/action@v1
+        with:
+          branch: rc
+          commit: 'chore: version packages'
+          title: 'chore: version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

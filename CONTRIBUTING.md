@@ -72,6 +72,22 @@ node scripts/check-commit-msg.mjs --text "fix(core): clamp the blur radius"
 
 `git commit --no-verify` skips the hook. It does not skip CI.
 
+## Branch from `rc`, not `main`
+
+`rc` is the development branch. `main` is the release branch, and a merge into it
+publishes to npm — so nothing lands there except a `rc → main` pull request.
+
+```bash
+git switch rc && git pull
+git switch -c fix/lens-focus-restore
+```
+
+Both branches take pull requests only, and both require the CI jobs to pass. If
+your change is one a consumer would notice, add a changeset in the same pull
+request — `pnpm changeset`. Releases are cut from what those changesets add up to,
+so a missing one means your change ships with no version bump and no changelog
+line.
+
 ## Before you open a pull request
 
 ```bash
