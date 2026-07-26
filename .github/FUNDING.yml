@@ -1,0 +1,22 @@
+# What puts the Sponsor button on the repository page. GitHub reads this file from
+# the default branch only, so it has to reach main to have any effect.
+#
+# The button appears for entries that resolve. A `github:` name that is not
+# enrolled in GitHub Sponsors resolves to nothing and is skipped silently — which
+# is why this can sit here before the account is set up and simply start working
+# the day it is, with no second commit to remember.
+#
+# Enrolling is the part no file can do: it needs identity details, a bank account
+# through Stripe Connect, a tax form, two-factor authentication on the account, and
+# GitHub's review. Start at https://github.com/sponsors.
+#
+# Sponsoring the person rather than the organisation is deliberate. An org listing
+# needs its own bank account and its own review, and there is one maintainer here;
+# it can move later without breaking anyone's existing sponsorship.
+github: [yu5ag]
+# Other platforms need no GitHub review and can be added alongside, each one an
+# account someone has to create first:
+# ko_fi: yu5ag
+# buy_me_a_coffee: yu5ag
+# open_collective: liquefy-ui
+# custom: ['https://liquefy-ui.com/#/sponsor']
