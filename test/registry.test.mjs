@@ -1,6 +1,10 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { buildRegistry } from '../scripts/build-registry.mjs'
 import { HOMEPAGE } from '../scripts/component-catalog.mjs'
+
+const { version: coreVersion } = JSON.parse(
+  readFileSync(new URL('../packages/core/package.json', import.meta.url), 'utf8'))
 
 // The registry is generated, so the thing worth testing is that the generation
 // produced something the shadcn CLI can actually install: a closed dependency
@@ -53,6 +57,20 @@ describe('shadcn registry', () => {
 
   it('tells the installer what to do next', () => {
     for (const item of items) expect(item.docs, item.name).toBeTruthy()
+  })
+
+  // A copied tree keeps importing @liquefy-ui/core from npm, and the range that
+  // went with it used to be the hard-coded string `^0.1.0`. Nothing failed while
+  // core stayed on 0.1.x, and nothing would have failed loudly afterwards either:
+  // a caret range stops at the next minor below 1.0, so the CLI would simply have
+  // installed an old engine underneath new component source.
+  it('asks npm for the version of core this registry was built from', () => {
+    const wrong = items.flatMap((item) =>
+      (item.dependencies ?? [])
+        .filter((dependency) => dependency.startsWith('@liquefy-ui/core@'))
+        .filter((dependency) => dependency !== `@liquefy-ui/core@^${coreVersion}`)
+        .map((dependency) => `${item.name} -> ${dependency}`))
+    expect(wrong).toEqual([])
   })
 
   it('gives every item a title, a description and file content', () => {

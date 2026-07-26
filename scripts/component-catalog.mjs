@@ -8,6 +8,7 @@ import { readFile, readdir } from 'node:fs/promises'
 
 const srcDir = new URL('../packages/react/src/', import.meta.url)
 const reactPackageJson = new URL('../packages/react/package.json', import.meta.url)
+const corePackageJson = new URL('../packages/core/package.json', import.meta.url)
 const iconsEntry = new URL('../packages/icons/src/index.tsx', import.meta.url)
 const coreEntry = new URL('../packages/core/src/index.ts', import.meta.url)
 
@@ -257,8 +258,23 @@ export const readCoreApi = async () => {
   return { types: types.sort(), values: values.sort() }
 }
 
+/**
+ * What a copied registry tree should ask npm for when it imports the engine.
+ *
+ * react depends on core as `workspace:^`, which is meaningless outside this
+ * repository, so the range has to be built from core's real version. It used to be
+ * the literal `^0.1.0`, which resolved fine while core stayed on 0.1.x and would
+ * have quietly installed a stale engine the day core reached 0.2.0 — a caret range
+ * does not cross a minor bump below 1.0.
+ */
+export const coreRange = async () => {
+  const { version } = JSON.parse(await readFile(corePackageJson, 'utf8'))
+  return `^${version}`
+}
+
 export const readCatalog = async () => {
   const { dependencies } = JSON.parse(await readFile(reactPackageJson, 'utf8'))
+  const core = await coreRange()
   const publicApi = await readPublicApi()
   const files = (await readdir(srcDir))
     .filter((file) => (file.endsWith('.ts') || file.endsWith('.tsx')) && file !== 'index.ts')
@@ -284,7 +300,7 @@ export const readCatalog = async () => {
     return {
       /** npm packages the copied file still needs, version-pinned from the workspace. */
       dependencies: packages.map((name) => {
-        const range = name === '@liquefy-ui/core' ? '^0.1.0' : dependencies[name]
+        const range = name === '@liquefy-ui/core' ? core : dependencies[name]
         return range ? `${name}@${range}` : name
       }),
       description: descriptions[slug] ?? `${titleCase(slug)} for liquefy-ui.`,
@@ -312,5 +328,5 @@ export const readCatalog = async () => {
     }
   }))
 
-  return { entries, reactDependencies: dependencies }
+  return { coreRange: core, entries, reactDependencies: dependencies }
 }

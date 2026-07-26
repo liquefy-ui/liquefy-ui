@@ -57,12 +57,12 @@ const buildStylesheet = async () => {
 }
 
 export const buildRegistry = async () => {
-  const { entries, reactDependencies } = await readCatalog()
+  const { coreRange, entries, reactDependencies } = await readCatalog()
 
   const baseItem = {
     $schema: itemSchema,
     dependencies: [
-      '@liquefy-ui/core@^0.1.0',
+      `@liquefy-ui/core@${coreRange}`,
       `@base-ui/react@${reactDependencies['@base-ui/react']}`,
     ],
     description:

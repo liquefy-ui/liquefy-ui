@@ -44,13 +44,6 @@ describe('published package manifests', () => {
   it.each(PUBLISHED)('publishes @liquefy-ui/%s publicly, with provenance', (name) => {
     expect(manifest(name).publishConfig).toEqual({ access: 'public', provenance: true })
   })
-
-  // changesets keeps these three in lockstep; a drifted version means the copied
-  // registry tree and the npm tree can disagree about what belongs together.
-  it('keeps the linked packages on one version', () => {
-    const versions = ['core', 'icons', 'react'].map((name) => manifest(name).version)
-    expect(new Set(versions).size).toBe(1)
-  })
 })
 
 describe('the one spelling', () => {
