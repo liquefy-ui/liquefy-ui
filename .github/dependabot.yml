@@ -1,0 +1,33 @@
+version: 2
+
+updates:
+  # Action versions are pinned to a major, so this is mostly about picking up the
+  # occasional breaking bump deliberately rather than discovering it mid-release.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: 'chore(ci)'
+    groups:
+      actions:
+        patterns: ['*']
+
+  # One PR a week for the whole workspace, split by risk: the two that decide
+  # what consumers get land on their own, everything else travels together.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      prefix-development: 'chore(dev)'
+    groups:
+      runtime:
+        patterns: ['@base-ui/react', 'react', 'react-dom']
+      build:
+        patterns: ['tsdown', 'typescript', 'vite', 'vitest', 'next']
+      rest:
+        patterns: ['*']
+        exclude-patterns: ['@base-ui/react', 'react', 'react-dom', 'tsdown', 'typescript', 'vite', 'vitest', 'next']

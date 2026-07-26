@@ -1,0 +1,17 @@
+/*
+ * liquefy-ui first, Tailwind second. The interop sheet declares the layer order,
+ * so Tailwind utilities land after `liquefy-ui` and win when they collide.
+ */
+@import '@liquefy-ui/react/tailwind.css';
+@import 'tailwindcss';
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background:
+    radial-gradient(120% 90% at 15% 0%, #2b3f7a 0%, transparent 55%),
+    radial-gradient(110% 80% at 85% 20%, #7a3f6b 0%, transparent 50%),
+    #0b1020;
+  color: #f8faff;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}

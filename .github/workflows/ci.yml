@@ -1,0 +1,183 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer push to the same branch makes the previous run's answer irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # The history is the one artefact nobody can correct after the fact without
+  # rewriting what others have already pulled, so the convention is enforced
+  # before a commit lands rather than apologised for afterwards. No install: the
+  # checker has no dependencies, which is most of why it can run in seconds.
+  commit-lint:
+    name: Commit messages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # It reads messages, not the tree, so it needs the commits themselves.
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Every commit this branch adds
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          # A new branch, a force push, or a manual run reports no usable base.
+          # Check the tip alone rather than replaying history that predates the
+          # convention and can no longer be fixed.
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            BASE="$HEAD~1"
+          fi
+          node scripts/check-commit-msg.mjs --range "$BASE..$HEAD"
+
+      # A squash merge writes the pull request title as the subject line, so a
+      # title nobody checked is a way for a bad subject to reach main regardless
+      # of how well every commit behind it was worded.
+      - name: The pull request title
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: node scripts/check-commit-msg.mjs --text "$TITLE"
+
+  # The gate: types, tests, builds and the client-directive check, in the order
+  # the repository's own `pnpm check` runs them.
+  check:
+    name: Typecheck, test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+
+      # The docs site is the only deployable artefact, and the generated agent
+      # files live inside it — worth keeping what a green run produced.
+      - uses: actions/upload-artifact@v4
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          name: docs-dist
+          path: apps/docs/dist
+          retention-days: 7
+
+  # The suite on the current release as well as the one the check job pins. pnpm
+  # 11 needs Node 22.13, so the floor in `engines` cannot be tested here — the
+  # consumer job below does that with npm instead.
+  matrix:
+    name: Tests on Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+
+  # The only check that uses the packages the way a consumer does: pack them,
+  # install the tarballs into an empty project with npm, and server-render a
+  # component out of them. It runs on the oldest Node `engines` claims, so that
+  # claim is verified rather than asserted.
+  consumer:
+    name: Consumer install on Node 20.19
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # `pnpm pack`, not `npm pack`: only pnpm rewrites its own `workspace:^`
+      # specifier, and npm exits 1 on the unknown protocol without saying why.
+      - run: pnpm pack:packages
+
+      # Everything from here runs on the floor version, without pnpm.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19'
+      - run: node --version
+      - run: node scripts/consumer-smoke.mjs .tarballs
+
+  # What npm would actually serve: the manifests, the file lists, and whether the
+  # type declarations resolve under every module resolution a consumer might use.
+  # Cheaper to learn here than from a published version that cannot be unpublished.
+  packaging:
+    name: Package manifests and types
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - name: publint
+        run: |
+          for package in core icons react mcp; do
+            echo "::group::@liquefy-ui/$package"
+            pnpm --filter "@liquefy-ui/$package" exec npx -y publint --strict
+            echo "::endgroup::"
+          done
+
+      # Three shapes, three assertions:
+      #   core, icons — dual ESM/CJS, so every resolution mode must work
+      #   react       — the same, minus the two CSS subpaths, which have no types
+      #   mcp         — a CLI that is ESM-only on purpose, so only ESM is asserted
+      - name: Are the types wrong?
+        run: |
+          for package in core icons; do
+            echo "::group::@liquefy-ui/$package"
+            pnpm --filter "@liquefy-ui/$package" exec npx -y @arethetypeswrong/cli --pack .
+            echo "::endgroup::"
+          done
+          echo "::group::@liquefy-ui/react"
+          pnpm --filter "@liquefy-ui/react" exec npx -y @arethetypeswrong/cli \
+            --pack . --exclude-entrypoints styles.css tailwind.css
+          echo "::endgroup::"
+          echo "::group::@liquefy-ui/mcp"
+          pnpm --filter "@liquefy-ui/mcp" exec npx -y @arethetypeswrong/cli \
+            --pack . --profile esm-only
+          echo "::endgroup::"

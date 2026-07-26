@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href="/brand/liquefy-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/brand/liquefy-icon.svg" />
+    <meta
+      name="description"
+      content="liquefy-ui — transparent Liquid Glass components for React, with WebGL optics, spring physics, a shadcn registry and an MCP server."
+    />
+    <title>liquefy-ui — Liquid Glass for React</title>
+    <script>
+      // Runs before first paint so the page never flashes the wrong theme.
+      try {
+        var stored = localStorage.getItem('liquefy-docs-theme')
+        document.documentElement.dataset.theme =
+          stored === 'dark' || stored === 'light'
+            ? stored
+            : matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light'
+      } catch (error) {
+        document.documentElement.dataset.theme = 'light'
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

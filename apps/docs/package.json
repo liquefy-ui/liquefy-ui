@@ -1,0 +1,27 @@
+{
+  "name": "@liquefy-ui/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm generate && tsc --noEmit && vite build",
+    "dev": "pnpm generate && vite",
+    "generate": "node ../../scripts/build-registry.mjs && node ../../scripts/build-llms.mjs && node ../../scripts/copy-brand.mjs",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@liquefy-ui/core": "workspace:*",
+    "@liquefy-ui/icons": "workspace:*",
+    "@liquefy-ui/react": "workspace:*",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "6.0.1",
+    "typescript": "7.0.2",
+    "vite": "8.1.5"
+  }
+}

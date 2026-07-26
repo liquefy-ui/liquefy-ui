@@ -1,0 +1,28 @@
+{
+  "name": "@liquefy-ui/next-example",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Proves @liquefy-ui/react imports cleanly from a Next.js App Router server component.",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --port 3100",
+    "start": "next start --port 3100",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@liquefy-ui/core": "workspace:*",
+    "@liquefy-ui/icons": "workspace:*",
+    "@liquefy-ui/react": "workspace:*",
+    "next": "16.2.11",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3"
+  }
+}

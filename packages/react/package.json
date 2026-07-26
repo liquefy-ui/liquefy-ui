@@ -1,0 +1,75 @@
+{
+  "name": "@liquefy-ui/react",
+  "version": "0.1.0",
+  "description": "Accessible React components with transparent Liquid Glass optics and tactile WebGL motion.",
+  "license": "MIT",
+  "homepage": "https://liquefy-ui.com",
+  "repository": {
+    "directory": "packages/react",
+    "type": "git",
+    "url": "git+https://github.com/liquefy-ui/liquefy-ui.git"
+  },
+  "bugs": "https://github.com/liquefy-ui/liquefy-ui/issues",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./styles.css": "./dist/styles.css",
+    "./tailwind.css": "./dist/tailwind.css"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsdown && node ../../scripts/copy-styles.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "1.6.0",
+    "@liquefy-ui/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": ">=18.2",
+    "react-dom": ">=18.2"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "tsdown": "0.22.9",
+    "typescript": "7.0.2",
+    "unrun": "0.3.1"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "keywords": [
+    "react",
+    "liquid-glass",
+    "webgl",
+    "components",
+    "design-system"
+  ]
+}

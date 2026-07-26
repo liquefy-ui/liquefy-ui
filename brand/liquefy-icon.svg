@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="2.8 2.8 58.4 58.4" width="64" height="64" role="img" aria-label="liquefy-ui">
+  <defs>
+    <!-- The mark tuned for 16-32px: the same two capsules, cropped closer, with
+         deeper colour and a contact shadow instead of the soft one. A wide
+         shadow blurs to nothing at a favicon's size and takes the gap between
+         the capsules with it. -->
+    <linearGradient id="lq-icon-glass" x1="0.25" y1="0.067" x2="0.75" y2="0.933">
+      <stop offset="0" stop-color="#eef0f1"/>
+      <stop offset="0.4" stop-color="#b6b8bc"/>
+      <stop offset="1" stop-color="#54555a"/>
+    </linearGradient>
+    <filter id="lq-contact" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="-0.5" dy="1.2" stdDeviation="0.9" flood-color="#0b0b0f" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <g transform="rotate(-29 25 26.1)">
+    <rect x="13.25" y="7.3" width="23.5" height="37.6" rx="11.75" fill="url(#lq-icon-glass)"/>
+    <rect x="13.85" y="7.9" width="22.3" height="36.4" rx="11.15" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="1.2"/>
+  </g>
+  <!-- Only the front capsule casts: it is the one that has to separate from the
+       shape behind it, and a shadow under both would just thicken the pair. -->
+  <g transform="rotate(-29 39.05 37.9)" filter="url(#lq-contact)">
+    <rect x="27.3" y="19.1" width="23.5" height="37.6" rx="11.75" fill="url(#lq-icon-glass)"/>
+    <rect x="27.9" y="19.7" width="22.3" height="36.4" rx="11.15" fill="none" stroke="#ffffff" stroke-opacity="0.65" stroke-width="1.2"/>
+  </g>
+</svg>

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Installed by the root `prepare` script, which points core.hooksPath here.
+# Bypass with `git commit --no-verify` — CI runs the same check and will not.
+exec node "$(dirname "$0")/../scripts/check-commit-msg.mjs" "$1"

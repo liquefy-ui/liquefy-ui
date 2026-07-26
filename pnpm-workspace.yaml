@@ -1,0 +1,20 @@
+packages:
+  - packages/*
+  - apps/*
+
+# next pulls sharp in for image optimisation. The example app renders no images,
+# and sharp ships prebuilt binaries, so its install script is skipped on purpose.
+allowBuilds:
+  sharp: false
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@liquefy-ui/*'
+  - react
+  - react-dom
+  - vite
+  - typescript
+  - tsdown
+  - vitest
+  - '@changesets/*'
+  - '@vitejs/*'

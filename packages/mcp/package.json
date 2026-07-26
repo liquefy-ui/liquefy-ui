@@ -1,0 +1,52 @@
+{
+  "name": "@liquefy-ui/mcp",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server that answers questions about liquefy-ui from its real API surface.",
+  "license": "MIT",
+  "homepage": "https://liquefy-ui.com",
+  "repository": {
+    "directory": "packages/mcp",
+    "type": "git",
+    "url": "git+https://github.com/liquefy-ui/liquefy-ui.git"
+  },
+  "bugs": "https://github.com/liquefy-ui/liquefy-ui/issues",
+  "type": "module",
+  "bin": {
+    "liquefy-ui-mcp": "./dist/index.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "pnpm generate && tsdown",
+    "generate": "node ../../scripts/build-mcp-catalog.mjs",
+    "typecheck": "pnpm generate && tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsdown": "0.22.9",
+    "typescript": "7.0.2",
+    "unrun": "0.3.1"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "liquefy-ui",
+    "ai",
+    "agents"
+  ]
+}

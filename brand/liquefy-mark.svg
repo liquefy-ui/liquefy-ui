@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="liquefy-ui">
+  <defs>
+    <!-- The docs header's .brand-mark, in one file: two glass capsules, each
+         rotated -29deg, lit from the top-left along a 150deg gradient. -->
+    <linearGradient id="lq-glass" x1="0.25" y1="0.067" x2="0.75" y2="0.933">
+      <stop offset="0" stop-color="#f1f2f3"/>
+      <stop offset="0.42" stop-color="#c1c2c5"/>
+      <stop offset="1" stop-color="#66676b"/>
+    </linearGradient>
+    <linearGradient id="lq-sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.8"/>
+      <stop offset="0.28" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Per capsule, not per group: the front one has to cast onto the back one,
+         or the overlap flattens and the pair reads as a single blob. -->
+    <filter id="lq-cast" x="-45%" y="-45%" width="190%" height="190%">
+      <feDropShadow dx="-0.6" dy="1.8" stdDeviation="2" flood-color="#0b0b0f" flood-opacity="0.34"/>
+    </filter>
+  </defs>
+
+  <g transform="rotate(-29 25 26.1)" filter="url(#lq-cast)">
+    <rect x="13.25" y="7.3" width="23.5" height="37.6" rx="11.75" fill="url(#lq-glass)"/>
+    <rect x="13.25" y="7.3" width="23.5" height="37.6" rx="11.75" fill="url(#lq-sheen)"/>
+    <rect x="13.85" y="7.9" width="22.3" height="36.4" rx="11.15" fill="none" stroke="#ffffff" stroke-opacity="0.6" stroke-width="1.2"/>
+  </g>
+  <g transform="rotate(-29 39.05 37.9)" filter="url(#lq-cast)">
+    <rect x="27.3" y="19.1" width="23.5" height="37.6" rx="11.75" fill="url(#lq-glass)"/>
+    <rect x="27.3" y="19.1" width="23.5" height="37.6" rx="11.75" fill="url(#lq-sheen)"/>
+    <rect x="27.9" y="19.7" width="22.3" height="36.4" rx="11.15" fill="none" stroke="#ffffff" stroke-opacity="0.6" stroke-width="1.2"/>
+  </g>
+</svg>

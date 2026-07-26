@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+  # npm provenance: every package sets publishConfig.provenance, which needs an
+  # OIDC token to attest that the build came from this workflow.
+  id-token: write
+
+jobs:
+  # Without a token this workflow can neither publish nor open the version PR,
+  # and a red X on every push to main teaches people to ignore red X's — so it
+  # says what is missing and stops.
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.token.outputs.ready }}
+    steps:
+      - id: token
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -n "$NPM_TOKEN" ]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+            echo '✅ NPM_TOKEN is present; the release job will run.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            {
+              echo '### Release skipped'
+              echo
+              echo 'This repository has no `NPM_TOKEN` secret, so nothing can be published yet.'
+              echo 'Two things are needed before the first release:'
+              echo
+              echo '1. **`NPM_TOKEN`** — an npm automation token for the `@liquefy-ui` scope,'
+              echo '   added under Settings → Secrets and variables → Actions.'
+              echo '2. **PR permission** — Settings → Actions → General → Workflow permissions →'
+              echo '   *Allow GitHub Actions to create and approve pull requests*. Changesets opens'
+              echo '   a "Version Packages" PR, and without this it fails with'
+              echo '   `GitHub Actions is not permitted to create or approve pull requests`.'
+              echo
+              echo 'Until then, release by hand: `pnpm changeset version && pnpm release`.'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  release:
+    name: Version or publish
+    needs: preflight
+    if: needs.preflight.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Changesets compares against the base branch to decide what to bump.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+
+      # A release is the moment a red test matters most, so main is verified here
+      # rather than trusting whichever CI run happened to precede it.
+      - run: pnpm check
+
+      - uses: changesets/action@v1
+        with:
+          # Opens or updates the "Version Packages" PR; publishes once it merges.
+          publish: pnpm release
+          commit: 'chore: version packages'
+          title: 'chore: version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,0 +1,42 @@
+/*
+ * Tailwind CSS v4 interop for liquefy-ui.
+ *
+ * Import this instead of `styles.css` when the project also uses Tailwind:
+ *
+ *   @import '@liquefy-ui/react/tailwind.css';
+ *   @import 'tailwindcss';
+ *
+ * Import order matters. The `@layer` statement below is what puts `liquefy-ui`
+ * before Tailwind's own layers, so a utility class always beats a component
+ * style and `class="p-0"` on a LiquidButton does what you expect. Import
+ * Tailwind first and the cascade flips.
+ */
+
+@layer liquefy-ui, theme, base, components, utilities;
+
+@import './styles.css';
+
+/*
+ * `inline` is load-bearing. liquefy-ui retints every token when the theme flips
+ * between light and dark, so the utilities have to resolve `var(--lq-*)` at use
+ * time rather than baking in whatever the value happened to be at build time.
+ */
+@theme inline {
+  --color-liquid-accent: var(--lq-accent);
+  --color-liquid-foreground: var(--lq-foreground);
+  --color-liquid-muted: var(--lq-muted);
+  --color-liquid-placeholder: var(--lq-placeholder);
+  --color-liquid-line: var(--lq-regular-line);
+  --color-liquid-fill: var(--lq-regular-fill);
+  --color-liquid-glass-soft: var(--lq-glass-soft);
+  --color-liquid-glass-bright: var(--lq-glass-bright);
+  --color-liquid-glass-shade: var(--lq-glass-shade);
+  --color-liquid-solid: var(--lq-solid-fill);
+
+  --radius-liquid: var(--lq-radius-default);
+  --spacing-liquid: var(--lq-space);
+  --ease-liquid: var(--lq-easing);
+  --shadow-liquid:
+    0 16px 40px var(--lq-shadow-color),
+    0 2px 8px color-mix(in srgb, var(--lq-shadow-color) 52%, transparent);
+}
