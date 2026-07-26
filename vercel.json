@@ -2,5 +2,13 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter '@liquefy-ui/docs...' build",
-  "outputDirectory": "apps/docs/dist"
+  "outputDirectory": "apps/docs/dist",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "liquefy-ui.vercel.app" }],
+      "destination": "https://liquefy-ui.com/$1",
+      "permanent": true
+    }
+  ]
 }
