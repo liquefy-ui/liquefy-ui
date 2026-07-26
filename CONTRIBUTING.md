@@ -74,9 +74,13 @@ node scripts/check-commit-msg.mjs --text "fix(core): clamp the blur radius"
 
 One exemption, by author: Dependabot writes a body listing every version it moved
 and has no setting that turns it off, so CI skips its commits and holds the pull
-request title to the rule instead — which is the subject a squash merge lands
-anyway. Squash-merge those pull requests, or the body reaches the history the
-convention exists to keep readable.
+request title to the rule instead.
+
+What makes that safe is a repository setting rather than a habit: squash merges are
+configured to take the pull request title and **discard the body**. On GitHub's
+default a squash concatenates every commit message it replaces, so the bot's body
+lands regardless of how well the title reads — three commits on `rc` carry one,
+from before the setting was found.
 
 ## Branch from `rc`, not `main`
 
