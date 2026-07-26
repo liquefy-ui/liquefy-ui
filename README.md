@@ -291,38 +291,47 @@ Use `theme="dark"`, `theme="light"`, or `theme="system"` on `LiquefyProvider` to
 
 ## Releasing
 
-Every package publishes publicly from the `@liquefy-ui` scope, with npm
-provenance. Four things keep that working:
+Every package publishes publicly from the `@liquefy-ui` scope, with an npm
+provenance attestation. There is **no publish token** anywhere: each package names
+`liquefy-ui/liquefy-ui` and `release.yml` as its trusted publisher, so the workflow
+trades its OIDC identity for a short-lived credential and the registry signs the
+result. Consumers can check it with `npm audit signatures`.
 
-1. `NPM_TOKEN` — a granular token with publish access to the scope — is set as a
-   GitHub Actions secret. Without it the Release workflow reports what is missing
-   and stops instead of failing.
+Three things keep that working:
+
+1. `release.yml` keeps its name and its `id-token: write` permission. Rename the
+   file and every publish fails until the trusted publisher is updated on all four
+   packages, at Settings → Trusted Publisher on each one.
 2. Settings → Actions → General → Workflow permissions has *Allow GitHub Actions
    to create and approve pull requests* enabled. Changesets opens a Version
    Packages pull request, and without this it fails with `GitHub Actions is not
    permitted to create or approve pull requests`.
 3. Every package carries a `repository` field, which npm requires before it will
-   sign a publish with provenance. `test/metadata.test.mjs` keeps that true.
-4. Nothing is published from a dirty tree: `pnpm check` has to pass first.
+   sign a publish with provenance. `test/metadata.test.mjs` keeps that true, along
+   with holding the three linked packages to a single version.
 
 The loop is: `pnpm changeset` per publishable change, push to `main`, Changesets
 opens or updates the Version Packages pull request, and merging it publishes
 every package.
 
-Locally:
+Publishing only works from CI, which is the point — a laptop has no OIDC identity
+the registry will trust. What is worth running locally is the rehearsal:
 
 ```bash
 pnpm smoke              # pack, install with npm, render — before anything else
 pnpm changeset
-pnpm version-packages
-pnpm release
+pnpm version-packages   # review the bump and the changelogs, then push
 ```
 
 Pack with **pnpm**, never `npm pack`: only pnpm rewrites its own `workspace:^`
 specifier into a real range, and npm exits 1 on the unknown protocol without
 saying why. `pnpm release` and `pnpm smoke` both do the right thing.
 
-Verify publish permissions with `npm whoami` and `npm access ls-packages`.
+One trap worth knowing, because it cost a version. `changeset publish` shells out
+to the workspace's package manager — `pnpm publish` here — and pnpm has no
+provenance support at all. `publishConfig.provenance` is an npm-only field, so it
+is accepted and ignored, and the release goes out unsigned with no warning. Trusted
+publishing is what actually produces the attestation; the field alone does nothing.
 
 ## Design notes
 

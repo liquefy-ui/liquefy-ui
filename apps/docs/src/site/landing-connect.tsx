@@ -120,8 +120,8 @@ export const Connect = () => {
       </div>
 
       <p className="install-note">
-        Published on npm. Only <code>@liquefy-ui/react</code> is mandatory — the other two come along or
-        stay optional.{' '}
+        Published on npm with provenance. Only <code>@liquefy-ui/react</code> is mandatory — the other two
+        come along or stay optional.{' '}
         <a className="text-link" href="#/docs/installation">Installation<ArrowRightIcon size={14} /></a>
       </p>
 
