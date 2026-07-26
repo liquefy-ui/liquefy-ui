@@ -5,6 +5,11 @@ updates:
   # occasional breaking bump deliberately rather than discovering it mid-release.
   - package-ecosystem: github-actions
     directory: /
+    # Dependency bumps are development, and development happens on rc. Left on
+    # the default branch these would open pull requests straight against the
+    # release branch, which is the one place nothing is allowed to land without
+    # having been through rc first.
+    target-branch: rc
     schedule:
       interval: weekly
     commit-message:
@@ -17,6 +22,7 @@ updates:
   # what consumers get land on their own, everything else travels together.
   - package-ecosystem: npm
     directory: /
+    target-branch: rc
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
