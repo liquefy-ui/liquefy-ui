@@ -36,6 +36,12 @@ const TRAILER = /^[A-Za-z][A-Za-z0-9-]*: .+$/
 // people avoiding the commands.
 const GENERATED = [/^Merge /, /^Revert "/, /^fixup! /, /^squash! /, /^amend! /]
 
+/**
+ * GitHub gives every app the same shape of address — `1234+name[bot]@users.
+ * noreply.github.com` — so the bracket is the reliable part, not the name.
+ */
+export const BOT_AUTHOR = /\[bot\]@/i
+
 // The trailers that make a commit look like someone else wrote it. The point of
 // the convention is that `git shortlog` names the people who are accountable for
 // the change, so an assistant's byline is a defect, not a courtesy.
@@ -150,18 +156,35 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   } else if (flag === '--range') {
     if (value === undefined) usage()
     const git = (args) => execFileSync('git', args, { encoding: 'utf8' })
-    // Second field is the parent list: more than one parent means a merge, which
-    // git wrote and nobody should have to reword.
-    const commits = git(['log', '--format=%H %P', value])
+
+    const all = git(['log', '--format=%H%x09%ae%x09%P', value])
       .split('\n')
       .filter(Boolean)
-      .filter((line) => line.trim().split(' ').length <= 2)
-      .map((line) => line.split(' ')[0])
+      .map((line) => {
+        const [sha, email, parents = ''] = line.split('\t')
+        return { email, parents: parents.trim().split(' ').filter(Boolean), sha }
+      })
 
-    for (const sha of commits) {
+    // A merge has more than one parent. git wrote that message, and rewording it
+    // by hand is the kind of friction that makes people avoid the command.
+    const authored = all.filter(({ parents }) => parents.length <= 1)
+
+    // Same reasoning, different author: Dependabot writes a body listing every
+    // version it moved, and there is no setting that turns it off. Its branches
+    // are squash-merged, so the subject that reaches rc is the pull request
+    // title — which the step after this one checks under the full rule. Skipping
+    // the commit itself asserts what actually lands rather than what a bot wrote
+    // on the way there.
+    const commits = authored.filter(({ email }) => !BOT_AUTHOR.test(email))
+    const skipped = authored.length - commits.length
+
+    for (const { sha } of commits) {
       if (!report(`${sha.slice(0, 8)}`, git(['show', '-s', '--format=%B', sha]))) ok = false
     }
-    if (ok) console.log(`Commit messages passed: ${commits.length} commit(s) in ${value}`)
+    if (ok) {
+      const note = skipped > 0 ? `, ${skipped} from a bot skipped` : ''
+      console.log(`Commit messages passed: ${commits.length} commit(s) in ${value}${note}`)
+    }
   } else {
     ok = report(flag, await readFile(flag, 'utf8'))
     if (!ok) {

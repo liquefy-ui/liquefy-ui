@@ -14,13 +14,13 @@
     "@liquefy-ui/core": "workspace:*",
     "@liquefy-ui/icons": "workspace:*",
     "@liquefy-ui/react": "workspace:*",
-    "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "6.0.1",
+    "@vitejs/plugin-react": "6.0.4",
     "typescript": "7.0.2",
     "vite": "8.1.5"
   }

@@ -35,7 +35,7 @@
     "typecheck": "pnpm generate && tsc --noEmit"
   },
   "devDependencies": {
-    "tsdown": "0.22.9",
+    "tsdown": "0.22.14",
     "typescript": "7.0.2",
     "unrun": "0.3.1"
   },
