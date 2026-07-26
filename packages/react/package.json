@@ -56,8 +56,8 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "tsdown": "0.22.9",
     "typescript": "7.0.2",
     "unrun": "0.3.1"
