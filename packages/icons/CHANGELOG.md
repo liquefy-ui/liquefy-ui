@@ -1,5 +1,19 @@
 # @liquefy-ui/icons
 
+## 0.1.2
+
+### Patch Changes
+
+- Republish `@liquefy-ui/core` with the provenance attestation 0.1.1 is missing.
+
+  The other packages picked up their trusted-publisher configuration on the 0.1.1
+  release; core did not, so its OIDC exchange failed and the publish fell back to the
+  token — which produces an unsigned tarball.
+
+  `icons` and `react` ride along because the three are a linked group and
+  `test/metadata.test.mjs` holds them to one version. None of the packaged code
+  changed.
+
 ## 0.1.1
 
 ### Patch Changes
