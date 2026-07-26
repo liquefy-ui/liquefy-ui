@@ -1,8 +1,11 @@
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-import { CONVENTIONAL_SCOPES, MAX_HEADER_LENGTH, TYPES, checkCommitMessage } from '../scripts/check-commit-msg.mjs'
+import { BOT_AUTHOR, CONVENTIONAL_SCOPES, MAX_HEADER_LENGTH, TYPES, checkCommitMessage } from '../scripts/check-commit-msg.mjs'
 
 const root = new URL('..', import.meta.url)
 
@@ -66,6 +69,72 @@ describe('rejects', () => {
     ['🤖 Generated with [Claude Code](https://claude.com/claude-code)', 'advertisement'],
   ])('the trailer %s', (trailer, fragment) => {
     rejects(`fix(core): clamp the blur radius\n\n${trailer}`, fragment)
+  })
+})
+
+// Dependabot writes a body listing every version it moved and offers no setting
+// to stop, so the range check skips it and the pull request title — which is what
+// a squash merge lands — carries the rule instead. The exemption is by author, so
+// the thing worth proving is that it does not spill onto anyone else.
+describe('the bot exemption', () => {
+  it.each([
+    '49699333+dependabot[bot]@users.noreply.github.com',
+    '41898282+github-actions[bot]@users.noreply.github.com',
+  ])('covers %s', (email) => expect(BOT_AUTHOR.test(email)).toBe(true))
+
+  it.each([
+    'ada@example.com',
+    'yu@users.noreply.github.com',
+    'robot@example.com',
+  ])('leaves %s alone', (email) => expect(BOT_AUTHOR.test(email)).toBe(false))
+
+  const inRepo = () => {
+    const dir = mkdtempSync(join(tmpdir(), 'commit-msg-'))
+    const git = (args, env = {}) =>
+      execFileSync('git', args, { cwd: dir, encoding: 'utf8', env: { ...process.env, ...env } })
+    git(['init', '-q', '-b', 'main'])
+    git(['-c', 'user.name=Base', '-c', 'user.email=base@example.com', 'commit', '-q', '--allow-empty', '-m', 'chore: base'])
+
+    const commit = (email, message) => git([
+      '-c', 'user.name=Author', `-c`, `user.email=${email}`,
+      'commit', '-q', '--allow-empty', '-m', message,
+    ])
+
+    const check = () => {
+      try {
+        execFileSync('node', [fileURLToPath(new URL('scripts/check-commit-msg.mjs', root)), '--range', 'HEAD~1..HEAD'],
+          { cwd: dir, encoding: 'utf8', stdio: 'pipe' })
+        return { ok: true }
+      } catch (error) {
+        return { ok: false, output: `${error.stdout ?? ''}${error.stderr ?? ''}` }
+      }
+    }
+
+    return { check, commit, dir }
+  }
+
+  const body = 'chore: bump the build group with 2 updates\n\nBumps the build group with 2 updates: tsdown and typescript.'
+
+  it('skips a body a bot wrote', () => {
+    const { check, commit, dir } = inRepo()
+    try {
+      commit('49699333+dependabot[bot]@users.noreply.github.com', body)
+      expect(check().ok).toBe(true)
+    } finally {
+      rmSync(dir, { force: true, recursive: true })
+    }
+  })
+
+  it('still rejects the same body from a person', () => {
+    const { check, commit, dir } = inRepo()
+    try {
+      commit('ada@example.com', body)
+      const result = check()
+      expect(result.ok).toBe(false)
+      expect(result.output).toContain('must be one line')
+    } finally {
+      rmSync(dir, { force: true, recursive: true })
+    }
   })
 })
 

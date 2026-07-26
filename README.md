@@ -198,6 +198,12 @@ The build comes first because `apps/next-example` deliberately typechecks agains
 the built package rather than the source — it is the canary for the `'use client'`
 banner — so on a clean checkout the types do not exist until the build has run.
 
+That app also holds the one version this repository does not keep current:
+`typescript` stays on 5.x there while everything else is on 7.x. Next 16.2 cannot
+find TypeScript 7 — `next build` reports *"you do not have the required package(s)
+installed"* and exits 1 — so the pin is what keeps the canary alive. Raise it when
+Next supports 7, not before; a dependency bot will offer to, and CI will refuse it.
+
 | Command | Purpose |
 | --- | --- |
 | `pnpm dev` | Start the documentation and playground |
