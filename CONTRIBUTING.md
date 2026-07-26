@@ -106,3 +106,30 @@ pnpm check   # build, typecheck, test, and the 'use client' directive check
 
 `pnpm smoke` additionally packs the four packages and installs them into an
 empty project with npm, the way a consumer would.
+
+## Where the numbers are
+
+How often the packages are downloaded, per package and since each was first
+published:
+
+```bash
+pnpm downloads          # a table
+pnpm downloads --json   # the same numbers, for something else to read
+```
+
+npm totals a day once it has ended in UTC and publishes the total some hours
+later, so the newest number is yesterday's and a package published today has
+none at all. The report prints the day it counts through rather than implying it
+is up to the minute.
+
+How many people opened <https://liquefy-ui.com> is [Vercel Web
+Analytics](https://vercel.com/docs/analytics), enabled on the project. It has no
+public API, so that half is read in the project's Analytics tab. It sets no
+cookie, which is why the site carries no consent banner.
+
+The site routes on the hash and the analytics script reads `location.pathname` —
+`/` on every page of it — so `apps/docs/src/site/analytics.tsx` reports the page
+itself: the `path` a visitor opened, and the `route` pattern it matched, which is
+what lets the dashboard read the component reference as a single line as well as
+page by page. A new *shape* of page needs a line in the `ROUTES` table there, and
+`test/analytics.test.mjs` records what each shape is filed under.

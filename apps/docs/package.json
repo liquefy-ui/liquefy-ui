@@ -14,6 +14,7 @@
     "@liquefy-ui/core": "workspace:*",
     "@liquefy-ui/icons": "workspace:*",
     "@liquefy-ui/react": "workspace:*",
+    "@vercel/analytics": "2.0.1",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

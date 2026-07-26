@@ -7,6 +7,7 @@ import { catalog, componentCount } from '../src/docs/catalog'
 import { docCategories, docCount, docOrder, findDocPage } from '../src/docs/docs-nav'
 import { iconCount, iconEntries, iconsImportLine } from '../src/docs/icons-gallery'
 import type { ComponentDoc } from '../src/docs/types'
+import { analyticsRoute } from '../src/site/analytics'
 
 /**
  * The docs site is generated from hand-written entries that describe a library
@@ -191,5 +192,33 @@ describe('internal links', () => {
     const targets = [...app.matchAll(/'(#\/docs[^']*)'/g)].map(([, target]) => target)
     expect(targets.length).toBeGreaterThan(2)
     for (const target of targets) expect(routes, target).toContain(target)
+  })
+})
+
+// Analytics reads `location.pathname`, which is `/` for every route of a hash
+// router, so the site reports the page itself. These hold that report against
+// the routes the router actually resolves — the failure otherwise is silent and
+// arrives as a month of traffic filed under one page.
+describe('the page analytics is told a visit was', () => {
+  it('gives every route a page of its own', () => {
+    const paths = [...routes].map((hash) => analyticsRoute(hash).path)
+    expect(new Set(paths).size).toBe(routes.size)
+    expect(paths.filter((path) => path === '/')).toEqual(['/'])
+  })
+
+  // The grouping is the reason for reporting a route as well as a path, so the
+  // set it groups into has to stay short enough to read down. A new shape of
+  // page fails this until `ROUTES` gives it a name.
+  it('groups them under the sections the site has', () => {
+    const grouped = new Set([...routes].map((hash) => analyticsRoute(hash).route))
+    expect([...grouped].sort()).toEqual([
+      '/',
+      '/components',
+      '/components/[component]',
+      '/components/icons',
+      '/docs',
+      '/docs/[page]',
+      '/playground',
+    ])
   })
 })

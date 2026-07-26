@@ -225,6 +225,7 @@ Next supports 7, not before; a dependency bot will offer to, and CI will refuse 
 | `pnpm changeset` | Describe a change for the next release |
 | `pnpm version-packages` | Apply the changesets locally |
 | `pnpm release` | Build and publish (what the Release workflow runs) |
+| `pnpm downloads` | Report how often each published package is downloaded |
 
 ### Tests
 
@@ -236,8 +237,8 @@ invariant tests that exist because the failures they catch are silent.
 | `packages/react/test` | The `styles` engine, the keyboard behaviour of every overlay, the provider's attributes and tokens, the role/name/state contract of every control, and a server render of all of them |
 | `packages/core/test` | The spring integrator, and the custom properties the motion engine writes on every frame — the stylesheet reads exactly those names |
 | `packages/mcp/test` | The protocol handshake, notification handling, and that every answer comes from the generated catalog |
-| `apps/docs/test` | Every demo and doc page renders, every import line names a real export, every component is documented, and every `#/` link resolves |
-| `test/` | The published export surface, the token set per theme, the shadcn registry's install graph, the generated `llms` files, the package manifests, the commit-message convention, and that the retired spelling never comes back |
+| `apps/docs/test` | Every demo and doc page renders, every import line names a real export, every component is documented, every `#/` link resolves, and every route is counted as a page of its own |
+| `test/` | The published export surface, the token set per theme, the shadcn registry's install graph, the generated `llms` files, the package manifests, the commit-message convention, the page each hash route is reported to analytics as, and that the retired spelling never comes back |
 
 A few of them are worth knowing about before making changes:
 
