@@ -120,8 +120,8 @@ export const introductionDoc: DocEntry = {
         />
         <p>
           React and React DOM are peer dependencies at <code>&gt;=18.2</code>; nothing bundles a copy of
-          them. Both ESM and CJS builds carry their own type declarations, and every release is published
-          with npm provenance.{' '}
+          them. Both ESM and CJS builds carry their own type declarations, and releases are published from
+          CI rather than from anyone&rsquo;s laptop.{' '}
           <a className="text-link" href="#/docs/installation">Install it<ArrowRightIcon size={14} /></a>
         </p>
       </Section>
