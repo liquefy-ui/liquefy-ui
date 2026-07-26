@@ -1,5 +1,11 @@
 # @liquefy-ui/icons
 
+## 0.1.3
+
+### Patch Changes
+
+- fdfe03b: Rehearse the rc pipeline. This changeset is removed before it reaches a release.
+
 ## 0.1.2
 
 ### Patch Changes

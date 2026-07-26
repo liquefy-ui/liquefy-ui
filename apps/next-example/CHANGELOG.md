@@ -1,5 +1,12 @@
 # @liquefy-ui/next-example
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [fdfe03b]
+  - @liquefy-ui/icons@0.1.3
+
 ## 0.0.2
 
 ### Patch Changes
