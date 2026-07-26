@@ -1,6 +1,6 @@
 {
   "name": "@liquefy-ui/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Framework-agnostic motion, optics, and design tokens for liquefy-ui.",
   "license": "MIT",
   "homepage": "https://liquefy-ui.com",
