@@ -296,6 +296,9 @@ The Vercel deployment builds only `@liquefy-ui/docs` and what it imports —
 `apps/next-example` exists as a CI guard for the RSC boundary, not as something to
 deploy, and `vercel.json` filters it out so it does not slow every preview.
 
+The project is connected to this repository, so `main` deploys to production and
+every other branch gets a preview URL of its own. Nothing needs `vercel deploy`.
+
 `vercel.json` also sends `liquefy-ui.vercel.app` to `liquefy-ui.com` with a 308.
 Vercel assigns that hostname to the project and there is no way to give it back, so
 the site answered on two origins — which splits search rankings between them and
