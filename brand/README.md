@@ -10,6 +10,13 @@ a tab, a README and a social card all show the same thing.
 | `liquefy-icon.svg` | The same mark tuned for 16–32px — cropped closer, deeper colour, a contact shadow that survives being shrunk. Favicon, npm avatar, home screen |
 | `liquefy-logo.svg` | The full lockup on a light background |
 | `liquefy-logo-dark.svg` | The full lockup on a dark background |
+| `liquefy-lens.gif` | The one thing a still cannot show — the lens bending its backdrop. The README's opening image |
+
+`liquefy-lens.gif` is the odd one out here: not a logo, and not hand-drawn. It is a
+recording of the landing page's own lens, driven through one unbroken drag so the
+last frame lands back on the first and the loop has no seam. Dark theme, because
+the refraction and the dispersion at the rim both disappear into a light backdrop.
+Re-record it with `scripts/record-lens.mjs` rather than by hand.
 
 The two lockups differ only in the colour of the wordmark. There is no
 theme-aware single file on purpose: an SVG loaded through `<img>` cannot read the
