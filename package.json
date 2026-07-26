@@ -13,6 +13,7 @@
     "changeset": "changeset",
     "check": "pnpm build && pnpm typecheck && pnpm test && pnpm verify:rsc",
     "dev": "pnpm --filter @liquefy-ui/docs dev",
+    "downloads": "node scripts/report-downloads.mjs",
     "generate": "node scripts/build-mcp-catalog.mjs && node scripts/build-registry.mjs && node scripts/build-llms.mjs && node scripts/copy-brand.mjs",
     "pack:packages": "rm -rf .tarballs && mkdir -p .tarballs && pnpm --filter @liquefy-ui/core --filter @liquefy-ui/icons --filter @liquefy-ui/react exec pnpm pack --pack-destination ../../.tarballs",
     "prepare": "git rev-parse --git-dir > /dev/null 2>&1 && git config core.hooksPath .githooks || true",
