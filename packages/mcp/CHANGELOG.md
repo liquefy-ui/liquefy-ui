@@ -1,5 +1,11 @@
 # @liquefy-ui/mcp
 
+## 0.1.2
+
+### Patch Changes
+
+- 0781867: Broaden the npm keywords so search finds these packages by what they are
+
 ## 0.1.1
 
 ### Patch Changes
