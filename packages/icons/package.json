@@ -52,9 +52,12 @@
     "node": ">=20.19"
   },
   "keywords": [
-    "icons",
     "react",
+    "icons",
+    "react-icons",
     "svg",
+    "svg-icons",
+    "tree-shakeable",
     "liquid-glass"
   ]
 }

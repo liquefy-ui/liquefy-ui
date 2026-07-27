@@ -11,6 +11,17 @@ a tab, a README and a social card all show the same thing.
 | `liquefy-logo.svg` | The full lockup on a light background |
 | `liquefy-logo-dark.svg` | The full lockup on a dark background |
 | `liquefy-lens.gif` | The one thing a still cannot show — the lens bending its backdrop. The README's opening image |
+| `liquefy-og.png` | The link preview, 1200×630. What the site's `og:image` points at, and what a post, a chat or a pull request comment shows instead of a bare URL |
+| `liquefy-social.png` | The same card at 1280×640, GitHub's aspect for a repository's social preview |
+
+The two cards are the same drawing at two aspects, and the picture inside them is
+not a mock-up either: it is a clipped screenshot of the landing page's own lens
+stage, taken after a drag so the hint is gone and the springs have settled. Redraw
+them with `scripts/record-card.mjs` — never by hand, and never by cropping one
+from the other. `apps/docs/index.html` declares the size of `liquefy-og.png`, and
+`test/metadata.test.mjs` reads the PNG header to check the declaration still
+matches the file. GitHub's copy is the one file here that no build or deploy
+installs: it is uploaded once, by hand, under Settings → Social preview.
 
 `liquefy-lens.gif` is the odd one out here: not a logo, and not hand-drawn. It is a
 recording of the landing page's own lens, driven through one unbroken drag so the
