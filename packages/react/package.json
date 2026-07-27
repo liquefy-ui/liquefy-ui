@@ -67,9 +67,16 @@
   },
   "keywords": [
     "react",
+    "react-components",
+    "ui-library",
+    "component-library",
     "liquid-glass",
+    "glassmorphism",
+    "frosted-glass",
     "webgl",
-    "components",
-    "design-system"
+    "design-system",
+    "accessible",
+    "shadcn",
+    "nextjs"
   ]
 }

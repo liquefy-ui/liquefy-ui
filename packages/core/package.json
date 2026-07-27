@@ -48,9 +48,12 @@
   },
   "keywords": [
     "liquid-glass",
+    "glassmorphism",
     "webgl",
-    "spring",
-    "ui",
+    "shader",
+    "displacement-map",
+    "spring-physics",
+    "animation",
     "typescript"
   ]
 }
