@@ -2799,6 +2799,7 @@
   }
 
   .lq-drawer[data-side='bottom'] {
+    display: flex;
     height: auto;
     inset: auto 0 0 0;
     max-height: 82dvh;
@@ -2836,7 +2837,20 @@
     flex-direction: column;
     height: 100%;
     overflow: auto;
+    overscroll-behavior: contain;
     padding: 24px;
+  }
+
+  /* The bottom panel is sized by `max-height` rather than `height`, so the
+     percentage above resolves against an `auto` parent and collapses back to
+     `auto` — the surface then grows to its content and nothing scrolls, which
+     puts the end of a tall panel past the bottom of the screen. Stretching it
+     as a flex item gives it the clamped height, and `min-height: 0` lets it
+     become shorter than its content so `overflow` has something to do. */
+  .lq-drawer[data-side='bottom'] .lq-drawer__surface {
+    flex: 1;
+    height: auto;
+    min-height: 0;
   }
 
   .lq-drawer__header {
