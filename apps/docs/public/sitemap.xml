@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  One URL, and that is not an oversight to be corrected by pasting the routes in.
+  Every page of this site is a hash route, and a fragment is not part of a URL as
+  far as a crawler is concerned: #/components/liquid-button is the same document
+  as /, so listing thirty of them would list the same page thirty times.
+
+  What this file is actually for is naming the canonical host. The site answers on
+  a vercel.app domain as well, which redirects here (see vercel.json) — this says
+  which one is the original.
+
+  Giving the component and doc pages their own entries means giving them their own
+  URLs first: real paths instead of hashes, and a rewrite so a deep link serves
+  index.html. Until then, this is the honest sitemap.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://liquefy-ui.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

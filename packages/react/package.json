@@ -1,6 +1,6 @@
 {
   "name": "@liquefy-ui/react",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Accessible React components with transparent Liquid Glass optics and tactile WebGL motion.",
   "license": "MIT",
   "homepage": "https://liquefy-ui.com",
@@ -67,9 +67,16 @@
   },
   "keywords": [
     "react",
+    "react-components",
+    "ui-library",
+    "component-library",
     "liquid-glass",
+    "glassmorphism",
+    "frosted-glass",
     "webgl",
-    "components",
-    "design-system"
+    "design-system",
+    "accessible",
+    "shadcn",
+    "nextjs"
   ]
 }

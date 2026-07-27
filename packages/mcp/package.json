@@ -1,6 +1,6 @@
 {
   "name": "@liquefy-ui/mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Model Context Protocol server that answers questions about liquefy-ui from its real API surface.",
   "license": "MIT",
   "homepage": "https://liquefy-ui.com",
@@ -45,7 +45,11 @@
   "keywords": [
     "mcp",
     "model-context-protocol",
+    "mcp-server",
     "liquefy-ui",
+    "react",
+    "ui-library",
+    "liquid-glass",
     "ai",
     "agents"
   ]

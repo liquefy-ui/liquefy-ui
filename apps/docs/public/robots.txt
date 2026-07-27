@@ -1,0 +1,7 @@
+# Everything served here is public documentation, including the generated
+# `llms.txt` files and the shadcn registry under /r/ — a crawler reading those is
+# the point of publishing them.
+User-agent: *
+Allow: /
+
+Sitemap: https://liquefy-ui.com/sitemap.xml

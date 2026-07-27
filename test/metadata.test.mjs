@@ -150,3 +150,62 @@ describe('the README', () => {
     }
   })
 })
+
+/**
+ * How the project looks when it is linked rather than visited. Every failure here
+ * is invisible from inside the site: the page renders, the build passes, and the
+ * card in someone else's post is blank or stale.
+ */
+describe('the link preview', () => {
+  const html = readFileSync(new URL('../apps/docs/index.html', import.meta.url), 'utf8')
+  const content = (attribute, name) =>
+    html.match(new RegExp(`<meta[^>]*${attribute}="${name}"[^>]*content="([^"]*)"`, 's'))?.[1]
+      ?? html.match(new RegExp(`<meta[^>]*content="([^"]*)"[^>]*${attribute}="${name}"`, 's'))?.[1]
+
+  /** Width and height out of a PNG's IHDR, which is always its first chunk. */
+  const pngSize = (file) => {
+    const bytes = readFileSync(new URL(`../brand/${file}`, import.meta.url))
+    expect(bytes.subarray(1, 4).toString(), `${file} is a PNG`).toBe('PNG')
+    return { height: bytes.readUInt32BE(20), width: bytes.readUInt32BE(16) }
+  }
+
+  it('points at an image that exists, at the size it claims', () => {
+    const image = content('property', 'og:image')
+    expect(image).toBe(`${SITE}/brand/liquefy-og.png`)
+    // Relative URLs are dropped by the crawlers that read this, not resolved.
+    expect(image.startsWith('https://')).toBe(true)
+    expect(pngSize('liquefy-og.png')).toEqual({
+      height: Number(content('property', 'og:image:height')),
+      width: Number(content('property', 'og:image:width')),
+    })
+  })
+
+  it('gives GitHub a card at the aspect GitHub wants', () => {
+    expect(pngSize('liquefy-social.png')).toEqual({ height: 640, width: 1280 })
+  })
+
+  it('asks for the large card, and names one canonical host', () => {
+    expect(content('name', 'twitter:card')).toBe('summary_large_image')
+    expect(content('name', 'twitter:image')).toBe(`${SITE}/brand/liquefy-og.png`)
+    expect(content('property', 'og:url')).toBe(`${SITE}/`)
+    expect(html).toContain(`<link rel="canonical" href="${SITE}/" />`)
+    for (const tag of ['og:type', 'og:title', 'og:description', 'og:image:alt']) {
+      expect(content('property', tag), tag).toBeTruthy()
+    }
+  })
+
+  // A sitemap naming a different host than the redirect target sends crawlers
+  // round in a circle, and a robots.txt that points at a sitemap which is not
+  // served is worse than having neither.
+  it('agrees with robots.txt about where the sitemap is', () => {
+    const publicDir = new URL('../apps/docs/public/', import.meta.url)
+    const robots = readFileSync(new URL('robots.txt', publicDir), 'utf8')
+    const sitemap = readFileSync(new URL('sitemap.xml', publicDir), 'utf8')
+
+    expect(robots).toContain(`Sitemap: ${SITE}/sitemap.xml`)
+    expect(robots).toMatch(/^User-agent: \*$/m)
+    expect(sitemap).toContain(`<loc>${SITE}/</loc>`)
+    // One document, because every page of this site is a fragment of it.
+    expect([...sitemap.matchAll(/<loc>/g)]).toHaveLength(1)
+  })
+})

@@ -1,5 +1,13 @@
 # @liquefy-ui/react
 
+## 0.1.3
+
+### Patch Changes
+
+- 0781867: Broaden the npm keywords so search finds these packages by what they are
+- Updated dependencies [0781867]
+  - @liquefy-ui/core@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes
