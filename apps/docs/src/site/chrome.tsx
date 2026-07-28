@@ -4,6 +4,8 @@ import { CheckIcon, CopyIcon, GithubIcon, MoonIcon, MoreHorizontalIcon, SunIcon 
 import { useSiteConfig } from './site-config'
 
 export const repositoryUrl = 'https://github.com/liquefy-ui/liquefy-ui'
+/** The maintainer's personal listing, not the organisation's — see `.github/FUNDING.yml`. */
+export const sponsorUrl = 'https://github.com/sponsors/yu5ag'
 export const siteUrl = 'https://liquefy-ui.com'
 export const version = '0.1'
 
@@ -285,6 +287,7 @@ export const SiteFooter = () => (
         <strong>Elsewhere</strong>
         <a href={repositoryUrl} rel="noreferrer" target="_blank">GitHub</a>
         <a href="https://www.npmjs.com/package/@liquefy-ui/react" rel="noreferrer" target="_blank">npm</a>
+        <a href={sponsorUrl} rel="noreferrer" target="_blank">Sponsor</a>
         <a href="/llms.txt">llms.txt</a>
         <a href="/r/registry.json">Registry</a>
       </div>
