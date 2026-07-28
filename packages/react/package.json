@@ -77,6 +77,12 @@
     "design-system",
     "accessible",
     "shadcn",
-    "nextjs"
+    "shadcn-registry",
+    "nextjs",
+    "tailwindcss",
+    "mcp",
+    "ai",
+    "agents",
+    "llms-txt"
   ]
 }
