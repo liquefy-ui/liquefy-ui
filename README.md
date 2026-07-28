@@ -396,6 +396,15 @@ publishing is what actually produces the attestation; the field alone does nothi
 - React and React DOM are peer dependencies, preventing duplicate React bundles.
 - Motion and transparency are **always on by default**, independent of OS accessibility settings (macOS "Reduce Motion" / "Reduce Transparency" silently flip both media queries in every desktop browser). Toggle them per subtree with `motion={false}` / `transparency={false}` on `LiquefyProvider`; apps that want to honor the OS can pass e.g. `motion={!matchMedia('(prefers-reduced-motion: reduce)').matches}` or use the core-level `respectReducedMotion` / `respectReducedTransparency` options.
 
+## Sponsor
+
+[GitHub Sponsors](https://github.com/sponsors/yu5ag) funds the maintenance of this
+library — the shader work, the browser matrix, and the release plumbing that keeps
+`pnpm add @liquefy-ui/react` boring. Sponsorship goes to the maintainer rather than
+to an organisation; there is one of us.
+
+GitHub takes no cut, so the whole amount arrives. One-off is as welcome as monthly.
+
 ## License
 
 MIT
