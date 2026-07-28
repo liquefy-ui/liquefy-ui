@@ -3,6 +3,9 @@ name: Release
 on:
   push:
     branches: [main]
+  # Run this on `rc` to release: it promotes rc into main and publishes what that
+  # merge produced, in one run. Run it on `main` to publish main as it stands,
+  # which is the retry path when a publish failed after the merge already landed.
   workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
@@ -13,7 +16,9 @@ permissions:
   # The registry trusts this workflow by name rather than a token: pnpm exchanges
   # this OIDC token for a short-lived one, and npm attaches the provenance
   # attestation itself. Renaming this file breaks publishing until the trusted
-  # publisher is updated on all four packages.
+  # publisher is updated on all four packages. It is also why promoting rc lives
+  # here rather than in a workflow of its own — the publish has to stay in this
+  # file, and splitting the two would only add a second thing to press.
   id-token: write
 
 jobs:
@@ -26,21 +31,15 @@ jobs:
         with:
           # `changeset publish` reads the tags to know what is already out.
           fetch-depth: 0
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 11.13.1
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: pnpm
-          registry-url: https://registry.npmjs.org
-      - run: pnpm install --frozen-lockfile
 
       # Versions are decided on rc, by the Version workflow. A changeset that
       # reaches main un-applied means rc was merged before its version pull
       # request was — so the numbers about to be published are the previous
       # release's. Stop here and say so, rather than publishing them again under
       # the same version and letting `changeset publish` shrug it off as a no-op.
+      #
+      # This runs before rc is promoted, not after, so a premature press leaves
+      # main untouched instead of needing a revert.
       - name: Refuse to publish with changesets still pending
         run: |
           pending=$(find .changeset -name '*.md' ! -name 'README.md' | sort)
@@ -55,11 +54,94 @@ jobs:
               echo '```'
               echo
               echo 'Merge the **chore: version packages** pull request into `rc` first,'
-              echo 'then merge `rc` into `main` again.'
+              echo 'then run this workflow again.'
             } >> "$GITHUB_STEP_SUMMARY"
-            echo "::error::rc was merged before its version pull request; nothing published."
+            echo "::error::rc carries unapplied changesets; nothing published."
             exit 1
           fi
+
+      # Why a pull request the workflow then merges itself, rather than a push to
+      # main: the ruleset over main requires one and names no bypass actor, so a
+      # direct push is refused outright.
+      #
+      # The required checks are already green here without a run of their own.
+      # CI runs on pushes to rc, so rc's tip carries all five before this starts —
+      # and because this pull request is opened with GITHUB_TOKEN it raises no
+      # `pull_request` event, so nothing re-runs against it. The check that used to
+      # fail by hand, `Commit messages`, only ever failed on the *title* GitHub
+      # fills in by default; opening it here means the title is right the first
+      # time, and no second run appears to disagree.
+      - name: Promote rc into main
+        if: github.event_name == 'workflow_dispatch' && github.ref_name == 'rc'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git fetch origin main rc
+
+          if git diff --quiet origin/main origin/rc; then
+            echo "::error::rc and main hold the same tree; there is nothing to release."
+            exit 1
+          fi
+
+          pr=$(gh pr list --base main --head rc --state open --json number --jq '.[0].number // empty')
+          if [ -z "$pr" ]; then
+            url=$(gh pr create --base main --head rc \
+              --title 'chore: release' \
+              --body 'Opened by the Release workflow. Merging this publishes what `rc` carries.')
+            pr=${url##*/}
+            echo "opened #$pr"
+          else
+            # A pull request left open from a manual attempt may carry the default
+            # title, which the commit lint rejects because a squash merge would use
+            # it as the subject. Correct it rather than opening a second one.
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/pulls/$pr" -f title='chore: release' >/dev/null
+            echo "reusing #$pr"
+          fi
+
+          # Waits for the state GitHub itself will act on rather than polling the
+          # checks and reasoning about them separately.
+          state=UNKNOWN
+          for _ in $(seq 1 40); do
+            state=$(gh pr view "$pr" --json mergeStateStatus --jq .mergeStateStatus)
+            if [ "$state" = CLEAN ]; then
+              break
+            fi
+            if [ "$state" = DIRTY ]; then
+              echo "::error::#$pr conflicts with main; merge main into rc and try again."
+              exit 1
+            fi
+            sleep 15
+          done
+
+          if [ "$state" != CLEAN ]; then
+            echo "::error::#$pr is still $state after ten minutes; nothing merged."
+            exit 1
+          fi
+
+          # A merge commit, matching every release before this one. A squash would
+          # flatten rc's history into main and leave the two permanently divergent.
+          gh pr merge "$pr" --merge
+
+          echo "Promoted rc into main through #$pr." >> "$GITHUB_STEP_SUMMARY"
+
+      # The dispatch ran on rc, so the checkout above is rc. Publish from what the
+      # merge actually produced.
+      - name: Move to main
+        if: github.event_name == 'workflow_dispatch' && github.ref_name == 'rc'
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+          git log --oneline -1
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.13.1
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
 
       # A release is the moment a red test matters most, so main is verified here
       # rather than trusting whichever CI run happened to precede it.
