@@ -889,11 +889,6 @@
     }
   }
 
-  .lq-provider[data-liquid-theme='light'] .lq-dock__item[data-active='true'],
-  .lq-provider[data-liquid-theme='light'] .lq-dock__item:hover {
-    color: #17203a;
-  }
-
   @media (prefers-color-scheme: light) {
     .lq-provider[data-liquid-theme='system'] {
       --lq-clear-fill: transparent;
