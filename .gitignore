@@ -18,5 +18,8 @@ coverage
 .vercel
 .tarballs
 .playwright-mcp
+
+# Takes from scripts/record-clip.mjs — regenerated, never reviewed
+.recordings
 .env*
 packages/mcp/src/catalog.generated.ts
