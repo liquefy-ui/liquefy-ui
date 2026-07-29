@@ -9,11 +9,12 @@ import {
   LiquidSurface,
   LiquidSwitch,
   LiquidTextField,
+  type LiquefyTheme,
 } from '@liquefy-ui/react'
 import { HeartIcon, SearchIcon, SparklesIcon } from '@liquefy-ui/icons'
 import { CopyButton } from './chrome'
 import { LiquefyLockup } from './lockup'
-import { TINTS, useSiteConfig } from './site-config'
+import { THEME_LABELS, THEME_ORDER, TINTS, useSiteConfig } from './site-config'
 
 /**
  * The draggable lens. It is the fastest way to feel what the library actually
@@ -151,10 +152,7 @@ const SamplePanel = () => {
   )
 }
 
-const THEME_OPTIONS = [
-  { label: 'Light', value: 'light' },
-  { label: 'Dark', value: 'dark' },
-]
+const THEME_OPTIONS = THEME_ORDER.map((value) => ({ label: THEME_LABELS[value], value }))
 
 type ControlRailProps = {
   onToggleCode: () => void
@@ -171,9 +169,9 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
         <span className="pg-rail__label">Appearance</span>
         <LiquidSegmented
           label="Appearance"
-          onValueChange={(value) => config.setTheme(value === 'dark' ? 'dark' : 'light')}
+          onValueChange={(value) => config.setTheme(value as LiquefyTheme)}
           options={THEME_OPTIONS}
-          value={config.theme === 'dark' ? 'dark' : 'light'}
+          value={config.themeChoice}
         />
       </div>
 
@@ -265,7 +263,7 @@ const providerSnippet = (config: ReturnType<typeof useSiteConfig>) => {
   const flag = (name: string, value: boolean) => (value ? `  ${name}` : `  ${name}={false}`)
   return [
     '<LiquefyProvider',
-    `  theme="${config.theme}"`,
+    `  theme="${config.themeChoice}"`,
     `  tint="${config.tint}"`,
     `  intensity={${config.intensity.toFixed(2)}}`,
     `  wobbliness={${config.wobbliness.toFixed(1)}}`,
