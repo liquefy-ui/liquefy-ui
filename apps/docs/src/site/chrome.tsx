@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { LiquidDrawer } from '@liquefy-ui/react'
 import { CheckIcon, CopyIcon, GithubIcon, MoonIcon, MoreHorizontalIcon, SunIcon } from '@liquefy-ui/icons'
-import { useSiteConfig } from './site-config'
+import { nextTheme, THEME_LABELS, useSiteConfig } from './site-config'
 
 export const repositoryUrl = 'https://github.com/liquefy-ui/liquefy-ui'
 /** The maintainer's personal listing, not the organisation's — see `.github/FUNDING.yml`. */
@@ -78,20 +78,45 @@ export const MotionToggle = () => {
   )
 }
 
+/** The third appearance: a screen, for "whatever the machine says". */
+const SystemMark = () => (
+  <svg
+    aria-hidden="true"
+    className="theme-toggle__system"
+    fill="none"
+    height={17}
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={1.6}
+    viewBox="0 0 24 24"
+    width={17}
+  >
+    <rect height="12.5" rx="2.2" width="18" x="3" y="4" />
+    <path d="M9 20.5h6M12 16.5v4" />
+  </svg>
+)
+
+/**
+ * Three states rather than two, because "follow the OS" has to be somewhere a
+ * visitor can get back to: a two-way toggle pins the theme on the first click and
+ * the machine's own light/dark switch stops reaching the page for good.
+ */
 export const ThemeToggle = () => {
-  const { theme, toggleTheme } = useSiteConfig()
+  const { cycleTheme, themeChoice } = useSiteConfig()
 
   return (
     <button
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      aria-label={`Appearance: ${THEME_LABELS[themeChoice]}. Switch to ${THEME_LABELS[nextTheme(themeChoice)]}.`}
       className="icon-toggle theme-toggle"
-      data-theme={theme}
-      onClick={toggleTheme}
+      data-theme={themeChoice}
+      onClick={cycleTheme}
       type="button"
     >
       <span className="theme-toggle__icons">
         <SunIcon className="theme-toggle__sun" size={17} />
         <MoonIcon className="theme-toggle__moon" size={17} />
+        <SystemMark />
       </span>
     </button>
   )
@@ -163,7 +188,7 @@ type SiteHeaderProps = {
  * Escape come with it.
  */
 const CompactMenu = ({ section }: { section: SiteSection }) => {
-  const { motionOn, setMotionOn, theme, toggleTheme } = useSiteConfig()
+  const { cycleTheme, motionOn, setMotionOn, themeChoice } = useSiteConfig()
   const [open, setOpen] = useState(false)
 
   // Following a link inside the drawer should close it.
@@ -208,7 +233,7 @@ const CompactMenu = ({ section }: { section: SiteSection }) => {
         </nav>
         <div className="header-drawer__row">
           <span>Appearance</span>
-          <button onClick={toggleTheme} type="button">{theme === 'dark' ? 'Dark' : 'Light'}</button>
+          <button onClick={cycleTheme} type="button">{THEME_LABELS[themeChoice]}</button>
         </div>
         <div className="header-drawer__row">
           <span>Jelly motion</span>
