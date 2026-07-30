@@ -98,7 +98,7 @@ RSC app needs no follow-up edit.
 
 ## Documentation
 
-Run `pnpm dev`, then:
+Everything is on **[liquefy-ui.com](https://liquefy-ui.com)**:
 
 | Route | Contents |
 | --- | --- |
@@ -109,11 +109,7 @@ Run `pnpm dev`, then:
 | `#/docs/frameworks` · `#/docs/tailwind` · `#/docs/ai-tooling` | Integration |
 | `#/docs/accessibility` · `#/docs/performance` · `#/docs/troubleshooting` | Practices |
 
-Twelve doc pages live in `apps/docs/src/docs/pages/*.tsx`, registered in
-`apps/docs/src/docs/docs-nav.tsx` — one `DocEntry` per page, grouped into sidebar
-categories. The 33 component pages come from `apps/docs/src/docs/catalog-*.tsx`, and
-the shadcn registry publishes 37 items built from the same source. Old
-`#/guides/*` links redirect to their `#/docs/*` equivalents.
+Old `#/guides/*` links redirect to their `#/docs/*` equivalents.
 
 ## Style overrides: the `styles` prop
 
@@ -183,145 +179,10 @@ The full version of this — every shorthand, token reference, breakpoint and st
 key, plus custom components and server rendering — is at `#/docs/styles-prop`,
 with the token system itself at `#/docs/theming`.
 
-## Development
-
-Two different Node floors, and they are not the same number:
-
-- **Consumers** need Node 20.19 or newer, which is what `engines` says. CI proves
-  it by installing the packed tarballs with npm on exactly that version and
-  server-rendering from them.
-- **This repository** needs Node 22.13 or newer, because pnpm 11 does.
-
-```bash
-corepack enable
-pnpm install
-pnpm dev
-```
-
-`pnpm check` is what CI runs: `build`, then `typecheck`, `test` and `verify:rsc`.
-The build comes first because `apps/next-example` deliberately typechecks against
-the built package rather than the source — it is the canary for the `'use client'`
-banner — so on a clean checkout the types do not exist until the build has run.
-
-That app also holds the one version this repository does not keep current:
-`typescript` stays on 5.x there while everything else is on 7.x. Next 16.2 cannot
-find TypeScript 7 — `next build` reports *"you do not have the required package(s)
-installed"* and exits 1 — so the pin is what keeps the canary alive. Raise it when
-Next supports 7, not before; a dependency bot will offer to, and CI will refuse it.
-
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | Start the documentation and playground |
-| `pnpm preview` | Serve the built documentation |
-| `pnpm typecheck` | Type-check every package |
-| `pnpm test` | Regenerate the generated files, then run the whole suite |
-| `pnpm build` | Build npm artifacts and documentation |
-| `pnpm check` | Build, type-check, test, and verify the RSC directive — what CI runs |
-| `pnpm generate` | Regenerate the MCP catalog, the shadcn registry and the `llms` files from source |
-| `pnpm verify:rsc` | Assert the built bundles carry `'use client'` |
-| `pnpm pack:packages` | Pack the three consumer-facing packages into `.tarballs/` |
-| `pnpm prepare` | Point `core.hooksPath` at `.githooks/` — run for you by `pnpm install` |
-| `pnpm smoke` | Pack, install the tarballs into an empty npm project, and render from them |
-| `pnpm changeset` | Describe a change for the next release |
-| `pnpm version-packages` | Apply the changesets locally |
-| `pnpm release` | Build and publish (what the Release workflow runs) |
-| `pnpm downloads` | Report how often each published package is downloaded |
-
-### Tests
-
-`pnpm test` runs everything: unit tests, DOM tests under jsdom, and a set of
-invariant tests that exist because the failures they catch are silent.
-
-| Suite | Holds |
-| --- | --- |
-| `packages/react/test` | The `styles` engine, the keyboard behaviour of every overlay, the provider's attributes and tokens, the role/name/state contract of every control, and a server render of all of them |
-| `packages/core/test` | The spring integrator, and the custom properties the motion engine writes on every frame — the stylesheet reads exactly those names |
-| `packages/mcp/test` | The protocol handshake, notification handling, and that every answer comes from the generated catalog |
-| `apps/docs/test` | Every demo and doc page renders, every import line names a real export, every component is documented, every `#/` link resolves, and every route is counted as a page of its own |
-| `test/` | The published export surface, the token set per theme, the shadcn registry's install graph, the generated `llms` files, the package manifests, the commit-message convention, the page each hash route is reported to analytics as, and that the retired spelling never comes back |
-
-A few of them are worth knowing about before making changes:
-
-- `test/public-api.test.mjs` lists every export by name. Changing that list fails
-  the test on purpose: it means writing a changeset, not noticing in a consumer's
-  build.
-- `test/tokens.test.mjs` asserts light and dark declare the same `--lq-*` set. A
-  token added to one theme and not the other breaks only that theme, and nothing
-  else fails.
-- `test/metadata.test.mjs` fails if the retired spelling of the project name — the
-  one with an `i` where this one has an `e` — appears anywhere. The two used to
-  coexist, and generated links went to the wrong one more than once.
-
-### Branches
-
-`rc` is where development happens. Branch from it, open a pull request back into
-it, and that is the whole loop for a change. `main` is the release branch and
-holds nothing that has not already been through `rc`.
-
-```
-feature/… ──▶ rc ──▶ main
-                     └── publishes to npm
-```
-
-Both branches take pull requests only — no direct pushes, no force pushes, no
-deletions — and both require the CI jobs below to be green before a merge.
-
-A release is a pull request from `rc` to `main`. What makes that safe to do at any
-time is the ordering rule: **versions are decided on `rc`, never on `main`.**
-
-| Where | Workflow | What it does |
-| --- | --- | --- |
-| push to `rc` | `version.yml` | Opens or updates the **chore: version packages** pull request, which applies the accumulated changesets. It has no npm credentials and no `id-token` permission, so it cannot publish. |
-| push to `main` | `release.yml` | Publishes whatever versions `rc` arrived carrying, with provenance. |
-
-So the release sequence is: merge the version pull request into `rc` first, then
-merge `rc` into `main`. Get that backwards and `release.yml` stops before
-publishing and says which changesets are still pending — the alternative is
-republishing the previous release's numbers, which npm accepts as a silent no-op.
-
-### Continuous integration
-
-`.github/workflows/ci.yml` runs on every pull request and every push to `rc` or
-`main`. All five are required before either branch will take a merge:
-
-| Job | What it answers |
-| --- | --- |
-| Commit messages | Does every new commit — and the pull request title a squash merge would use — follow the convention? |
-| Typecheck, test and build | Does `pnpm check` pass? |
-| Tests on Node 24 | Does the suite pass on the current release? |
-| Consumer install on Node 20.19 | Do the packed tarballs install with npm and render, on the version `engines` claims? |
-| Package manifests and types | Do `publint` and `@arethetypeswrong/cli` accept what npm would serve? |
-
-### Commits
-
-One line, prefixed with what kind of change it is:
-
-```
-fix(react): keep the lens visible when the tab regains focus
-```
-
-[CONTRIBUTING.md](./CONTRIBUTING.md) has the types, the scopes and the reasoning.
-`pnpm install` installs the hook that checks it, and the `commit-lint` job checks
-it again on the way in.
-
-The Vercel deployment builds only `@liquefy-ui/docs` and what it imports —
-`apps/next-example` exists as a CI guard for the RSC boundary, not as something to
-deploy, and `vercel.json` filters it out so it does not slow every preview.
-
-The project is connected to this repository, so `main` deploys to production and
-every other branch gets a preview URL of its own. Nothing needs `vercel deploy`.
-
-`vercel.json` also sends `liquefy-ui.vercel.app` to `liquefy-ui.com` with a 308.
-Vercel assigns that hostname to the project and there is no way to give it back, so
-the site answered on two origins — which splits search rankings between them and
-means a link someone copied out of the address bar keeps working after the project
-is renamed or moved. The redirect matches on the host and leaves the path alone, so
-deployment-specific preview URLs are unaffected and still open directly.
-
 ## Components
 
-33 components and 44 icons, each with live demos and a full prop table on the
-components site: run `pnpm dev` and open `#/components`.
+33 components and 44 icons, each with live demos and a full prop table at
+[liquefy-ui.com/#/components](https://liquefy-ui.com/#/components).
 
 | Category | Components |
 | --- | --- |
@@ -336,55 +197,6 @@ When WebGL is unavailable, components automatically fall back to the transparent
 
 Use `theme="dark"`, `theme="light"`, or `theme="system"` on `LiquefyProvider` to control appearance.
 
-## Releasing
-
-Every package publishes publicly from the `@liquefy-ui` scope, with an npm
-provenance attestation. There is **no publish token** anywhere: each package names
-`liquefy-ui/liquefy-ui` and `release.yml` as its trusted publisher, so the workflow
-trades its OIDC identity for a short-lived credential and the registry signs the
-result. Consumers can check it with `npm audit signatures`.
-
-Three things keep that working:
-
-1. `release.yml` keeps its name and its `id-token: write` permission. Rename the
-   file and every publish fails until the trusted publisher is updated on all four
-   packages, at Settings → Trusted Publisher on each one.
-2. Settings → Actions → General → Workflow permissions has *Allow GitHub Actions
-   to create and approve pull requests* enabled. Changesets opens the version
-   pull request, and without this it fails with `GitHub Actions is not permitted
-   to create or approve pull requests`.
-3. Every package carries a `repository` field, which npm requires before it will
-   sign a publish with provenance. `test/metadata.test.mjs` keeps that true.
-
-The loop is: `pnpm changeset` alongside the change, merge into `rc`, merge the
-**chore: version packages** pull request that `version.yml` raises, then open
-`rc → main`. Merging that publishes.
-
-Packages version independently. There was a `linked` group holding `core`, `icons`
-and `react` to one number, on the theory that a copied registry tree and the npm
-tree could otherwise disagree — but the registry pins only `core`, and derives that
-range from core's own manifest, so nothing was reading the alignment. All it did
-was republish two untouched packages every time the third changed.
-
-Publishing only works from CI, which is the point — a laptop has no OIDC identity
-the registry will trust. What is worth running locally is the rehearsal:
-
-```bash
-pnpm smoke              # pack, install with npm, render — before anything else
-pnpm changeset
-pnpm version-packages   # review the bump and the changelogs, then push
-```
-
-Pack with **pnpm**, never `npm pack`: only pnpm rewrites its own `workspace:^`
-specifier into a real range, and npm exits 1 on the unknown protocol without
-saying why. `pnpm release` and `pnpm smoke` both do the right thing.
-
-One trap worth knowing, because it cost a version. `changeset publish` shells out
-to the workspace's package manager — `pnpm publish` here — and pnpm has no
-provenance support at all. `publishConfig.provenance` is an npm-only field, so it
-is accepted and ignored, and the release goes out unsigned with no warning. Trusted
-publishing is what actually produces the attestation; the field alone does nothing.
-
 ## Design notes
 
 - **Real edge refraction**: a WebGL shader bakes a rounded-rect lens displacement map, applied to the live backdrop through an SVG `feDisplacementMap` inside `backdrop-filter` (with per-channel chromatic dispersion). Chromium renders it fully; WebKit and Gecko gracefully fall back to the blurred CSS material.
@@ -395,6 +207,12 @@ publishing is what actually produces the attestation; the field alone does nothi
 - **Accessibility comes from Base UI**: Dialog, Drawer, Menu, Select, Tooltip, Tabs and Accordion are built on `@base-ui/react`, which supplies focus trapping and restoration, scroll locking, Escape handling, roving tabindex, typeahead, and collision-aware positioning. liquefy-ui keeps the optics and the springs and stops re-implementing the parts that are easy to get subtly wrong. The keyboard behaviour is asserted in `packages/react/test/keyboard.test.tsx` rather than assumed.
 - React and React DOM are peer dependencies, preventing duplicate React bundles.
 - Motion and transparency are **always on by default**, independent of OS accessibility settings (macOS "Reduce Motion" / "Reduce Transparency" silently flip both media queries in every desktop browser). Toggle them per subtree with `motion={false}` / `transparency={false}` on `LiquefyProvider`; apps that want to honor the OS can pass e.g. `motion={!matchMedia('(prefers-reduced-motion: reduce)').matches}` or use the core-level `respectReducedMotion` / `respectReducedTransparency` options.
+
+## Contributing
+
+Issues and pull requests are welcome. `rc` is the development branch — branch from
+it and open the pull request back into it. [CONTRIBUTING.md](./CONTRIBUTING.md) has
+the local setup, the test suites, the CI jobs and the commit convention.
 
 ## Sponsor
 
