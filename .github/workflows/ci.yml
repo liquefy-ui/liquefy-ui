@@ -1,7 +1,13 @@
 name: CI
 
 on:
+  # `edited` is not in the default set, and one of the checks below reads the
+  # pull request title — so without it, a title the convention rejects can never
+  # be made green. Editing raises no event the default set covers, and a re-run
+  # replays the original payload, title included. Closing and reopening was the
+  # only way through, twice.
   pull_request:
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main, rc]
   workflow_dispatch:

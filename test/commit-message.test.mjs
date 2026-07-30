@@ -154,6 +154,14 @@ describe('the rule is wired up', () => {
     expect(workflow).toContain('--text')
   })
 
+  // Checking the title is only useful if a corrected title can be checked again.
+  // `edited` is outside the default trigger set and a re-run replays the original
+  // payload, so dropping it leaves a rejected title with no way to go green.
+  it('runs again when the pull request title is edited', () => {
+    const workflow = readFileSync(new URL('.github/workflows/ci.yml', root), 'utf8')
+    expect(workflow).toMatch(/pull_request:\s*\n\s*types:\s*\[[^\]]*\bedited\b/)
+  })
+
   it('documents every type and scope the checker knows', () => {
     const contributing = readFileSync(new URL('CONTRIBUTING.md', root), 'utf8')
     for (const type of TYPES) expect(contributing, `type ${type}`).toContain(`\`${type}\``)
