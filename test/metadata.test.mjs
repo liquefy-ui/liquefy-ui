@@ -98,7 +98,15 @@ describe('the one spelling', () => {
 
 describe('the README', () => {
   const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8')
+  const contributing = readFileSync(new URL('../CONTRIBUTING.md', import.meta.url), 'utf8')
   const root = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+
+  /**
+   * Scripts only the maintainer runs, deliberately absent from CONTRIBUTING: the
+   * release is not something a contributor performs, and documenting it there
+   * would read as an invitation.
+   */
+  const MAINTAINER_SCRIPTS = ['release', 'version-packages', 'downloads']
 
   it('lists every published package', () => {
     for (const name of PUBLISHED) expect(readme, name).toContain(`\`${NPM_SCOPE}/${name}\``)
@@ -106,9 +114,9 @@ describe('the README', () => {
 
   // A command that exists but is not written down is a command nobody runs, and a
   // documented one that no longer exists sends people looking for a bug.
-  it('documents every root script, and invents none', () => {
-    const documented = new Set([...readme.matchAll(/\| `pnpm ([a-z:-]+)`/g)].map(([, name]) => name))
-    const real = Object.keys(root.scripts)
+  it('documents every contributor-facing root script, and invents none', () => {
+    const documented = new Set([...contributing.matchAll(/\| `pnpm ([a-z:-]+)`/g)].map(([, name]) => name))
+    const real = Object.keys(root.scripts).filter((name) => !MAINTAINER_SCRIPTS.includes(name))
     expect(real.filter((name) => !documented.has(name))).toEqual([])
     expect([...documented].filter((name) => !real.includes(name))).toEqual([])
   })
@@ -130,9 +138,9 @@ describe('the README', () => {
           .match(/slug: '/g) ?? []).length, 0)
 
     expect(readme).toContain(`${componentPages} components and ${icons.names.length} icons`)
-    expect(readme).toContain(`${registry.items.length} items`)
+    expect(contributing).toContain(`${registry.items.length} items`)
     expect(docPages).toBe(12)
-    expect(readme.toLowerCase()).toContain('twelve doc pages')
+    expect(contributing.toLowerCase()).toContain('twelve doc pages')
     // The catalogue and the registry are built from the same source, so a drift
     // between them means one of the two builders stopped seeing a file.
     expect(registry.items.length).toBe(entries.length + 1)
