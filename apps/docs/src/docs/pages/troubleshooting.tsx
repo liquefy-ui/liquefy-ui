@@ -122,9 +122,14 @@ export const SaveButton = ({ onSave }: { onSave: () => void }) => (
         <CodeBlock
           code={`<!-- In <head>, before the app bundle -->
 <script>
+  // A stored 'system' is not a colour: it means "ask the OS", same as no value.
+  var stored = localStorage.getItem('theme')
   document.documentElement.dataset.theme =
-    localStorage.getItem('theme') ??
-    (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    stored === 'dark' || stored === 'light'
+      ? stored
+      : matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light'
 </script>`}
         />
       </Section>

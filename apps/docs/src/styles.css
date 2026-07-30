@@ -480,24 +480,21 @@ a {
   transition: opacity 320ms ease, transform 620ms cubic-bezier(0.3, 1.4, 0.4, 1);
 }
 
-.theme-toggle__sun {
+/* Three appearances, three glyphs, one at a time. The button shows the state it
+   is in — `data-theme` is the visitor's choice, so System keeps the screen glyph
+   whichever way the OS happens to be leaning. */
+.theme-toggle__sun,
+.theme-toggle__moon,
+.theme-toggle__system {
   opacity: 0;
   transform: rotate(-90deg) scale(0.6);
 }
 
-.theme-toggle__moon {
+.theme-toggle[data-theme='system'] .theme-toggle__system,
+.theme-toggle[data-theme='light'] .theme-toggle__sun,
+.theme-toggle[data-theme='dark'] .theme-toggle__moon {
   opacity: 1;
   transform: rotate(0) scale(1);
-}
-
-.theme-toggle[data-theme='light'] .theme-toggle__sun {
-  opacity: 1;
-  transform: rotate(0) scale(1);
-}
-
-.theme-toggle[data-theme='light'] .theme-toggle__moon {
-  opacity: 0;
-  transform: rotate(90deg) scale(0.6);
 }
 
 @media (prefers-reduced-motion: reduce) {

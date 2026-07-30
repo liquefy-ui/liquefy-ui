@@ -29,7 +29,12 @@ export type MaterialConfig = {
   wobbliness: number
 }
 
+/** What is actually on screen. `system` has already been resolved away. */
+export type ResolvedTheme = 'dark' | 'light'
+
 export type SiteConfig = MaterialConfig & {
+  /** System → Light → Dark → System. */
+  cycleTheme: () => void
   /** Physics actually handed to the provider; trails `motionOn` on the way off. */
   motion: boolean
   /** What the motion toggle displays. */
@@ -37,9 +42,12 @@ export type SiteConfig = MaterialConfig & {
   reset: () => void
   setMaterial: <K extends keyof MaterialConfig>(key: K, value: MaterialConfig[K]) => void
   setMotionOn: (next: boolean) => void
+  /** Takes `system` as well, which puts the site back on the OS setting. */
   setTheme: (next: LiquefyTheme) => void
-  theme: LiquefyTheme
-  toggleTheme: () => void
+  /** The appearance in force. Read this to paint something. */
+  theme: ResolvedTheme
+  /** What the visitor picked. `system` while the OS is in charge. */
+  themeChoice: LiquefyTheme
 }
 
 export const TINTS = [
@@ -106,17 +114,30 @@ export const useSiteConfig = (): SiteConfig => {
   return config
 }
 
+/** The three appearances, in the order the header toggle walks through them. */
+export const THEME_ORDER = ['system', 'light', 'dark'] as const satisfies readonly LiquefyTheme[]
+
+export const THEME_LABELS: Record<LiquefyTheme, string> = {
+  dark: 'Dark',
+  light: 'Light',
+  system: 'System',
+}
+
+export const nextTheme = (current: LiquefyTheme): LiquefyTheme =>
+  // The `??` is only for the checked-index rule; the modulo cannot miss.
+  THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length] ?? 'system'
+
 const readStoredTheme = (): LiquefyTheme | null => {
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
-    return stored === 'dark' || stored === 'light' ? stored : null
+    return THEME_ORDER.includes(stored as LiquefyTheme) ? (stored as LiquefyTheme) : null
   } catch {
     // Private mode or a blocked storage partition: fall back to the OS setting.
     return null
   }
 }
 
-const systemTheme = (): LiquefyTheme =>
+const systemTheme = (): ResolvedTheme =>
   window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light'
 
 /**
@@ -124,22 +145,27 @@ const systemTheme = (): LiquefyTheme =>
  * material settings shared by every route.
  */
 export const SiteProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setThemeState] = useState<LiquefyTheme>(() => readStoredTheme() ?? systemTheme())
-  const [chosen, setChosen] = useState(() => readStoredTheme() !== null)
+  const [themeChoice, setThemeChoice] = useState<LiquefyTheme>(() => readStoredTheme() ?? 'system')
+  const [systemScheme, setSystemScheme] = useState<ResolvedTheme>(systemTheme)
   const [material, setMaterialState] = useState<MaterialConfig>(DEFAULT_MATERIAL)
   const [motion, setMotion] = useState(true)
   const [motionOn, setMotionOnState] = useState(true)
   const motionOffTimer = useRef<number | undefined>(undefined)
 
-  // Follow the OS until the visitor makes a choice of their own; after that the
-  // choice sticks across reloads.
+  // `system` is a standing choice, not just a starting point: the subscription
+  // stays up for the whole session so flipping the OS switch — including back and
+  // forth, and including after the visitor has pinned a theme and returned to
+  // System — lands on the page immediately.
   useEffect(() => {
-    if (chosen) return
     const media = window.matchMedia(DARK_QUERY)
-    const onChange = (event: MediaQueryListEvent) => setThemeState(event.matches ? 'dark' : 'light')
+    const onChange = () => setSystemScheme(media.matches ? 'dark' : 'light')
+    // The OS may have moved between the inline script in <head> and this effect.
+    onChange()
     media.addEventListener('change', onChange)
     return () => media.removeEventListener('change', onChange)
-  }, [chosen])
+  }, [])
+
+  const theme: ResolvedTheme = themeChoice === 'system' ? systemScheme : themeChoice
 
   // The page background and the browser chrome live outside the provider, so
   // they read the theme from the document element instead.
@@ -155,8 +181,7 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo<SiteConfig>(() => {
     const setTheme = (next: LiquefyTheme) => {
-      setThemeState(next)
-      setChosen(true)
+      setThemeChoice(next)
       try {
         window.localStorage.setItem(THEME_STORAGE_KEY, next)
       } catch {
@@ -176,6 +201,7 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
 
     return {
       ...material,
+      cycleTheme: () => setTheme(nextTheme(themeChoice)),
       motion,
       motionOn,
       reset: () => setMaterialState(DEFAULT_MATERIAL),
@@ -183,9 +209,9 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
       setMotionOn,
       setTheme,
       theme,
-      toggleTheme: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
+      themeChoice,
     }
-  }, [material, motion, motionOn, theme])
+  }, [material, motion, motionOn, theme, themeChoice])
 
   return (
     <SiteConfigContext.Provider value={value}>

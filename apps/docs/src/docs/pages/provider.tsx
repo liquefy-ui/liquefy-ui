@@ -136,8 +136,11 @@ export const App = () => (
           mismatch, and no effect — prefer it whenever the app has no theme switcher of its own.
         </p>
         <p>
-          A switcher needs state, and the useful shape is: follow the OS until the visitor picks
-          something, then remember the pick. This site does exactly that.
+          A switcher needs state, and the shape that works is three choices rather than two:{' '}
+          <strong>System, Light, Dark</strong>. Store the choice, not the colour. A two-way toggle pins
+          the theme on the first click, and from then on the machine&apos;s own light/dark switch — which
+          on a phone is a sunset — never reaches the page again, with nothing in the UI to undo it. This
+          site does exactly what is below.
         </p>
         <CodeBlock
           code={`'use client'
@@ -148,23 +151,35 @@ import { useEffect, useState } from 'react'
 const QUERY = '(prefers-color-scheme: dark)'
 
 export const ThemedApp = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState<LiquefyTheme>('system')
-  const [chosen, setChosen] = useState(false)
+  // What the visitor picked, which is the thing worth storing.
+  const [choice, setChoice] = useState<LiquefyTheme>('system')
+  const [system, setSystem] = useState<LiquefyTheme | null>(null)
 
-  // Only subscribe while still following the OS.
+  // localStorage does not exist on the server, so the remembered choice is read
+  // after mount rather than during render.
   useEffect(() => {
-    if (chosen) return
+    const stored = localStorage.getItem('theme') as LiquefyTheme | null
+    if (stored) setChoice(stored)
+  }, [])
+
+  // Subscribed for the whole session, so coming back to System starts following
+  // the OS again — and so every flip of it lands while the tab is open.
+  useEffect(() => {
     const media = window.matchMedia(QUERY)
-    const onChange = () => setTheme(media.matches ? 'dark' : 'light')
+    const onChange = () => setSystem(media.matches ? 'dark' : 'light')
+    onChange()
     media.addEventListener('change', onChange)
     return () => media.removeEventListener('change', onChange)
-  }, [chosen])
+  }, [])
 
   const choose = (next: LiquefyTheme) => {
-    setTheme(next)
-    setChosen(true)
+    setChoice(next)
     localStorage.setItem('theme', next)
   }
+
+  // Before the effects have run, hand the provider 'system' and let CSS resolve
+  // it: that is the frame that would otherwise flash the wrong theme.
+  const theme = choice === 'system' ? system ?? 'system' : choice
 
   return <LiquefyProvider theme={theme}>{children}</LiquefyProvider>
 }`}
