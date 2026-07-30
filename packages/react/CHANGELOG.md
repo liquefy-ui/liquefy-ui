@@ -1,5 +1,18 @@
 # @liquefy-ui/react
 
+## 0.1.5
+
+### Patch Changes
+
+- 6475e4a: Name the agent-facing tooling in the npm keywords: `mcp`, `ai`, `agents` and
+  `llms-txt`, alongside `shadcn-registry` and `tailwindcss`. The package ships an
+  MCP server, a shadcn registry and a Tailwind v4 bridge, and npm search could not
+  find any of them by name.
+- 621f110: Let the light theme's dock honour `--lq-dock-active`. The active and hovered item
+  hard-coded the colour instead of reading the token, so overriding it moved the
+  dock under `theme="dark"` and `theme="system"` but not under `theme="light"` —
+  the one asymmetry between the three themes. The default colour is unchanged.
+
 ## 0.1.4
 
 ### Patch Changes

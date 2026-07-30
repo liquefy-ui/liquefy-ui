@@ -1,5 +1,13 @@
 # @liquefy-ui/next-example
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [6475e4a]
+- Updated dependencies [621f110]
+  - @liquefy-ui/react@0.1.5
+
 ## 0.0.4
 
 ### Patch Changes
