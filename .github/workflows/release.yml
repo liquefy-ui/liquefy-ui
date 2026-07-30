@@ -162,3 +162,65 @@ jobs:
           publish: pnpm release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The MCP Registry stores metadata only: it takes the npm package this
+      # points at and refuses the submission unless that package carries a
+      # matching `mcpName`. So it has to run after the publish above, never
+      # before, and `packages/mcp/package.json` is where the marker lives.
+      #
+      # No secret. `login github-oidc` trades the id-token this workflow already
+      # requests for a registry credential, and the namespace follows the
+      # repository owner, which is what makes the name `io.github.liquefy-ui/*`.
+      - name: Register the MCP server
+        working-directory: packages/mcp
+        run: |
+          version=$(node -p "require('./package.json').version")
+          server=io.github.liquefy-ui/liquefy-ui
+
+          # Deliberately not keyed off the publish step's output: on the retry
+          # path — dispatching this workflow again on main — changesets publishes
+          # nothing a second time, so that output is empty and this would skip the
+          # very run that exists to fix it. Ask the registry what it holds
+          # instead. It answers 404 until the server is registered once.
+          latest=$(curl -fsS \
+            "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.liquefy-ui%2Fliquefy-ui/versions/latest" \
+            | node -e 'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>{try{process.stdout.write(JSON.parse(s).server.version)}catch{}})' \
+            || true)
+
+          if [ "$latest" = "$version" ]; then
+            echo "\`$server@$version\` is already registered; nothing to do." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # The schema requires a version, so server.json carries one — but the
+          # number that matters is whatever was just published. Take it from
+          # package.json rather than trusting the committed value to have kept up.
+          node -e '
+            const fs = require("fs")
+            const server = JSON.parse(fs.readFileSync("server.json", "utf8"))
+            server.version = process.argv[1]
+            server.packages[0].version = process.argv[1]
+            fs.writeFileSync("server.json", JSON.stringify(server, null, 2) + "\n")
+          ' "$version"
+
+          cd "$RUNNER_TEMP"
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+          cd "$GITHUB_WORKSPACE/packages/mcp"
+
+          "$RUNNER_TEMP/mcp-publisher" login github-oidc
+
+          # npm has just accepted the tarball but the registry reads it back over
+          # the public API, and validation fails outright if it looks at a version
+          # that is not visible yet. Give propagation a few tries before calling it
+          # a failure.
+          for attempt in 1 2 3; do
+            if "$RUNNER_TEMP/mcp-publisher" publish; then
+              echo "Registered \`$server@$version\`." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "::warning::attempt $attempt did not take; @liquefy-ui/mcp@$version may not have propagated on npm yet."
+            sleep 20
+          done
+
+          echo "::error::could not register $server@$version. Re-run this workflow on main once npm shows the version."
+          exit 1
