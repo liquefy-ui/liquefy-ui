@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.liquefy-ui/liquefy-ui",
+  "title": "liquefy-ui",
+  "description": "Answers questions about liquefy-ui from its real API surface, so an agent stops inventing props.",
+  "websiteUrl": "https://liquefy-ui.com/#/guides/ai-tooling",
+  "repository": {
+    "url": "https://github.com/liquefy-ui/liquefy-ui",
+    "source": "github",
+    "subfolder": "packages/mcp"
+  },
+  "version": "0.1.2",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@liquefy-ui/mcp",
+      "version": "0.1.2",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
