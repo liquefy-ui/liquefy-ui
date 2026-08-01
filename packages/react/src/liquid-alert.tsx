@@ -4,7 +4,10 @@ import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 
 export type LiquidAlertSeverity = 'info' | 'success' | 'warning' | 'danger'
 
-export type LiquidAlertProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps & {
+// `title` is omitted because HTMLAttributes declares it as the tooltip attribute,
+// i.e. a `string`, and intersecting that with `ReactNode` leaves `string` — the
+// `<strong>` below could never be given an element.
+export type LiquidAlertProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> & LiquidStyleProps & {
   action?: ReactNode
   children: ReactNode
   closeLabel?: string

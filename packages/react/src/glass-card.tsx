@@ -3,8 +3,8 @@ import { LiquidSurface, type LiquidSurfaceProps } from './liquid-surface'
 
 // `title` is omitted alongside `children` because HTMLAttributes declares it as
 // the tooltip attribute, i.e. a `string`. Intersecting that with `ReactNode`
-// leaves `string`, so the heading below could never be given an element — the
-// same reason Dialog and Drawer omit it from their own props.
+// leaves `string`, so the heading below could never be given an element. Every
+// component here that renders a `title` into an element omits it for this reason.
 export type GlassCardProps = Omit<LiquidSurfaceProps, 'children' | 'title'> & {
   children: ReactNode
   description?: ReactNode
