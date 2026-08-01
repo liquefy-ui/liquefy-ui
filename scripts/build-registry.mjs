@@ -3,8 +3,9 @@ import { HOMEPAGE, readCatalog } from './component-catalog.mjs'
 
 /**
  * Emits a shadcn-compatible registry into the docs site's public directory, so
- * `npx shadcn add https://<docs>/r/liquid-button.json` copies real source into a
- * project rather than a re-export of the npm package.
+ * `npx shadcn add @liquefy-ui/liquid-button` — or the `https://<docs>/r/liquid-button.json`
+ * URL that namespace resolves to — copies real source into a project rather than
+ * a re-export of the npm package.
  *
  * The copied tree deliberately does NOT depend on @liquefy-ui/react. It keeps
  * @liquefy-ui/core for the optics engine and @base-ui/react for the primitives,

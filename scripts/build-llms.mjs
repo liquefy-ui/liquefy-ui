@@ -1,6 +1,7 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import {
   HOMEPAGE,
+  addCommand,
   readCatalog,
   readCoreApi,
   readDocsSlugs,
@@ -72,12 +73,16 @@ export function App() {
 }
 \`\`\`
 
-Or copy the source into your own repo with the shadcn CLI, which needs no npm
-publication:
+Or copy the source into your own repo with the shadcn CLI. The namespace is
+registered in shadcn's registry directory, so it resolves with nothing added to
+\`components.json\`:
 
 \`\`\`bash
-npx shadcn@latest add ${HOMEPAGE}/r/liquid-button.json
-\`\`\``
+${addCommand('liquid-button')}
+\`\`\`
+
+The \`${HOMEPAGE}/r/<name>.json\` URL that namespace resolves to still works, and
+is what a CLI too old to know the directory needs.`
 
 const RULES = `Rules an agent should not have to guess:
 
@@ -161,7 +166,7 @@ const componentPage = (entry) => [
       'and is installable as copied source from the registry item below.']),
   `Kind: ${entry.kind}`,
   `Docs: ${docsUrl(entry)}`,
-  `Copy the source: \`npx shadcn@latest add ${HOMEPAGE}/r/${entry.slug}.json\``,
+  `Copy the source: \`${addCommand(entry.slug)}\``,
   ...(entry.dependencies.length > 0 ? [`npm dependencies: ${entry.dependencies.join(', ')}`] : []),
   '',
   ...(entry.typeDeclarations.length > 0
@@ -251,7 +256,7 @@ const entrySection = (entry) => [
     : ['Internal: not exported from `@liquefy-ui/react`; available as copied source.']),
   `Page: ${textUrl(entry)}`,
   `Docs: ${docsUrl(entry)}`,
-  `Registry: \`npx shadcn@latest add ${HOMEPAGE}/r/${entry.slug}.json\``,
+  `Registry: \`${addCommand(entry.slug)}\``,
   '',
   ...(entry.typeDeclarations.length > 0
     ? ['```ts', entry.typeDeclarations.map((declaration) => declaration.text).join('\n\n'), '```', '']
