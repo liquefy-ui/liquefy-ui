@@ -1,7 +1,11 @@
 import { forwardRef, type ReactNode } from 'react'
 import { LiquidSurface, type LiquidSurfaceProps } from './liquid-surface'
 
-export type GlassCardProps = Omit<LiquidSurfaceProps, 'children'> & {
+// `title` is omitted alongside `children` because HTMLAttributes declares it as
+// the tooltip attribute, i.e. a `string`. Intersecting that with `ReactNode`
+// leaves `string`, so the heading below could never be given an element. Every
+// component here that renders a `title` into an element omits it for this reason.
+export type GlassCardProps = Omit<LiquidSurfaceProps, 'children' | 'title'> & {
   children: ReactNode
   description?: ReactNode
   eyebrow?: ReactNode

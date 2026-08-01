@@ -47,7 +47,10 @@ export const LiquidAccordion = forwardRef<HTMLDivElement, LiquidAccordionProps>(
 
 LiquidAccordion.displayName = 'LiquidAccordion'
 
-export type LiquidAccordionItemProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps & {
+// `title` is omitted because HTMLAttributes declares it as the tooltip attribute,
+// i.e. a `string`, and intersecting that with `ReactNode` leaves `string` — the
+// header below could never be given an element.
+export type LiquidAccordionItemProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> & LiquidStyleProps & {
   children: ReactNode
   subtitle?: ReactNode
   title: ReactNode
