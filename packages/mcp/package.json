@@ -1,6 +1,6 @@
 {
   "name": "@liquefy-ui/mcp",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "mcpName": "io.github.liquefy-ui/liquefy-ui",
   "description": "Model Context Protocol server that answers questions about liquefy-ui from its real API surface.",
   "license": "MIT",
