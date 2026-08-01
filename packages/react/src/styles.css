@@ -1195,7 +1195,14 @@
     gap: 10px;
     justify-content: space-between;
     min-height: 48px;
-    min-width: 200px;
+    /* A flat 200px cannot be honoured by a trigger in a narrower column — three
+       filters side by side on a phone — and the overflow reads as neighbouring
+       selects overlapping rather than as a width problem. Capping the floor at
+       the container keeps the 200px comfortable default wherever there is room
+       for it. A parent sized by its own content (`fit-content`, a table cell)
+       gives the percentage nothing definite to resolve against, so the trigger
+       measures its content there rather than the 200px. */
+    min-width: min(200px, 100%);
     overflow: hidden;
     padding: 0 15px;
     text-align: left;
