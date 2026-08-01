@@ -1,6 +1,6 @@
 {
   "name": "@liquefy-ui/react",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Accessible React components with transparent Liquid Glass optics and tactile WebGL motion.",
   "license": "MIT",
   "homepage": "https://liquefy-ui.com",
