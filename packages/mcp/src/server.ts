@@ -118,7 +118,7 @@ const describe = (component: McpComponent) => [
     ]),
   `Docs: ${component.docsUrl}`,
   `Plain text: ${component.textUrl}`,
-  `Copy the source: npx shadcn@latest add ${component.registryUrl}`,
+  `Copy the source: npx shadcn@latest add ${component.registryItem}`,
   ...(component.dependencies.length > 0 ? [`npm dependencies: ${component.dependencies.join(', ')}`] : []),
   '',
   ...(component.types.length > 0 ? ['## Types', '', '```ts', component.types.join('\n\n'), '```'] : ['No exported types.']),

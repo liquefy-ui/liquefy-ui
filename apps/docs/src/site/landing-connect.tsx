@@ -85,7 +85,7 @@ export const Connect = () => {
               component depends on.
             </p>
             <CommandRow
-              command="npx shadcn@latest add https://liquefy-ui.com/r/liquid-button.json"
+              command="npx shadcn@latest add @liquefy-ui/liquid-button"
               label="Copy the shadcn command"
             />
             <a className="text-link" href="/r/registry.json" rel="noreferrer" target="_blank">

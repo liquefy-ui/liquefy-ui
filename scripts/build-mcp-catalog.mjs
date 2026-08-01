@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import {
   HOMEPAGE,
+  NAMESPACE,
   readCatalog,
   readCoreApi,
   readDocsSlugs,
@@ -38,6 +39,7 @@ const components = entries.map((entry) => {
     name: entry.slug,
     registryDependencies: [`${HOMEPAGE}/r/liquefy-ui.json`,
       ...entry.registryDependencies.map((name) => `${HOMEPAGE}/r/${name}.json`)],
+    registryItem: `${NAMESPACE}/${entry.slug}`,
     registryUrl: `${HOMEPAGE}/r/${entry.slug}.json`,
     source: entry.source,
     /** A page any fetcher can read, unlike the docs site's hash routes. */
@@ -50,7 +52,7 @@ const conventions = [
   "Every component is a client component. Both the published bundles and every file in the registry carry a 'use client' banner, so importing from a Next.js server component works. Only your own event handlers need a directive of their own.",
   'LiquefyProvider is required at the root. Components read tint, spacing, motion, transparency and WebGL settings from it. A nested provider does NOT inherit from the one above it — unset props fall back to library defaults, so pass useLiquefyConfig() through if a subtree should keep the surrounding material.',
   'Everything is imported from the package root; there are no deep entry points. Names this catalog lists under internalExports (compileLiquidStyles, useLiquefyPortalContainer, the internal glyphs) are NOT exported from @liquefy-ui/react.',
-  'Two ways in, both supported: install @liquefy-ui/react from npm, or copy real source into the project with the shadcn registry. The copied tree still depends on @liquefy-ui/core from npm.',
+  `Two ways in, both supported: install @liquefy-ui/react from npm, or copy real source into the project with "npx shadcn@latest add ${NAMESPACE}/<name>". The namespace is registered in shadcn's registry directory, so it resolves without a "registries" entry in components.json; the /r/<name>.json URL it resolves to also still works. The copied tree still depends on @liquefy-ui/core from npm.`,
   'LiquidButton has no `variant` prop. It varies by size, tint, isLoading, lens and webgl. `variant` exists on LiquidSurface ("clear" | "tinted") and LiquidChip.',
   'Every component takes a `styles` prop: CSS properties plus the p/px/mt/w/h/size/bg/radius shorthands on the --lq-space scale, $token references, responsive objects like { base: 1, md: 3 }, and state keys such as _hover, _focusVisible, _disabled, _dark.',
   'Dialog, Drawer, Menu, Select and Tooltip are built on Base UI and render into a portal inside the provider. Focus trapping, Escape, scroll lock and collision-aware placement are already handled.',
@@ -67,6 +69,7 @@ export const catalog: McpCatalog = ${JSON.stringify({
   core,
   homepage: HOMEPAGE,
   icons,
+  namespace: NAMESPACE,
   registryUrl: `${HOMEPAGE}/r/registry.json`,
   tokens,
 }, null, 2)}

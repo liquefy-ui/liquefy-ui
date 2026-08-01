@@ -163,7 +163,13 @@ export const SubmitButton = (props: Omit<LiquidButtonProps, 'type'>) => (
           whatever that component depends on — the surface it builds on, the styles engine, the
           provider, and the base item carrying the stylesheet.
         </p>
-        <CodeBlock code={`npx shadcn@latest add https://liquefy-ui.com/r/liquid-button.json`} />
+        <CodeBlock code={`npx shadcn@latest add @liquefy-ui/liquid-button`} />
+        <p>
+          The <code>@liquefy-ui</code> namespace is registered in shadcn&apos;s registry directory, so
+          that resolves with nothing added to your <code>components.json</code>. It points at{' '}
+          <code>https://liquefy-ui.com/r/liquid-button.json</code>, which you can still pass directly
+          if your CLI predates the directory.
+        </p>
         <Callout title="What the registry hands you">
           Real source, with imports rewritten to <code>@/components/ui</code>, <code>@/lib</code> and{' '}
           <code>@/hooks</code>, a <code>&apos;use client&apos;</code> directive already at the top of every

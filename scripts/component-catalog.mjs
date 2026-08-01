@@ -19,6 +19,18 @@ const coreEntry = new URL('../packages/core/src/index.ts', import.meta.url)
  */
 export const HOMEPAGE = 'https://liquefy-ui.com'
 
+/**
+ * The namespace registered in shadcn's public registry directory, which is what
+ * lets `npx shadcn@latest add @liquefy-ui/liquid-button` resolve with no entry in
+ * the project's `components.json`. The `/r/{name}.json` URLs still work and are
+ * still what registry items reference each other by; this is only the shorthand
+ * a human or an agent is told to type.
+ */
+export const NAMESPACE = '@liquefy-ui'
+
+/** The command that copies one item's source into a project. */
+export const addCommand = (slug) => `npx shadcn@latest add ${NAMESPACE}/${slug}`
+
 /** Files that are shared plumbing rather than a component. */
 const kinds = {
   'internal-glyphs.tsx': 'lib',
