@@ -61,18 +61,24 @@ const options = [{ label: 'One', value: 'one' }, { label: 'Two', value: 'two' }]
  * One entry per exported component. The point is not to assert markup, it is to
  * prove the module can be evaluated and rendered where there is no `window` —
  * which is exactly what a Next.js server render does before hydration.
+ *
+ * The `title` props handed an element rather than a string are deliberate. The DOM
+ * attribute of that name is a `string`, so a component rendering its title into an
+ * element has to omit the attribute from its props or the intersection narrows the
+ * node away; a string here would typecheck either way, and only a node keeps `tsc`
+ * proving the omission is still in place.
  */
 const cases: Array<[string, ReactElement]> = [
-  ['GlassCard', <GlassCard description="desc" eyebrow="new" footer="foot" title="Card">body</GlassCard>],
+  ['GlassCard', <GlassCard description="desc" eyebrow="new" footer="foot" title={<span>Card</span>}>body</GlassCard>],
   ['GlassDock', <GlassDock><DockItem icon={<span />} label="Home" /></GlassDock>],
   [
     'LiquidAccordion',
     <LiquidAccordion defaultValue={['a']}>
-      <LiquidAccordionItem title="A" value="a">body</LiquidAccordionItem>
+      <LiquidAccordionItem title={<span>A</span>} value="a">body</LiquidAccordionItem>
       <LiquidAccordionItem subtitle="sub" title="B" value="b">body</LiquidAccordionItem>
     </LiquidAccordion>,
   ],
-  ['LiquidAlert', <LiquidAlert severity="success" title="Saved">Done</LiquidAlert>],
+  ['LiquidAlert', <LiquidAlert severity="success" title={<span>Saved</span>}>Done</LiquidAlert>],
   ['LiquidAvatarGroup', <LiquidAvatarGroup max={2}><LiquidAvatar>YS</LiquidAvatar><LiquidAvatar>AB</LiquidAvatar></LiquidAvatarGroup>],
   ['LiquidBadge', <LiquidBadge>3</LiquidBadge>],
   ['LiquidBreadcrumbs', <LiquidBreadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Now' }]} />],
