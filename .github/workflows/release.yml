@@ -13,6 +13,9 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   contents: write
   pull-requests: write
+  # To approve the release pull request's own CI run, which the repository parks
+  # awaiting approval because a bot opened it. See the promote step below.
+  actions: write
   # The registry trusts this workflow by name rather than a token: pnpm exchanges
   # this OIDC token for a short-lived one, and npm attaches the provenance
   # attestation itself. Renaming this file breaks publishing until the trusted
@@ -64,13 +67,21 @@ jobs:
       # main: the ruleset over main requires one and names no bypass actor, so a
       # direct push is refused outright.
       #
-      # The required checks are already green here without a run of their own.
-      # CI runs on pushes to rc, so rc's tip carries all five before this starts —
-      # and because this pull request is opened with GITHUB_TOKEN it raises no
-      # `pull_request` event, so nothing re-runs against it. The check that used to
-      # fail by hand, `Commit messages`, only ever failed on the *title* GitHub
-      # fills in by default; opening it here means the title is right the first
-      # time, and no second run appears to disagree.
+      # The required checks are already green here without a run of their own: CI
+      # runs on pushes to rc, so rc's tip carries all five before this starts. The
+      # check that used to fail by hand, `Commit messages`, only ever failed on the
+      # *title* GitHub fills in by default; opening it here means the title is right
+      # the first time.
+      #
+      # A `pull_request` run is raised all the same, and parked. The repository's
+      # approval policy is `first_time_contributors`, and the author here is
+      # `github-actions[bot]` — never a collaborator, so always a first-time
+      # contributor. GitHub creates the run and leaves it in `action_required`,
+      # where it never starts and counts as a check that has not passed: the state
+      # below stays UNSTABLE, the loop times out, and the release stops having
+      # published nothing. That is what took three presses on 2026-07-30 and again
+      # on 2026-08-01. So the run is approved here, which is the whole difference
+      # between one press and three.
       - name: Promote rc into main
         if: github.event_name == 'workflow_dispatch' && github.ref_name == 'rc'
         env:
@@ -98,10 +109,32 @@ jobs:
             echo "reusing #$pr"
           fi
 
+          # Releases a run GitHub parked awaiting approval. Runs every pass rather
+          # than once: the run appears a moment after the pull request is opened,
+          # and a `synchronize` later in the wait would park another one. Approving
+          # is best-effort — if the token is refused, say which run needs a human
+          # rather than failing here, because the wait below is what decides.
+          approve_parked_runs() {
+            local parked run
+            parked=$(gh api \
+              "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$head&event=pull_request" \
+              --jq '.workflow_runs[] | select(.conclusion == "action_required") | .id' || true)
+            for run in $parked; do
+              if gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$run/approve" >/dev/null 2>&1; then
+                echo "approved the parked CI run $run"
+              else
+                echo "::warning::could not approve run $run — approve it by hand to unblock #$pr"
+              fi
+            done
+          }
+
+          head=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
+
           # Waits for the state GitHub itself will act on rather than polling the
           # checks and reasoning about them separately.
           state=UNKNOWN
           for _ in $(seq 1 40); do
+            approve_parked_runs
             state=$(gh pr view "$pr" --json mergeStateStatus --jq .mergeStateStatus)
             if [ "$state" = CLEAN ]; then
               break
