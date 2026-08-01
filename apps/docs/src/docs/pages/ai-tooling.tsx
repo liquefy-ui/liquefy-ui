@@ -84,11 +84,13 @@ export const aiToolingDoc: DocEntry = {
 
       <Section id="registry" title="shadcn registry">
         <p>
-          npm is the intended distribution and will be the simplest way to use the library — but it is not
-          live yet, and the registry is. Every component is published as a shadcn registry item: 37 of
-          them, including the provider, the styles engine and the icon glyphs.
+          Every component is published as a shadcn registry item: 37 of them, including the provider,
+          the styles engine and the icon glyphs. The <code>@liquefy-ui</code> namespace is listed in
+          shadcn&apos;s own registry directory, so the CLI resolves it with nothing added to your{' '}
+          <code>components.json</code> — the <code>/r/&lt;name&gt;.json</code> URL behind it still works
+          for a CLI that predates the directory.
         </p>
-        <CodeBlock code={`npx shadcn@latest add https://liquefy-ui.com/r/liquid-button.json`} />
+        <CodeBlock code={`npx shadcn@latest add @liquefy-ui/liquid-button`} />
         <p>
           That copies the real component source into your project — not a re-export of the package.
           Imports are rewritten to the standard aliases (<code>@/components/ui</code>, <code>@/lib</code>,{' '}
@@ -110,7 +112,10 @@ export const aiToolingDoc: DocEntry = {
           <a className="text-link" href="#/docs/frameworks">Frameworks<ArrowRightIcon size={14} /></a>
         </Callout>
         <CodeBlock
-          code={`# The whole index, if you want to browse it
+          code={`# Every item in the namespace, without leaving the terminal
+npx shadcn@latest search @liquefy-ui
+
+# Or the raw index
 https://liquefy-ui.com/r/registry.json`}
         />
       </Section>

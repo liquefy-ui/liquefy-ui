@@ -957,6 +957,17 @@
   /* ---------- Popover base (Select, Menu) ---------- */
   /* var() fallbacks keep the popover legible even in the rare frame where it
      portals outside a provider (before the container ref resolves). */
+  /* The stacking order every overlay in the library shares. Each layer portals
+     into the provider's node as a sibling of the others, so nesting in the JSX
+     buys nothing — this ladder is the only thing deciding what covers what, and
+     a popover opened from inside a dialog has to outrank the dialog itself:
+
+       50  floating dock
+       79  dialog and drawer backdrop
+       80  dialog and drawer panel
+       85  popover layer — select and menu
+       88  tooltip
+       90  toast viewport                                                    */
   .lq-popover {
     backdrop-filter: blur(14px) saturate(1.5) brightness(1.04);
     -webkit-backdrop-filter: blur(14px) saturate(1.5) brightness(1.04);
@@ -968,7 +979,7 @@
       inset 0 1px 0 var(--lq-glass-bright, rgba(255, 255, 255, 0.32)),
       inset 0 -1px 0 var(--lq-glass-shade, rgba(73, 111, 209, 0.07));
     padding: 5px;
-    z-index: 60;
+    z-index: 85;
     animation: lq-popover-in 420ms cubic-bezier(0.16, 1.35, 0.3, 1) both;
   }
 
@@ -1195,7 +1206,14 @@
     gap: 10px;
     justify-content: space-between;
     min-height: 48px;
-    min-width: 200px;
+    /* A flat 200px cannot be honoured by a trigger in a narrower column — three
+       filters side by side on a phone — and the overflow reads as neighbouring
+       selects overlapping rather than as a width problem. Capping the floor at
+       the container keeps the 200px comfortable default wherever there is room
+       for it. A parent sized by its own content (`fit-content`, a table cell)
+       gives the percentage nothing definite to resolve against, so the trigger
+       measures its content there rather than the 200px. */
+    min-width: min(200px, 100%);
     overflow: hidden;
     padding: 0 15px;
     text-align: left;
@@ -1243,7 +1261,7 @@
   }
 
   .lq-select__positioner {
-    z-index: 60;
+    z-index: 85;
   }
 
   .lq-select__listbox {
@@ -1637,7 +1655,7 @@
   }
 
   .lq-tooltip__positioner {
-    z-index: 70;
+    z-index: 88;
   }
 
   .lq-tooltip__bubble {
@@ -2679,7 +2697,7 @@
   }
 
   .lq-menu__positioner {
-    z-index: 60;
+    z-index: 85;
   }
 
   /* The positioner publishes how much room is left on the chosen side, so the

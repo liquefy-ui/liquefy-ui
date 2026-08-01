@@ -16,6 +16,9 @@ export type McpComponent = {
   name: string
   /** Other registry items that must be installed alongside this one. */
   registryDependencies: string[]
+  /** What to hand the shadcn CLI, e.g. `@liquefy-ui/liquid-button`. */
+  registryItem: string
+  /** The item JSON the namespace resolves to; what a pre-directory CLI needs. */
   registryUrl: string
   /** The source with sibling imports rewritten to shadcn aliases. */
   source: string
@@ -48,6 +51,8 @@ export type McpCatalog = {
   core: McpCoreApi
   homepage: string
   icons: McpIcons
+  /** The namespace registered in shadcn's registry directory. */
+  namespace: string
   registryUrl: string
   tokens: McpTokenScope[]
 }

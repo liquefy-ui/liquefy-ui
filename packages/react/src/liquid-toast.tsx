@@ -11,6 +11,7 @@ import {
 import { createPortal } from 'react-dom'
 import { DangerGlyph, InfoGlyph, SuccessGlyph, WarningGlyph, XGlyph } from './internal-glyphs'
 import type { LiquidAlertSeverity } from './liquid-alert'
+import { useLiquefyPortalContainer } from './provider'
 
 export type LiquidToastOptions = {
   description?: ReactNode
@@ -47,9 +48,14 @@ export const LiquidToastProvider = ({ children, placement = 'bottom-right' }: Li
   const [toasts, setToasts] = useState<ToastRecord[]>([])
   const [mounted, setMounted] = useState(false)
   const idRef = useRef(0)
+  // The theme tokens live on `.lq-provider`, so a viewport portaled to the body
+  // reads none of them: `--lq-solid-fill` resolves to nothing, the `color-mix`
+  // built on it is invalid, and the toast loses its fill and shadow entirely.
+  // The provider's own portal node is the fix Dialog, Drawer and Select already
+  // use — it is an unstyled div, so a fixed child still anchors to the screen.
+  // The body remains the fallback for a toast provider mounted on its own.
+  const portalContainer = useLiquefyPortalContainer()
 
-  // Portal to the body so the fixed viewport anchors to the screen, not to any
-  // transformed ancestor (a CSS transform makes fixed children relative to it).
   useEffect(() => setMounted(true), [])
 
   const dismiss = useCallback((id: number) => {
@@ -88,7 +94,7 @@ export const LiquidToastProvider = ({ children, placement = 'bottom-right' }: Li
             </div>
           ))}
         </div>,
-        document.body,
+        portalContainer ?? document.body,
       )}
     </ToastContext.Provider>
   )

@@ -81,7 +81,7 @@ is what keeps those utilities resolving per-theme at use time.
 | MCP server | `claude mcp add liquefy-ui -- npx -y @liquefy-ui/mcp` — eight tools answering from the real exports, no network, no dependencies |
 | `llms.txt` | [`/llms.txt`](https://liquefy-ui.com/llms.txt) and [`/llms-full.txt`](https://liquefy-ui.com/llms-full.txt), generated from source |
 | One page per component | [`/llms/liquid-button.md`](https://liquefy-ui.com/llms/liquid-button.md), plus `icons.md`, `core.md` and `mcp.md` — plain Markdown, because the docs site is a hash-routed SPA that a fetcher without JavaScript cannot read |
-| shadcn registry | `npx shadcn@latest add https://liquefy-ui.com/r/liquid-button.json` |
+| shadcn registry | `npx shadcn@latest add @liquefy-ui/liquid-button` — the namespace is in shadcn's registry directory, so it needs no `components.json` entry |
 
 The MCP tools are `get_conventions`, `list_components`, `get_component`,
 `search_components`, `get_component_source`, `get_tokens`, `list_icons` and

@@ -301,6 +301,18 @@ describe('toast', () => {
     await waitFor(() => expect(screen.queryByText('Saved')).toBeNull())
   })
 
+  // The material tokens are declared on `.lq-provider`, so a viewport portaled to
+  // the body reads none of them and the toast renders with no fill and no shadow.
+  // Nothing about the markup looks wrong when that happens, which is why the
+  // portal target is asserted rather than left to the eye.
+  it('portals its viewport inside the provider, where the tokens are', async () => {
+    ui(<LiquidToastProvider><Trigger /></LiquidToastProvider>)
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    const toast = await screen.findByRole('status')
+    expect(toast.closest('.lq-portal')).not.toBeNull()
+  })
+
   it('refuses to be used outside its provider, loudly', () => {
     const Orphan = () => {
       useLiquidToast()

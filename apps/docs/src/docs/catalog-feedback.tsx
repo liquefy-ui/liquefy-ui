@@ -246,7 +246,8 @@ export const feedbackDocs: ComponentDoc[] = [
   {
     demos: [
       {
-        code: `// 1. Wrap your app once
+        code: `// 1. Wrap your app once, inside LiquefyProvider — that is where the
+//    material tokens a toast paints itself with are declared
 <LiquidToastProvider placement="bottom-right">
   <App />
 </LiquidToastProvider>
