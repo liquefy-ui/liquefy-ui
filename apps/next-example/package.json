@@ -13,7 +13,7 @@
     "@liquefy-ui/core": "workspace:*",
     "@liquefy-ui/icons": "workspace:*",
     "@liquefy-ui/react": "workspace:*",
-    "next": "16.2.11",
+    "next": "16.2.12",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
@@ -23,6 +23,6 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "tailwindcss": "4.3.3",
-    "typescript": "5.9.3"
+    "typescript": "7.0.2"
   }
 }
