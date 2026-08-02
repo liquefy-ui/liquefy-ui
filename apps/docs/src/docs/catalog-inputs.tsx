@@ -443,6 +443,7 @@ export const inputDocs: ComponentDoc[] = [
       { description: 'Visible label above the trigger.', name: 'label', type: 'string' },
       { description: 'Helper text below the trigger.', name: 'hint', type: 'string' },
       { description: 'Called with the newly selected value.', name: 'onValueChange', type: '(value: string) => void' },
+      { description: 'Called when the popup opens or closes — a sheet holding the select needs to know.', name: 'onOpenChange', type: '(open: boolean) => void' },
     ],
     propsTitle: 'LiquidSelect',
     slug: 'select',
