@@ -9,6 +9,8 @@ export type LiquidSurfaceProps = HTMLAttributes<HTMLDivElement> & LiquidStylePro
   intensity?: number
   interactive?: boolean
   lens?: boolean
+  /** How far the lens softens what it refracts, in pixels. */
+  lensBlur?: number
   radius?: number | string
   tint?: string
   variant?: LiquidVariant
@@ -21,6 +23,7 @@ export const LiquidSurface = forwardRef<HTMLDivElement, LiquidSurfaceProps>(({
   intensity,
   interactive = true,
   lens,
+  lensBlur,
   radius,
   style,
   styles,
@@ -38,6 +41,7 @@ export const LiquidSurface = forwardRef<HTMLDivElement, LiquidSurfaceProps>(({
     disabled: !interactive,
     intensity: resolvedIntensity,
     lens: resolvedLens && config.transparency,
+    lensBlur,
     // `interactive` says the surface does not answer a pointer, which is what
     // `disabled` above turns off. It used to withhold the motion controller as
     // well, and the controller is what owns the shader — so a non-interactive

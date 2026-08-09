@@ -1025,6 +1025,26 @@
     }
   }
 
+  /* A panel that covers the page has to carry the legibility the page was
+     giving it. Both surfaces are `clear`, which leaves whatever is behind them
+     in full view — passable for a dialog floating over a dimmed desktop page,
+     unreadable on a phone, where a drawer is most of the screen and the backdrop
+     it dims is a sliver.
+
+     Thick glass rather than a sheet of paper: the blur is what makes the panel
+     readable, and the fill stays light enough that what is behind still moves
+     and colours through it. The lens matches this blur in the browsers that have
+     one — see `lensBlur` on both components. Set `transparency={false}` on the
+     provider for a panel with no glass at all. */
+  .lq-surface.lq-dialog__surface,
+  .lq-surface.lq-drawer__surface {
+    --lq-blur: 20px;
+    --lq-saturate: 1.7;
+    --lq-brighten: 1.06;
+    --lq-glow: 0.5;
+    --lq-fill: color-mix(in srgb, var(--lq-solid-fill) 58%, transparent);
+  }
+
   /* ---------- Checkbox ---------- */
   .lq-checkbox {
     align-items: flex-start;
