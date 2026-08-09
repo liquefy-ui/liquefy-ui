@@ -1,5 +1,56 @@
 # @liquefy-ui/react
 
+## 0.2.0
+
+### Minor Changes
+
+- 20db087: `LiquidDrawer` dismisses itself when the panel is flicked towards the edge it
+  slid in from. The gesture stands down for a mouse, for content that can still
+  scroll the way the flick would scroll it, and for a popup the panel opened —
+  a listbox is portaled out of the drawer but still bubbles its events back
+  through it. Set `swipeToClose={false}` to turn it off.
+- bbf5e1e: `LiquidDrawer` and `LiquidDialog` are thick glass rather than clear. A panel
+  that covers the page is read through, and on a phone a drawer is most of the
+  screen with only a sliver of dimmed backdrop beside it — the page underneath
+  used to show through the text. Both panels now soften what they refract, by
+  20px, and carry a fill a little over half way to solid: enough that the words
+  sit on something, little enough that the page still moves and colours behind
+  them. `transparency={false}` on the provider still takes the glass off entirely.
+
+  The softening reaches the lens too. `LiquidSurface` takes a `lensBlur`, which
+  sets the blur inside the refraction the lens performs — until now that blur was
+  fixed at a token 0.6px, so a lensed surface could refract the page behind it in
+  perfect focus however frosted the stylesheet asked it to be.
+
+- 4d89e14: `LiquidSelect` takes an `onOpenChange` callback, so whatever holds the select
+  can tell when its popup is on screen.
+
+### Patch Changes
+
+- 9945404: A `LiquidSurface` with `interactive={false}` paints its shader again. The prop
+  means the surface does not answer a pointer, but it also withheld the motion
+  controller — and the controller is what drives the WebGL sheen — so the surface
+  mounted a canvas that nothing ever drew into and wore flat glass instead of
+  liquid. It now holds still and keeps its shine. `LiquidDrawer` is the component
+  this was visible on; `LiquidAccordion` and `LiquidList` pass `webgl={false}` and
+  are unchanged.
+- 49998d7: Every glass surface keeps its blur once the stylesheet has been through a build.
+  `-webkit-backdrop-filter` is now written before the standard property rather
+  than after it: Lightning CSS, which is what Vite hands a stylesheet to, reads
+  the pair as one property declared twice and keeps only the last one. The old
+  order left a built stylesheet with nothing but the prefixed form in it, and
+  Chrome has since dropped that alias — so a bundled app got surfaces, buttons,
+  fields and popovers with no `backdrop-filter` at all, whatever it looked like in
+  development. Consumers importing the stylesheet as it ships were never affected.
+- 7440db1: A `LiquidDrawer` or `LiquidDialog` in the light theme is glass rather than
+  grey. The scrim behind a panel is a dark dim, and a translucent panel sitting
+  on top of it takes the dimming on as grey — 40% of near-black under a white
+  fill landed the panel body at about #ced0d0. Dark mode never showed it, because
+  there the dim disappears into the page. The light scrim now dims only as far as
+  it takes to put the page out of reach, the fill gives up a few points so more of
+  the page comes through, and the inner white glow steps back the way it already
+  does on every other light surface, where it only ever read as haze.
+
 ## 0.1.6
 
 ### Patch Changes
