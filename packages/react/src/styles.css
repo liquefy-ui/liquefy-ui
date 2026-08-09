@@ -3217,7 +3217,37 @@
     border-color: color-mix(in srgb, var(--lq-accent) 20%, rgba(66, 85, 128, 0.4));
   }
 
+  /* ---------- Light-mode panels ----------
+     The scrim behind a panel is a dark dim, and a translucent panel sitting on
+     top of it inherits the dimming as grey — 40% of near-black under 58% of
+     white lands at about #d5d5d5, which is milk, not glass. Dark mode never
+     showed it because the dim disappears into the page. So the light scrim only
+     dims enough to say the page is out of reach, the fill gives up a few points
+     to let more of the page through, and the inner white glow steps back the way
+     it does on every other light surface, where it only ever reads as haze. */
+  .lq-provider[data-liquid-theme='light'] .lq-dialog__backdrop,
+  .lq-provider[data-liquid-theme='light'] .lq-drawer__backdrop {
+    background: rgba(24, 33, 60, 0.18);
+  }
+
+  .lq-provider[data-liquid-theme='light'] .lq-dialog__surface,
+  .lq-provider[data-liquid-theme='light'] .lq-drawer__surface {
+    --lq-glow: 0.14;
+    --lq-fill: color-mix(in srgb, var(--lq-solid-fill) 54%, transparent);
+  }
+
   @media (prefers-color-scheme: light) {
+    .lq-provider[data-liquid-theme='system'] .lq-dialog__backdrop,
+    .lq-provider[data-liquid-theme='system'] .lq-drawer__backdrop {
+      background: rgba(24, 33, 60, 0.18);
+    }
+
+    .lq-provider[data-liquid-theme='system'] .lq-dialog__surface,
+    .lq-provider[data-liquid-theme='system'] .lq-drawer__surface {
+      --lq-glow: 0.14;
+      --lq-fill: color-mix(in srgb, var(--lq-solid-fill) 54%, transparent);
+    }
+
     .lq-provider[data-liquid-theme='system'] .lq-card,
     .lq-provider[data-liquid-theme='system'] .lq-accordion,
     .lq-provider[data-liquid-theme='system'] .lq-table-container,
