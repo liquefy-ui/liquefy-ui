@@ -39,7 +39,8 @@ export const LiquidDialog = ({
       <Dialog.Portal container={portalContainer ?? undefined}>
         <Dialog.Backdrop className="lq-dialog__backdrop" />
         <Dialog.Popup className={root.className} style={root.style} {...props}>
-          <LiquidSurface className="lq-dialog__surface" radius={32}>
+          {/* Refracting through a soft lens, for the reason the drawer gives. */}
+          <LiquidSurface className="lq-dialog__surface" lensBlur={20} radius={32}>
             <div className="lq-dialog__header">
               <div>
                 <Dialog.Title>{title}</Dialog.Title>

@@ -120,6 +120,12 @@ export const LiquidDrawer = ({
           <LiquidSurface
             className="lq-drawer__surface"
             interactive={false}
+            // The lens refracts what is behind the panel without hiding it, and
+            // it lands as an inline `backdrop-filter` the stylesheet cannot
+            // frost over — so the softening has to happen inside the lens. This
+            // is the same figure as `--lq-blur` on the panel, which is what the
+            // browsers without a lens fall back to.
+            lensBlur={20}
             radius={side === 'bottom' ? '26px 26px 0 0' : 0}
           >
             <div className="lq-drawer__header">
