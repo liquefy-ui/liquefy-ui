@@ -38,7 +38,12 @@ export const LiquidSurface = forwardRef<HTMLDivElement, LiquidSurfaceProps>(({
     disabled: !interactive,
     intensity: resolvedIntensity,
     lens: resolvedLens && config.transparency,
-    motion: interactive && config.motion,
+    // `interactive` says the surface does not answer a pointer, which is what
+    // `disabled` above turns off. It used to withhold the motion controller as
+    // well, and the controller is what owns the shader — so a non-interactive
+    // surface rendered a canvas that nothing ever drew into, and the material
+    // was flat glass instead of liquid. It keeps the shine; it just holds still.
+    motion: config.motion,
     tint: resolvedTint,
     webgl: resolvedWebgl,
     wobbliness: config.wobbliness,
