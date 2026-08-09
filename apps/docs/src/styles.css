@@ -2545,10 +2545,22 @@ kbd {
     padding: 0 16px;
   }
 
+  /* The panel and its scrim are fixed to the viewport, but they are declared
+     inside `.docs-body`, whose own `z-index: 1` boxes their stacking in below
+     the header's 25 — so the header painted straight over the panel's heading
+     and close button. Nothing in here needs the layer, since the panel is the
+     only thing in the grid that leaves the flow, so hand the two of them back
+     to the root and let 26 and 27 mean what they say. */
+  .docs-body {
+    z-index: auto;
+  }
+
   .docs-sidebar {
     background: var(--bg);
     border-right: 1px solid var(--line);
-    height: 100vh;
+    /* Not 100vh: the mobile browser counts its own chrome into that, and the
+       foot of the menu ends up under the toolbar. */
+    height: 100dvh;
     left: 0;
     max-height: none;
     padding: 18px 20px 60px;
