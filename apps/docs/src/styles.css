@@ -247,8 +247,8 @@ a {
 
 .site-header {
   align-items: center;
-  backdrop-filter: saturate(1.4) blur(18px);
   -webkit-backdrop-filter: saturate(1.4) blur(18px);
+  backdrop-filter: saturate(1.4) blur(18px);
   background: color-mix(in srgb, var(--bg) 72%, transparent);
   border-bottom: 1px solid var(--line);
   display: flex;
@@ -2695,8 +2695,8 @@ kbd {
 /* The drawer's glass is clear by default, which on a white page leaves the page
    text showing through the menu. Frost it into a readable sheet. */
 .header-drawer .lq-drawer__surface {
-  backdrop-filter: blur(22px) saturate(1.5);
   -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
   /* Nearly opaque: backdrop-filter is not guaranteed, and a menu you can read
      the page through is not a menu. */
   background: color-mix(in srgb, var(--bg) 98%, transparent);
