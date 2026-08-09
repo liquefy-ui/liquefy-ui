@@ -1,6 +1,6 @@
 {
   "name": "@liquefy-ui/next-example",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "private": true,
   "description": "Proves @liquefy-ui/react imports cleanly from a Next.js App Router server component.",
   "scripts": {
