@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, type Ref, type RefCallback } from 'reac
 
 export type LiquidGlassOptions = LiquidMotionOptions & {
   lens?: boolean
+  lensBlur?: number
   lensStrength?: number
   motion?: boolean
 }
@@ -55,7 +56,7 @@ export const useLiquidGlass = <Element extends HTMLElement>(
       : attachLiquidMotion(element, canvasRef.current, options)
     const lensController = options.lens === false
       ? null
-      : attachLiquidLens(element, { strength: options.lensStrength })
+      : attachLiquidLens(element, { blur: options.lensBlur, strength: options.lensStrength })
     controllerRef.current = motionController
 
     return () => {
@@ -68,6 +69,7 @@ export const useLiquidGlass = <Element extends HTMLElement>(
     options.disabled,
     options.intensity,
     options.lens,
+    options.lensBlur,
     options.lensStrength,
     options.motion,
     options.respectReducedMotion,

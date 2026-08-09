@@ -20,6 +20,8 @@ export type LiquidSelectProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'o
   defaultValue?: string
   hint?: string
   label?: string
+  /** Called when the popup opens or closes — a sheet holding the select needs to know. */
+  onOpenChange?: (open: boolean) => void
   onValueChange?: (value: string) => void
   options: LiquidSelectOption[]
   placeholder?: string
@@ -32,6 +34,7 @@ export const LiquidSelect = forwardRef<HTMLButtonElement, LiquidSelectProps>(({
   disabled,
   hint,
   label,
+  onOpenChange,
   onValueChange,
   options,
   placeholder = 'Select…',
@@ -57,7 +60,8 @@ export const LiquidSelect = forwardRef<HTMLButtonElement, LiquidSelectProps>(({
 
   const handleOpenChange = useCallback((open: boolean) => {
     if (open) pulse(0.8)
-  }, [pulse])
+    onOpenChange?.(open)
+  }, [onOpenChange, pulse])
 
   // The field wrapper is the layout box, so it owns className, style and styles.
   const root = useLiquidStyles('lq-select', { className, style, styles })

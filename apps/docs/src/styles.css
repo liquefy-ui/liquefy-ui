@@ -176,6 +176,15 @@ a {
   outline-offset: 2px;
 }
 
+/* A text field rings its control, not the input inside it, and silences the
+   input from inside @layer liquefy-ui — where the unlayered rule above wins.
+   Left alone, a focused field draws two rings: the library's rounded one and a
+   square one hugging the input, which has no radius of its own. */
+.lq-text-field input:focus-visible,
+.lq-textarea textarea:focus-visible {
+  outline: 0;
+}
+
 /* --- Shell and background ------------------------------------------------ */
 
 .site-shell {
@@ -247,8 +256,8 @@ a {
 
 .site-header {
   align-items: center;
-  backdrop-filter: saturate(1.4) blur(18px);
   -webkit-backdrop-filter: saturate(1.4) blur(18px);
+  backdrop-filter: saturate(1.4) blur(18px);
   background: color-mix(in srgb, var(--bg) 72%, transparent);
   border-bottom: 1px solid var(--line);
   display: flex;
@@ -2536,10 +2545,22 @@ kbd {
     padding: 0 16px;
   }
 
+  /* The panel and its scrim are fixed to the viewport, but they are declared
+     inside `.docs-body`, whose own `z-index: 1` boxes their stacking in below
+     the header's 25 — so the header painted straight over the panel's heading
+     and close button. Nothing in here needs the layer, since the panel is the
+     only thing in the grid that leaves the flow, so hand the two of them back
+     to the root and let 26 and 27 mean what they say. */
+  .docs-body {
+    z-index: auto;
+  }
+
   .docs-sidebar {
     background: var(--bg);
     border-right: 1px solid var(--line);
-    height: 100vh;
+    /* Not 100vh: the mobile browser counts its own chrome into that, and the
+       foot of the menu ends up under the toolbar. */
+    height: 100dvh;
     left: 0;
     max-height: none;
     padding: 18px 20px 60px;
@@ -2692,14 +2713,8 @@ kbd {
   display: none;
 }
 
-/* The drawer's glass is clear by default, which on a white page leaves the page
-   text showing through the menu. Frost it into a readable sheet. */
+/* The panel frosts itself now, so the menu only asks for its own padding. */
 .header-drawer .lq-drawer__surface {
-  backdrop-filter: blur(22px) saturate(1.5);
-  -webkit-backdrop-filter: blur(22px) saturate(1.5);
-  /* Nearly opaque: backdrop-filter is not guaranteed, and a menu you can read
-     the page through is not a menu. */
-  background: color-mix(in srgb, var(--bg) 98%, transparent);
   padding: 20px;
 }
 

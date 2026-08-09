@@ -10,6 +10,9 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   contents: write
   pull-requests: write
+  # To approve the version pull request's own CI run, which the repository parks
+  # awaiting approval because a bot opened it. See the last step below.
+  actions: write
 
 jobs:
   # rc is where changesets accumulate, so this is where they are turned into real
@@ -44,3 +47,46 @@ jobs:
           title: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The pull request above is opened by `github-actions[bot]`, and this
+      # repository's approval policy is `first_time_contributors` — a bot is never
+      # a collaborator, so it is always a first-time contributor. GitHub raises the
+      # `pull_request` run and parks it in `action_required`, where it never starts:
+      # the five required checks never arrive and the version pull request cannot be
+      # merged. Approving it by hand was part of every release until 2026-08-01.
+      # Release does this for the pull request it opens; this is the other half, and
+      # it is what makes merging the version pull request the only thing left to do.
+      #
+      # The run appears a moment after the push above, so this waits for it instead
+      # of looking once. Best-effort throughout: a version pull request that needs a
+      # manual approval is the old normal, never a reason to fail this job.
+      - name: Approve the version pull request's parked CI run
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr=$(gh pr list --base rc --head changeset-release/rc --state open \
+                 --json number --jq '.[0].number // empty')
+          if [ -z "$pr" ]; then
+            echo 'No version pull request is open — rc carries no changesets.'
+            exit 0
+          fi
+
+          head=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
+          for _ in $(seq 1 12); do
+            parked=$(gh api \
+              "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$head&event=pull_request" \
+              --jq '.workflow_runs[] | select(.conclusion == "action_required") | .id' || true)
+            for run in $parked; do
+              if gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$run/approve" >/dev/null 2>&1; then
+                echo "approved the parked CI run $run on #$pr"
+              else
+                echo "::warning::could not approve run $run — approve it by hand to unblock #$pr"
+              fi
+            done
+            if [ -n "$parked" ]; then
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "::warning::no parked run appeared for #$pr within two minutes; if its checks never arrive, approve them by hand"
