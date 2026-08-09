@@ -176,6 +176,15 @@ a {
   outline-offset: 2px;
 }
 
+/* A text field rings its control, not the input inside it, and silences the
+   input from inside @layer liquefy-ui — where the unlayered rule above wins.
+   Left alone, a focused field draws two rings: the library's rounded one and a
+   square one hugging the input, which has no radius of its own. */
+.lq-text-field input:focus-visible,
+.lq-textarea textarea:focus-visible {
+  outline: 0;
+}
+
 /* --- Shell and background ------------------------------------------------ */
 
 .site-shell {
