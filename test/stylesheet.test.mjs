@@ -95,6 +95,7 @@ describe('the state selectors Base UI drives', () => {
     ['an indeterminate progress bar', '.lq-progress__fill[data-indeterminate] {'],
     ['a divider with no label', ".lq-divider[data-orientation='horizontal']:not([data-with-label])::after {"],
     ['a disabled button', '.lq-button[data-disabled],'],
+    ['a disabled slider', '.lq-slider__control[data-disabled] {'],
     ['a toast of a given severity', ".lq-toast[data-type='success'] {"],
     ['a toast on its way out', '.lq-toast[data-ending-style] {'],
   ]

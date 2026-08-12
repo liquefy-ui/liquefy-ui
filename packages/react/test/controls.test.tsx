@@ -137,33 +137,45 @@ describe('radio group', () => {
 describe('slider', () => {
   it('is a labelled range input', () => {
     ui(<LiquidSlider defaultValue={64} label="Spatial depth" max={100} min={0} />)
-    const input = screen.getByLabelText<HTMLInputElement>('Spatial depth')
+    // The label names the group and the input alike, so the input is reached by
+    // its role rather than by the name they share.
+    const input = screen.getByRole<HTMLInputElement>('slider', { name: 'Spatial depth' })
     expect(input.type).toBe('range')
     expect(input.value).toBe('64')
     expect(input.min).toBe('0')
     expect(input.max).toBe('100')
   })
 
-  it('reports movement through the native change event', async () => {
+  it('reports movement through onValueChange', async () => {
     const Controlled = () => {
       const [value, setValue] = useState(20)
       return (
         <>
-          <LiquidSlider
-            label="Depth"
-            max={100}
-            min={0}
-            onChange={(event) => setValue(Number(event.currentTarget.value))}
-            value={value}
-          />
+          <LiquidSlider label="Depth" max={100} min={0} onValueChange={setValue} value={value} />
           <output data-testid="value">{value}</output>
         </>
       )
     }
     ui(<Controlled />)
-    fireEvent.change(screen.getByLabelText('Depth'), { target: { value: '73' } })
+    // The thumb still wraps a real range input, so a form — and a test — can
+    // drive it the way they always could.
+    fireEvent.change(screen.getByRole('slider'), { target: { value: '73' } })
     expect(screen.getByTestId('value').textContent).toBe('73')
-    expect(screen.getByLabelText<HTMLInputElement>('Depth').value).toBe('73')
+    expect(screen.getByRole<HTMLInputElement>('slider').value).toBe('73')
+  })
+
+  // Without a visible label the name has to reach the input inside the thumb.
+  // Base UI would otherwise leave `aria-label` on the group wrapped around it,
+  // and the thing a screen reader actually lands on would be unnamed.
+  it('names the input when the label is only an aria-label', () => {
+    ui(<LiquidSlider aria-label="Optical intensity" defaultValue={1} max={1.2} min={0.2} step={0.01} />)
+    expect(screen.getByRole('slider', { name: 'Optical intensity' })).toBeTruthy()
+  })
+
+  // The filled part of the track is what a native range could not draw.
+  it('fills the track up to the value', () => {
+    const { container } = ui(<LiquidSlider defaultValue={25} label="Depth" max={100} min={0} />)
+    expect(container.querySelector<HTMLElement>('.lq-slider__indicator')?.style.width).toBe('25%')
   })
 })
 

@@ -119,7 +119,7 @@ export const IconsPage = ({ query }: { query: string }) => {
             label="Stroke width"
             max={3}
             min={1}
-            onChange={(event) => setStrokeWidth(Number(event.currentTarget.value))}
+            onValueChange={setStrokeWidth}
             step={0.1}
             styles={{ flex: 1, maxWidth: 250, minWidth: 170 }}
             value={strokeWidth}

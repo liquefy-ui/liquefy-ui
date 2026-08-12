@@ -7,6 +7,7 @@ import { LiquidDivider } from '../src/liquid-divider'
 import { LiquidProgress } from '../src/liquid-progress'
 import { LiquidRadio, LiquidRadioGroup } from '../src/liquid-radio'
 import { LiquidSegmented } from '../src/liquid-segmented'
+import { LiquidSlider } from '../src/liquid-slider'
 import { LiquidSwitch } from '../src/liquid-switch'
 import { LiquefyProvider } from '../src/provider'
 
@@ -74,6 +75,11 @@ describe('the attributes the stylesheet paints on', () => {
     const fill = container.querySelector<HTMLElement>('.lq-progress__fill')
     expect(fill?.style.width).toBe('40%')
     expect(fill?.hasAttribute('data-indeterminate')).toBe(false)
+  })
+
+  it('marks a disabled slider, which is the only thing that dims its track', () => {
+    const { container } = ui(<LiquidSlider defaultValue={30} disabled label="Depth" />)
+    expect(container.querySelector('.lq-slider__control')?.hasAttribute('data-disabled')).toBe(true)
   })
 
   it('marks a divider that carries a label, which suppresses the second rule', () => {

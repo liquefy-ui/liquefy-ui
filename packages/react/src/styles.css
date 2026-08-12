@@ -514,50 +514,59 @@
     flex: 0 0 auto;
   }
 
-  .lq-slider input[type='range'] {
-    appearance: none;
-    background: transparent;
+  .lq-slider__control {
+    align-items: center;
     cursor: pointer;
+    display: flex;
     flex: 1;
     height: 28px;
     min-width: 80px;
+    /* The drag reads the pointer directly, so the browser must not claim the
+       gesture for a scroll first. */
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
-  .lq-slider input[type='range']::-webkit-slider-runnable-track {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--lq-accent) 72%, white 4%), rgba(255, 255, 255, 0.13));
+  .lq-slider__control[data-disabled] {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .lq-slider__track {
+    background: rgba(255, 255, 255, 0.13);
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 999px;
     height: 7px;
+    width: 100%;
   }
 
-  .lq-slider input[type='range']::-webkit-slider-thumb {
-    appearance: none;
+  /* The filled part of the track. A native range could not draw this: the vendor
+     track pseudo-element has no idea where the thumb is, so the fill used to be
+     a fixed gradient pretending to be one. */
+  .lq-slider__indicator {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--lq-accent) 72%, white 4%), color-mix(in srgb, var(--lq-accent) 88%, white 12%));
+    border-radius: inherit;
+  }
+
+  .lq-slider__thumb {
     background: linear-gradient(145deg, white, #dbe5f7);
     border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 50%;
     box-shadow: 0 4px 12px rgba(3, 8, 22, 0.4);
     height: 21px;
-    margin-top: -8px;
-    transform: scale(var(--lq-thumb-sx, 1), var(--lq-thumb-sy, 1));
+    /* `scale` rather than `transform`, so the squish composes with the
+       `translate` Base UI sets to centre the thumb on its value. */
+    scale: var(--lq-thumb-sx, 1) var(--lq-thumb-sy, 1);
     width: 21px;
-    will-change: transform;
+    will-change: scale;
   }
 
-  .lq-slider input[type='range']::-moz-range-track {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 999px;
-    height: 7px;
-  }
-
-  .lq-slider input[type='range']::-moz-range-thumb {
-    background: white;
-    border: 0;
-    border-radius: 50%;
-    box-shadow: 0 4px 12px rgba(3, 8, 22, 0.4);
-    height: 21px;
-    transform: scale(var(--lq-thumb-sx, 1), var(--lq-thumb-sy, 1));
-    width: 21px;
-    will-change: transform;
+  /* The focus ring belongs to the thumb; the input that takes the focus sits
+     inside it and has no size of its own. */
+  .lq-slider__thumb:has(:focus-visible) {
+    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline-offset: 3px;
   }
 
   .lq-text-field__control {
