@@ -1,7 +1,13 @@
+import { Switch } from '@base-ui/react/switch'
 import { forwardRef, useState, type ButtonHTMLAttributes } from 'react'
 import { useLiquefyConfig } from './provider'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 import { useLiquidGlass } from './use-liquid-glass'
+
+// Base UI renders a hidden checkbox beside the button, so the switch finally
+// submits with a form and reports itself to a `<label>` the way a native
+// control does. The button is kept as the rendered element because the shader
+// canvas and the thumb live inside it.
 
 export type LiquidSwitchProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> & LiquidStyleProps & {
   checked?: boolean
@@ -17,15 +23,15 @@ export const LiquidSwitch = forwardRef<HTMLButtonElement, LiquidSwitchProps>(({
   disabled,
   label,
   onCheckedChange,
-  onClick,
   style,
   styles,
   ...props
 }, forwardedRef) => {
   const config = useLiquefyConfig()
+  // The thumb has a resting position for each state, so the springy hop between
+  // them has to stay off until the first flick — otherwise every switch that
+  // starts on animates itself on as the page loads.
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [internalChecked, setInternalChecked] = useState(defaultChecked)
-  const isChecked = checked ?? internalChecked
   const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
     bounce: 0.06,
     disabled,
@@ -40,31 +46,28 @@ export const LiquidSwitch = forwardRef<HTMLButtonElement, LiquidSwitchProps>(({
   const root = useLiquidStyles('lq-switch', { className, style, styles })
 
   return (
-    <button
-      aria-checked={isChecked}
+    <Switch.Root
       aria-label={label}
+      checked={checked}
       className={root.className}
-      data-checked={isChecked}
-      data-interacted={hasInteracted}
+      data-interacted={hasInteracted || undefined}
+      defaultChecked={defaultChecked}
       disabled={disabled}
-      onClick={(event) => {
-        onClick?.(event)
-        if (event.defaultPrevented) return
-
+      nativeButton
+      onCheckedChange={(nextChecked) => {
         setHasInteracted(true)
-        const nextChecked = !isChecked
-        if (checked === undefined) setInternalChecked(nextChecked)
         onCheckedChange?.(nextChecked)
       }}
       ref={elementRef}
-      role="switch"
+      render={<button type="button" />}
       style={root.style}
-      type="button"
-      {...props}
+      // `render` swaps the span Base UI would have made for a button, but the
+      // prop types still describe the span. The cast is that swap, written down.
+      {...(props as Switch.Root.Props)}
     >
       {config.webgl && <canvas aria-hidden="true" className="lq-surface__shader" ref={canvasRef} />}
-      <span className="lq-switch__thumb" />
-    </button>
+      <Switch.Thumb className="lq-switch__thumb" />
+    </Switch.Root>
   )
 })
 

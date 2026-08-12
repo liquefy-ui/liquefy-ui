@@ -1,3 +1,4 @@
+import { Button } from '@base-ui/react/button'
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { useLiquefyConfig } from './provider'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
@@ -44,7 +45,7 @@ export const LiquidIconButton = forwardRef<HTMLButtonElement, LiquidIconButtonPr
   })
 
   return (
-    <button
+    <Button
       aria-label={label}
       className={root.className}
       data-liquid-shape={shape}
@@ -59,7 +60,7 @@ export const LiquidIconButton = forwardRef<HTMLButtonElement, LiquidIconButtonPr
       <span aria-hidden="true" className="lq-surface__edge" />
       {config.webgl && <canvas aria-hidden="true" className="lq-surface__shader" ref={canvasRef} />}
       <span className="lq-button__content">{children}</span>
-    </button>
+    </Button>
   )
 })
 
