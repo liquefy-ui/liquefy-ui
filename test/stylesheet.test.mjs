@@ -77,3 +77,46 @@ describe('the overlay ladder', () => {
     }
   })
 })
+
+/**
+ * The other half of `packages/react/test/style-hooks.test.tsx`. That file proves
+ * Base UI still emits each attribute; this one proves the stylesheet still
+ * selects on it. Either half passing alone is a component that renders correctly
+ * and looks wrong, which is exactly the failure neither a type error nor a render
+ * test catches.
+ */
+describe('the state selectors Base UI drives', () => {
+  const rules = [
+    ['a checked switch', ".lq-switch[data-checked] {"],
+    ['a switch flicked back off', '.lq-switch[data-interacted][data-unchecked] .lq-switch__thumb {'],
+    ['an indeterminate checkbox', '.lq-checkbox__box[data-indeterminate] {'],
+    ['a selected radio', '.lq-radio__control[data-checked] {'],
+    ['a pressed segment', '.lq-segmented__item[data-pressed] {'],
+    ['an indeterminate progress bar', '.lq-progress__fill[data-indeterminate] {'],
+    ['a divider with no label', ".lq-divider[data-orientation='horizontal']:not([data-with-label])::after {"],
+    ['a disabled button', '.lq-button[data-disabled],'],
+    ['a disabled slider', '.lq-slider__control[data-disabled] {'],
+    ['a toast of a given severity', ".lq-toast[data-type='success'] {"],
+    ['a toast on its way out', '.lq-toast[data-ending-style] {'],
+  ]
+
+  for (const [state, selector] of rules) {
+    it(`still paints ${state}`, () => {
+      expect(css, selector).toContain(selector)
+    })
+  }
+
+  // `[data-checked='true']` is how this library used to spell state, and how Base
+  // UI never spells it: the attribute is present or it is absent, so a rule left
+  // in the old form matches nothing at all. Only the names Base UI owns are
+  // checked; `data-loading`, `data-selected` and the spinner's own
+  // `data-indeterminate` are this library's, and are booleans on purpose.
+  it('spells Base UI state the way Base UI writes it', () => {
+    const owned = /\[data-(checked|unchecked|pressed|disabled|indeterminate)='/
+    const offenders = css
+      .split('\n')
+      .filter((line) => owned.test(line) && !line.includes('.lq-spinner'))
+
+    expect(offenders).toEqual([])
+  })
+})

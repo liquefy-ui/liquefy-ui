@@ -292,7 +292,7 @@
     padding: 0 27px;
   }
 
-  .lq-button:hover:not(:disabled) {
+  .lq-button:hover:not([data-disabled]) {
     background: color-mix(in srgb, var(--lq-button-tint) 8%, transparent);
     border-color: var(--lq-control-hover-line);
     box-shadow:
@@ -309,8 +309,8 @@
     outline-offset: 3px;
   }
 
-  .lq-button:disabled,
-  .lq-switch:disabled {
+  .lq-button[data-disabled],
+  .lq-switch[data-disabled] {
     cursor: not-allowed;
     opacity: 0.45;
   }
@@ -324,7 +324,7 @@
     transition: transform 500ms var(--lq-easing);
   }
 
-  .lq-button:hover:not(:disabled) .lq-button__content {
+  .lq-button:hover:not([data-disabled]) .lq-button__content {
     transform: translate3d(calc(var(--lq-magnet-x) * 0.45), calc(var(--lq-magnet-y) * 0.45), 0);
   }
 
@@ -339,7 +339,7 @@
   }
 
   .lq-button[data-loading='true'],
-  .lq-button[data-loading='true']:disabled {
+  .lq-button[data-loading='true'][data-disabled] {
     cursor: progress;
     opacity: 1;
   }
@@ -441,13 +441,13 @@
     width: 24px;
   }
 
-  .lq-switch[data-checked='true'] {
+  .lq-switch[data-checked] {
     background: color-mix(in srgb, var(--lq-accent) 3%, transparent);
     border-color: color-mix(in srgb, var(--lq-accent) 30%, rgba(255, 255, 255, 0.12));
     box-shadow: 0 6px 16px color-mix(in srgb, var(--lq-accent) 8%, transparent), inset 0 0.75px 0 rgba(255, 255, 255, 0.14);
   }
 
-  .lq-switch[data-checked='true']::before {
+  .lq-switch[data-checked]::before {
     opacity: 0.48;
     scale: 1.2;
     translate: 22px 0;
@@ -470,16 +470,16 @@
     z-index: 3;
   }
 
-  .lq-switch[data-checked='true'] .lq-switch__thumb {
+  .lq-switch[data-checked] .lq-switch__thumb {
     box-shadow: 0 2px 8px color-mix(in srgb, var(--lq-accent) 14%, rgba(3, 8, 22, 0.2));
     translate: 22px 0;
   }
 
-  .lq-switch[data-interacted='true'][data-checked='true'] .lq-switch__thumb {
+  .lq-switch[data-interacted][data-checked] .lq-switch__thumb {
     animation: lq-switch-thumb-on 680ms cubic-bezier(0.2, 0.9, 0.25, 1);
   }
 
-  .lq-switch[data-interacted='true'][data-checked='false'] .lq-switch__thumb {
+  .lq-switch[data-interacted][data-unchecked] .lq-switch__thumb {
     animation: lq-switch-thumb-off 680ms cubic-bezier(0.2, 0.9, 0.25, 1);
   }
 
@@ -514,50 +514,59 @@
     flex: 0 0 auto;
   }
 
-  .lq-slider input[type='range'] {
-    appearance: none;
-    background: transparent;
+  .lq-slider__control {
+    align-items: center;
     cursor: pointer;
+    display: flex;
     flex: 1;
     height: 28px;
     min-width: 80px;
+    /* The drag reads the pointer directly, so the browser must not claim the
+       gesture for a scroll first. */
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
-  .lq-slider input[type='range']::-webkit-slider-runnable-track {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--lq-accent) 72%, white 4%), rgba(255, 255, 255, 0.13));
+  .lq-slider__control[data-disabled] {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .lq-slider__track {
+    background: rgba(255, 255, 255, 0.13);
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 999px;
     height: 7px;
+    width: 100%;
   }
 
-  .lq-slider input[type='range']::-webkit-slider-thumb {
-    appearance: none;
+  /* The filled part of the track. A native range could not draw this: the vendor
+     track pseudo-element has no idea where the thumb is, so the fill used to be
+     a fixed gradient pretending to be one. */
+  .lq-slider__indicator {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--lq-accent) 72%, white 4%), color-mix(in srgb, var(--lq-accent) 88%, white 12%));
+    border-radius: inherit;
+  }
+
+  .lq-slider__thumb {
     background: linear-gradient(145deg, white, #dbe5f7);
     border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 50%;
     box-shadow: 0 4px 12px rgba(3, 8, 22, 0.4);
     height: 21px;
-    margin-top: -8px;
-    transform: scale(var(--lq-thumb-sx, 1), var(--lq-thumb-sy, 1));
+    /* `scale` rather than `transform`, so the squish composes with the
+       `translate` Base UI sets to centre the thumb on its value. */
+    scale: var(--lq-thumb-sx, 1) var(--lq-thumb-sy, 1);
     width: 21px;
-    will-change: transform;
+    will-change: scale;
   }
 
-  .lq-slider input[type='range']::-moz-range-track {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 999px;
-    height: 7px;
-  }
-
-  .lq-slider input[type='range']::-moz-range-thumb {
-    background: white;
-    border: 0;
-    border-radius: 50%;
-    box-shadow: 0 4px 12px rgba(3, 8, 22, 0.4);
-    height: 21px;
-    transform: scale(var(--lq-thumb-sx, 1), var(--lq-thumb-sy, 1));
-    width: 21px;
-    will-change: transform;
+  /* The focus ring belongs to the thumb; the input that takes the focus sits
+     inside it and has no size of its own. */
+  .lq-slider__thumb:has(:focus-visible) {
+    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline-offset: 3px;
   }
 
   .lq-text-field__control {
@@ -1053,7 +1062,7 @@
     gap: 11px;
   }
 
-  .lq-checkbox[data-disabled='true'] {
+  .lq-checkbox[data-disabled] {
     cursor: not-allowed;
     opacity: 0.45;
   }
@@ -1081,12 +1090,12 @@
     width: 22px;
   }
 
-  .lq-checkbox__box[data-interacted='true'][data-checked='true'],
-  .lq-checkbox__box[data-interacted='true'][data-checked='mixed'] {
+  .lq-checkbox__box[data-interacted][data-checked],
+  .lq-checkbox__box[data-interacted][data-indeterminate] {
     animation: lq-jelly-pop 620ms cubic-bezier(0.2, 0.9, 0.25, 1);
   }
 
-  .lq-checkbox__box[data-interacted='true'][data-checked='false'] {
+  .lq-checkbox__box[data-interacted][data-unchecked]:not([data-indeterminate]) {
     animation: lq-jelly-pop-off 620ms cubic-bezier(0.2, 0.9, 0.25, 1);
   }
 
@@ -1095,8 +1104,8 @@
     outline-offset: 3px;
   }
 
-  .lq-checkbox__box[data-checked='true'],
-  .lq-checkbox__box[data-checked='mixed'] {
+  .lq-checkbox__box[data-checked],
+  .lq-checkbox__box[data-indeterminate] {
     background: color-mix(in srgb, var(--lq-accent) 26%, transparent);
     border-color: color-mix(in srgb, var(--lq-accent) 58%, rgba(255, 255, 255, 0.2));
     box-shadow:
@@ -1113,8 +1122,8 @@
     z-index: 3;
   }
 
-  .lq-checkbox__box[data-checked='true'] .lq-checkbox__mark,
-  .lq-checkbox__box[data-checked='mixed'] .lq-checkbox__mark {
+  .lq-checkbox__box[data-checked] .lq-checkbox__mark,
+  .lq-checkbox__box[data-indeterminate] .lq-checkbox__mark {
     opacity: 1;
     scale: 1;
   }
@@ -1146,7 +1155,7 @@
     gap: 11px;
   }
 
-  .lq-radio[data-disabled='true'] {
+  .lq-radio[data-disabled] {
     cursor: not-allowed;
     opacity: 0.45;
   }
@@ -1173,16 +1182,13 @@
     width: 22px;
   }
 
-  .lq-radio__control[data-interacted='true'][data-checked='true'] {
-    animation: lq-jelly-pop 620ms cubic-bezier(0.2, 0.9, 0.25, 1);
-  }
-
   .lq-radio__control:focus-visible {
     outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
     outline-offset: 3px;
   }
 
-  .lq-radio__control[data-checked='true'] {
+  .lq-radio__control[data-checked] {
+    animation: lq-jelly-pop 620ms cubic-bezier(0.2, 0.9, 0.25, 1);
     border-color: color-mix(in srgb, var(--lq-accent) 58%, rgba(255, 255, 255, 0.2));
     box-shadow:
       0 4px 12px color-mix(in srgb, var(--lq-accent) 14%, transparent),
@@ -1202,7 +1208,7 @@
     z-index: 3;
   }
 
-  .lq-radio__control[data-checked='true'] .lq-radio__dot {
+  .lq-radio__control[data-checked] .lq-radio__dot {
     opacity: 1;
     scale: 1;
   }
@@ -1436,7 +1442,7 @@
     padding: 0 12px;
   }
 
-  .lq-segmented__item[data-active='true'] {
+  .lq-segmented__item[data-pressed] {
     color: var(--lq-foreground);
   }
 
@@ -1913,7 +1919,8 @@
     height: 1px;
   }
 
-  .lq-divider[data-orientation='horizontal'][data-with-label='false']::after {
+  /* Without a label there is nothing to draw a second rule on the far side of. */
+  .lq-divider[data-orientation='horizontal']:not([data-with-label])::after {
     display: none;
   }
 
@@ -1992,9 +1999,9 @@
     overflow: hidden;
     position: absolute;
     top: 0;
-    /* Overshoot easing makes the bar bounce as it lands on a new value. */
+    /* Overshoot easing makes the bar bounce as it lands on a new value. The
+       width itself is set inline, from the value. */
     transition: width 720ms cubic-bezier(0.34, 1.7, 0.5, 1);
-    width: calc(var(--lq-progress) * 100%);
   }
 
   /* A bright liquid glint forever flowing left-to-right along the fill. */
@@ -2027,7 +2034,7 @@
     z-index: 1;
   }
 
-  .lq-progress__track[data-indeterminate='true'] .lq-progress__fill {
+  .lq-progress__fill[data-indeterminate] {
     animation:
       lq-progress-slide 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite,
       lq-progress-squish 1.5s ease-in-out infinite;
@@ -2386,7 +2393,6 @@
 
   .lq-toast {
     --lq-toast-tint: #7fb2ff;
-    align-items: flex-start;
     animation: lq-toast-in 560ms cubic-bezier(0.16, 1.35, 0.3, 1) both;
     -webkit-backdrop-filter: blur(16px) saturate(1.5) brightness(1.04);
     backdrop-filter: blur(16px) saturate(1.5) brightness(1.04);
@@ -2396,26 +2402,47 @@
     box-shadow:
       0 16px 40px var(--lq-shadow-color),
       inset 0 0.75px 0 var(--lq-glass-bright);
+    min-width: 260px;
+    /* The swipe reads the pointer directly, so the browser must not claim the
+       gesture for a scroll first. */
+    touch-action: none;
+  }
+
+  /* Base UI clips the stack through this element, so the padding and the row
+     layout belong to it rather than to the popup that animates. */
+  .lq-toast__content {
+    align-items: flex-start;
     display: flex;
     gap: 11px;
-    min-width: 260px;
     padding: 13px 15px;
   }
 
-  .lq-toast[data-severity='success'] {
+  .lq-toast[data-type='success'] {
     --lq-toast-tint: #4fd8a4;
   }
 
-  .lq-toast[data-severity='warning'] {
+  .lq-toast[data-type='warning'] {
     --lq-toast-tint: #f4b64f;
   }
 
-  .lq-toast[data-severity='danger'] {
+  .lq-toast[data-type='danger'] {
     --lq-toast-tint: #ff5d73;
   }
 
-  .lq-toast[data-leaving='true'] {
+  .lq-toast[data-ending-style] {
     animation: lq-toast-out 340ms ease both;
+  }
+
+  /* A toast dropped for exceeding the limit never animated in, so it should not
+     be seen animating out either. */
+  .lq-toast[data-limited] {
+    animation: lq-toast-out 200ms ease both;
+  }
+
+  .lq-toast[data-swiping] {
+    animation: none;
+    transform: translate(var(--toast-swipe-movement-x), var(--toast-swipe-movement-y));
+    transition: none;
   }
 
   .lq-toast__icon {

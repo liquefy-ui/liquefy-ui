@@ -1,13 +1,13 @@
-import {
-  forwardRef,
-  useRef,
-  useState,
-  type HTMLAttributes,
-  type MouseEvent as ReactMouseEvent,
-  type ReactNode,
-} from 'react'
+import { Toggle } from '@base-ui/react/toggle'
+import { ToggleGroup } from '@base-ui/react/toggle-group'
+import { forwardRef, useRef, useState, type HTMLAttributes, type ReactNode } from 'react'
 import { useLiquefyConfig } from './provider'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
+
+// This used to claim `role="tablist"` and `role="tab"` without ever rendering a
+// tabpanel, which tells a screen reader to expect panels that do not exist and
+// leaves the arrow keys doing nothing. A toggle group is what this control
+// actually is: one pressed button out of several, with roving focus.
 
 export type LiquidSegmentedOption = {
   disabled?: boolean
@@ -43,31 +43,6 @@ export const LiquidSegmented = forwardRef<HTMLDivElement, LiquidSegmentedProps>(
   const resolvedValue = value ?? internalValue
   const activeIndex = Math.max(0, options.findIndex((option) => option.value === resolvedValue))
 
-  const handleSelect = (option: LiquidSegmentedOption, event: ReactMouseEvent<HTMLButtonElement>) => {
-    const changed = option.value !== resolvedValue
-    if (value === undefined) setInternalValue(option.value)
-    onValueChange?.(option.value)
-
-    // Squash-and-stretch the sliding indicator (and pop the picked item) so
-    // switching options reads as a springy jelly wobble, not a flat slide.
-    if (changed && config.motion !== false) {
-      indicatorRef.current?.animate(
-        [
-          { scale: '1 1' },
-          { scale: '1.16 0.8' },
-          { scale: '0.94 1.07' },
-          { scale: '1.02 0.98' },
-          { scale: '1 1' },
-        ],
-        { duration: 560, easing: 'cubic-bezier(0.2, 0.9, 0.25, 1)' },
-      )
-      event.currentTarget.animate(
-        [{ scale: '1' }, { scale: '1.14' }, { scale: '0.98' }, { scale: '1' }],
-        { duration: 460, easing: 'cubic-bezier(0.2, 0.9, 0.25, 1)' },
-      )
-    }
-  }
-
   const root = useLiquidStyles('lq-segmented', {
     className,
     style,
@@ -76,32 +51,56 @@ export const LiquidSegmented = forwardRef<HTMLDivElement, LiquidSegmentedProps>(
   })
 
   return (
-    <div
+    <ToggleGroup
       aria-label={label}
       className={root.className}
       data-liquid-size={size}
+      onValueChange={(next, details) => {
+        // A segmented control always has exactly one option chosen, so pressing
+        // the pressed one again is a no-op rather than a way to clear it.
+        const [nextValue] = next
+        if (!nextValue || nextValue === resolvedValue) return
+
+        if (value === undefined) setInternalValue(nextValue)
+        onValueChange?.(nextValue)
+
+        // Squash-and-stretch the sliding indicator (and pop the picked item) so
+        // switching options reads as a springy jelly wobble, not a flat slide.
+        if (config.motion === false) return
+
+        indicatorRef.current?.animate(
+          [
+            { scale: '1 1' },
+            { scale: '1.16 0.8' },
+            { scale: '0.94 1.07' },
+            { scale: '1.02 0.98' },
+            { scale: '1 1' },
+          ],
+          { duration: 560, easing: 'cubic-bezier(0.2, 0.9, 0.25, 1)' },
+        )
+        details.trigger?.animate(
+          [{ scale: '1' }, { scale: '1.14' }, { scale: '0.98' }, { scale: '1' }],
+          { duration: 460, easing: 'cubic-bezier(0.2, 0.9, 0.25, 1)' },
+        )
+      }}
       ref={ref}
-      role="tablist"
       style={root.style}
+      value={resolvedValue === undefined ? [] : [resolvedValue]}
       {...props}
     >
       <span aria-hidden="true" className="lq-segmented__indicator" ref={indicatorRef} />
       {options.map((option) => (
-        <button
-          aria-selected={option.value === resolvedValue}
+        <Toggle
           className="lq-segmented__item"
-          data-active={option.value === resolvedValue}
           disabled={option.disabled}
           key={option.value}
-          onClick={(event) => handleSelect(option, event)}
-          role="tab"
-          type="button"
+          value={option.value}
         >
           {option.icon && <span className="lq-segmented__icon">{option.icon}</span>}
           <span>{option.label}</span>
-        </button>
+        </Toggle>
       ))}
-    </div>
+    </ToggleGroup>
   )
 })
 

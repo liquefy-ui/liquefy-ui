@@ -200,7 +200,7 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
           aria-label="Optical intensity"
           max={1.2}
           min={0.2}
-          onChange={(event) => config.setMaterial('intensity', Number(event.currentTarget.value))}
+          onValueChange={(value) => config.setMaterial('intensity', value)}
           step={0.01}
           value={config.intensity}
         />
@@ -212,7 +212,7 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
           aria-label="Wobbliness"
           max={2}
           min={0}
-          onChange={(event) => config.setMaterial('wobbliness', Number(event.currentTarget.value))}
+          onValueChange={(value) => config.setMaterial('wobbliness', value)}
           step={0.1}
           value={config.wobbliness}
         />

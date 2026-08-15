@@ -1,4 +1,5 @@
-import { forwardRef, type CSSProperties, type HTMLAttributes } from 'react'
+import { Progress } from '@base-ui/react/progress'
+import { forwardRef, type HTMLAttributes } from 'react'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 
 export type LiquidProgressProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps & {
@@ -20,31 +21,39 @@ export const LiquidProgress = forwardRef<HTMLDivElement, LiquidProgressProps>(({
   value,
   ...props
 }, ref) => {
-  const indeterminate = value === undefined
-  const ratio = indeterminate ? 0 : Math.min(1, Math.max(0, value / max))
-  const root = useLiquidStyles('lq-progress', { className, style, styles })
+  // Base UI reads `null` as "still working, no idea how far", which is what
+  // leaving the value off has always meant here. It also drives the fill width
+  // itself, so the only thing left to hand the stylesheet is the tint.
+  const root = useLiquidStyles('lq-progress', {
+    className,
+    style,
+    styles,
+    vars: tint ? { '--lq-progress-tint': tint } : undefined,
+  })
 
   return (
-    <div className={root.className} ref={ref} style={root.style} {...props}>
+    <Progress.Root
+      className={root.className}
+      max={max}
+      ref={ref}
+      style={root.style}
+      value={value ?? null}
+      {...props}
+    >
       {(label || showValue) && (
         <span className="lq-progress__meta">
-          {label && <span className="lq-control-label">{label}</span>}
-          {showValue && !indeterminate && <span className="lq-progress__value">{Math.round(ratio * 100)}%</span>}
+          {label && <Progress.Label className="lq-control-label">{label}</Progress.Label>}
+          {showValue && (
+            <Progress.Value className="lq-progress__value">
+              {(_, currentValue) => currentValue === null ? null : `${Math.round((currentValue / max) * 100)}%`}
+            </Progress.Value>
+          )}
         </span>
       )}
-      <span
-        aria-label={label}
-        aria-valuemax={max}
-        aria-valuemin={0}
-        aria-valuenow={indeterminate ? undefined : value}
-        className="lq-progress__track"
-        data-indeterminate={indeterminate}
-        role="progressbar"
-        style={{ '--lq-progress': ratio, ...(tint ? { '--lq-progress-tint': tint } : {}) } as CSSProperties}
-      >
-        <span className="lq-progress__fill" />
-      </span>
-    </div>
+      <Progress.Track className="lq-progress__track">
+        <Progress.Indicator className="lq-progress__fill" />
+      </Progress.Track>
+    </Progress.Root>
   )
 })
 

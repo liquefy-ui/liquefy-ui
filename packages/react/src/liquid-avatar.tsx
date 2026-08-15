@@ -1,5 +1,11 @@
-import { forwardRef, useState, type HTMLAttributes, type ReactNode } from 'react'
+import { Avatar } from '@base-ui/react/avatar'
+import { forwardRef, type HTMLAttributes, type ReactNode } from 'react'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
+
+// Tracking the image with a single `errored` flag missed the cases that matter:
+// a cached image that is already complete before React attaches `onError`, and
+// a `src` that changes to a broken one after a good one has loaded. Base UI
+// tracks the loading status instead, and swaps the fallback in from that.
 
 export type LiquidAvatarProps = HTMLAttributes<HTMLSpanElement> & LiquidStyleProps & {
   alt?: string
@@ -30,8 +36,6 @@ export const LiquidAvatar = forwardRef<HTMLSpanElement, LiquidAvatarProps>(({
   tint,
   ...props
 }, ref) => {
-  const [errored, setErrored] = useState(false)
-  const showImage = src && !errored
   const root = useLiquidStyles('lq-avatar', {
     className,
     style,
@@ -40,7 +44,7 @@ export const LiquidAvatar = forwardRef<HTMLSpanElement, LiquidAvatarProps>(({
   })
 
   return (
-    <span
+    <Avatar.Root
       className={root.className}
       data-liquid-size={size}
       ref={ref}
@@ -48,12 +52,15 @@ export const LiquidAvatar = forwardRef<HTMLSpanElement, LiquidAvatarProps>(({
       title={name}
       {...props}
     >
-      {showImage
-        ? <img alt={alt ?? name ?? ''} onError={() => setErrored(true)} src={src} />
-        : <span aria-label={name} className="lq-avatar__fallback" role={name ? 'img' : undefined}>
-            {fallback ?? (name ? getInitials(name) : '•')}
-          </span>}
-    </span>
+      {src && <Avatar.Image alt={alt ?? name ?? ''} src={src} />}
+      <Avatar.Fallback
+        aria-label={name}
+        className="lq-avatar__fallback"
+        role={name ? 'img' : undefined}
+      >
+        {fallback ?? (name ? getInitials(name) : '•')}
+      </Avatar.Fallback>
+    </Avatar.Root>
   )
 })
 
