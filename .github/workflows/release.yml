@@ -190,7 +190,7 @@ jobs:
       #
       # The guard above means there is never a changeset left for this to version,
       # so it only ever publishes and pushes the tags.
-      - uses: changesets/action@v1
+      - uses: changesets/action@v2
         with:
           publish: pnpm release
         env:
