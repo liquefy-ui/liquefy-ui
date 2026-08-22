@@ -114,6 +114,40 @@
     will-change: transform;
   }
 
+  /* WebKit puts the text-selection callout — the bubble a long press raises, the
+     one holding Paste — in the wrong coordinate space when the input it belongs
+     to is nested inside a compositing layer, so on iOS a long press on a field
+     inside the block above raises no menu at all and the field cannot be pasted
+     into. The motion controller compounds it by springing that transform from
+     `pointerdown`, which leaves the field moving while the press is still being
+     recognised.
+
+     What the transform buys is tilt and parallax tracking a pointer, and a
+     touchscreen has no pointer to track, so a text entry and whatever surface
+     holds it give up the geometry there and keep every bit of the paint. Matched
+     on `any-pointer` rather than `pointer` so a tablet driven from a trackpad —
+     a fine pointer, with a finger still on the glass — is covered as well. */
+  @media (any-pointer: coarse) {
+    .lq-text-field__control {
+      transform: none;
+      transform-style: flat;
+      will-change: auto;
+    }
+  }
+
+  /* Held apart from the rule above rather than joined to its selector list: one
+     selector a browser cannot parse voids the whole list it sits in, and `:has()`
+     is the newest thing in this file. Split, a Safari too old for `:has()` still
+     gets the field itself unwrapped. The surface is matched only when it holds a
+     text entry, so a card with nothing to type into keeps its tilt. */
+  @media (any-pointer: coarse) {
+    .lq-surface:has(.lq-text-field__control) {
+      transform: none;
+      transform-style: flat;
+      will-change: auto;
+    }
+  }
+
   /* `-webkit-backdrop-filter` is written before the standard property, here and
      everywhere else in this file, and the order is load-bearing. Lightning CSS —
      what Vite hands a stylesheet to — reads the two as one property declared

@@ -120,3 +120,40 @@ describe('the state selectors Base UI drives', () => {
     expect(offenders).toEqual([])
   })
 })
+
+/**
+ * A text entry cannot sit inside a compositing layer on a touchscreen. WebKit
+ * places the text-selection callout — the bubble a long press raises, the one
+ * holding Paste — against the wrong coordinate space when it does, so the menu
+ * never appears and the field cannot be pasted into; a password typed from a
+ * manager is the usual casualty. Nothing about that is visible to a render test
+ * or a type, because the stylesheet is correct and the field looks right. It is
+ * checked here instead, against the two rules that unwrap it.
+ */
+describe('text entries on a touchscreen', () => {
+  /** The declarations one selector carries under `any-pointer: coarse`. */
+  const coarseBlockOf = (selector) => {
+    const pattern = new RegExp(
+      `@media \\(any-pointer: coarse\\) \\{\\s*${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`,
+    )
+    const found = pattern.exec(css)
+    if (!found) throw new Error(`No coarse-pointer block for ${selector}`)
+    return found[1]
+  }
+
+  it('drops the geometry off the field and the surface holding it', () => {
+    for (const selector of ['.lq-text-field__control', '.lq-surface:has(.lq-text-field__control)']) {
+      const block = coarseBlockOf(selector)
+      expect(block, `${selector} keeps a transform`).toMatch(/transform:\s*none/)
+      expect(block, `${selector} keeps a 3D context`).toMatch(/transform-style:\s*flat/)
+      expect(block, `${selector} keeps a compositing hint`).toMatch(/will-change:\s*auto/)
+    }
+  })
+
+  // One selector a browser cannot parse voids the whole list it sits in, so the
+  // two cannot share a rule: joined, a Safari too old for `:has()` would drop the
+  // plain field along with it and be left with the bug this fixes.
+  it('keeps the `:has()` selector out of the plain field rule', () => {
+    expect(coarseBlockOf('.lq-text-field__control')).not.toContain(':has(')
+  })
+})
