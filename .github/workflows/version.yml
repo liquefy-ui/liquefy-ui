@@ -40,7 +40,7 @@ jobs:
 
       # No `publish` input on purpose: this job has no npm credentials and no
       # id-token permission, so it cannot publish even by accident.
-      - uses: changesets/action@v1
+      - uses: changesets/action@v2
         with:
           branch: rc
           commit: 'chore: version packages'
