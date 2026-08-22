@@ -31,3 +31,24 @@ breaks these. Do not reach for `--no-verify` — fix the message.
   `packages/mcp` that a consumer would notice needs a changeset: `pnpm changeset`.
 - Generated files — the registry, the `/llms/` pages, the MCP catalog — are
   built by `pnpm generate`. Edit the generator, never its output.
+
+## Language
+
+Everything written into the repository is **English only** — pull request
+titles and bodies, commit messages, issue text, code comments, changesets and
+documentation. This holds even when the conversation that produced the change
+is in another language. Translate; do not paste.
+
+## CSS and visual work
+
+- **The liquid/glass aesthetic is not negotiable.** Never fix a readability or
+  contrast bug by dropping an opaque background behind a surface. Solve it with
+  `backdrop-filter`, tint layering, or a border/shadow adjustment instead.
+- Fix CSS by editing **the specific rule that is wrong**. Never run a bulk
+  find-and-replace across a stylesheet — it has broken this repo before.
+- Any change a user would see needs a **Playwright screenshot** attached to the
+  pull request, captured in light, dark and system themes at both a mobile and
+  a desktop width. Report regressions with measured pixel values, not
+  impressions.
+- A bug fix gets a **regression test**. A component migration keeps its commit
+  scoped to that component.
