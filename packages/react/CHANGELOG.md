@@ -1,5 +1,113 @@
 # @liquefy-ui/react
 
+## 0.3.0
+
+### Minor Changes
+
+- 6c4cdb0: The remaining hand-rolled controls sit on Base UI primitives, which mostly shows
+  up as things that were quietly missing starting to work. Every public prop is
+  unchanged, and so is every piece of glass: Base UI supplies the behaviour, the
+  shader canvas and the springs stay exactly where they were.
+
+  - `LiquidSwitch`, `LiquidCheckbox` and `LiquidRadio` render a hidden input
+    beside the button, so they submit with a form and answer `required`. They were
+    `<button role="checkbox">` and friends before, which no form ever saw.
+  - `LiquidRadioGroup` has roving focus. Tab used to stop on every option in the
+    group and the arrow keys did nothing — the two things a radio group is
+    specified to do.
+  - `LiquidTextField` and `LiquidTextArea` are Base UI fields. The label, the
+    control and the hint were wired together by hand through a generated id;
+    the field owns that now, and a control put in a form reports its validity
+    through the same parts.
+  - `LiquidButton` stays focusable while `isLoading`. A button that disables
+    itself while it works used to throw the keyboard back to the top of the
+    document at the moment the user was waiting to hear what happened.
+  - `LiquidChip` reports `aria-pressed` when it is given a `selected` state.
+    A chip with only an `onClick` is still an ordinary button, and one with
+    neither is still a label with a delete button hanging off it.
+  - `LiquidAvatar` tracks the image's loading status rather than a single
+    `errored` flag, which covers a cached image that is already complete before
+    React attaches `onError`, and a `src` that changes to a broken one after a
+    good one has loaded.
+  - `LiquidProgress` and `LiquidDivider` follow the same primitives, and
+    `LiquidProgress` now sizes its fill from the value itself.
+
+  Consumers styling these components off the library's own class names are
+  unaffected. Anything reaching past them into the data attributes should know
+  that state is now spelled the Base UI way — `[data-checked]` rather than
+  `[data-checked='true']`, `[data-indeterminate]` rather than
+  `[data-checked='mixed']`, and `[data-disabled]` rather than `:disabled`.
+
+- 6c4cdb0: `LiquidSegmented` is a toggle group rather than a tab list. It used to claim
+  `role="tablist"` and `role="tab"` without ever rendering a tabpanel, which tells
+  a screen reader to expect panels that do not exist, and it left the arrow keys
+  doing nothing — Tab stopped on every option in turn instead. It now takes one
+  tab stop and moves between options with the arrows, and each option reports
+  itself with `aria-pressed`.
+
+  Pressing the option that is already chosen stays a no-op: a segmented control
+  answers its question at all times, so there is no way to clear it.
+
+  `options`, `value`, `defaultValue`, `onValueChange`, `size` and `label` are
+  unchanged, as is the springy indicator. A test that reaches for
+  `getAllByRole('tab')` or reads `aria-selected` needs `button` and `aria-pressed`.
+
+- 3281818: `LiquidSlider` draws a real track, a real filled indicator and a real thumb.
+
+  It used to wrap a bare `input[type=range]` and paint it through the vendor
+  pseudo-elements, which put a ceiling on what it could look like:
+  `::-webkit-slider-runnable-track` has no idea where the thumb is, so the "filled"
+  part of the track was a fixed gradient pretending to be one — it did not follow
+  the value at all. Firefox got a plain grey track instead, because
+  `::-moz-range-track` will not take the gradient. Both browsers now get the same
+  slider, and the fill is the value.
+
+  The thumb still wraps a real `input[type=range]`, so the slider submits with a
+  form, `ref` still gives you the input, and a test can still drive it with a
+  change event. The jelly squish is unchanged — it composes with the `translate`
+  Base UI sets on the thumb by riding the `scale` property instead of `transform`.
+
+  **Breaking:** the props are the slider's own rather than the input element's.
+
+  - `onChange={(event) => setValue(Number(event.currentTarget.value))}` becomes
+    `onValueChange={setValue}` — it hands you the number directly.
+  - `value`, `defaultValue`, `min`, `max` and `step` are `number` (they were the
+    input's wider `string | number | readonly string[]`). Anything already passing
+    numbers, which is every example in the docs, needs no change.
+  - `label`, `startAdornment`, `endAdornment`, `name`, `disabled` and `aria-label`
+    all keep working. An `aria-label` reaches the input inside the thumb, not just
+    the group around it.
+
+- 6c4cdb0: `LiquidToastProvider` runs on Base UI's toast manager, so a message no longer
+  withdraws itself while it is being read. The old queue dismissed each toast from
+  a bare `setTimeout` started the moment it was queued: hovering the stack,
+  focusing the button inside it or tabbing away to another window all left it
+  counting down, and a long message could vanish mid-sentence. The timer now pauses
+  for all three, and <kbd>F6</kbd> moves keyboard focus into the stack.
+
+  Two things a consumer can see changed with it:
+
+  - `toast()` returns a `string` id rather than a `number`, and `dismiss()` takes
+    the same. Code that stores what `toast()` handed back and passes it to
+    `dismiss()` needs no change; code that declared the type in between does.
+  - Each toast is a `dialog` rather than a `status`, announced from the live
+    region around the viewport. This is what APG asks for — `role="status"` on the
+    toast itself re-announced the whole stack every time one arrived — but a test
+    that looks for `getByRole('status')` will need to look for `dialog` instead.
+
+  `placement`, `severity`, `duration` and the `useLiquidToast()` hook are
+  unchanged, including `duration={0}` meaning "stay until dismissed".
+
+### Patch Changes
+
+- 9cde2b7: Let a touchscreen paste into `LiquidTextField` and `LiquidTextarea`. Both wrap
+  their input in a compositing layer, and WebKit places the text-selection callout
+  against the wrong coordinate space when an input is nested that way, so a long
+  press on iOS raised no menu and the field could not be pasted into. Under
+  `any-pointer: coarse` the field — and a surface holding one — now drop the
+  transform, which only ever drove pointer-tracked tilt that a touchscreen has no
+  pointer for. Nothing changes for a mouse.
+
 ## 0.2.0
 
 ### Minor Changes
