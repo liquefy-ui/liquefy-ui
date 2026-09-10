@@ -1,6 +1,6 @@
 {
   "name": "@liquefy-ui/react",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Accessible React components with transparent Liquid Glass optics and tactile WebGL motion.",
   "license": "MIT",
   "homepage": "https://liquefy-ui.com",
@@ -43,7 +43,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "1.6.0",
+    "@base-ui/react": "1.7.0",
     "@liquefy-ui/core": "workspace:^"
   },
   "peerDependencies": {
@@ -53,12 +53,12 @@
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
+    "@testing-library/user-event": "^14.6.4",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "tsdown": "0.22.14",
+    "tsdown": "0.23.0",
     "typescript": "7.0.2",
     "unrun": "0.3.1"
   },

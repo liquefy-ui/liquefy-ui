@@ -1,3 +1,4 @@
+import { Button } from '@base-ui/react/button'
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { LiquidSpinner } from './liquid-progress'
 import { useLiquefyConfig } from './provider'
@@ -58,12 +59,17 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(({
   })
 
   return (
-    <button
+    <Button
       aria-busy={isLoading || undefined}
       className={root.className}
       data-liquid-size={size}
       data-loading={isLoading}
       disabled={isDisabled}
+      // A button that disables itself while it works would otherwise throw the
+      // keyboard back to the top of the document at the moment the user is
+      // waiting to hear what happened. Staying focusable keeps `aria-busy` and
+      // whatever the button says next where they can be read.
+      focusableWhenDisabled={isLoading}
       ref={elementRef}
       style={root.style}
       type="button"
@@ -81,7 +87,7 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(({
         <span>{children}</span>
         {iconAfter && <span className="lq-button__icon" data-position="after">{iconAfter}</span>}
       </span>
-    </button>
+    </Button>
   )
 })
 

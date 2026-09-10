@@ -1,7 +1,13 @@
-import { forwardRef, useId, type ChangeEvent, type InputHTMLAttributes, type ReactNode } from 'react'
+import { Field } from '@base-ui/react/field'
+import { forwardRef, type ChangeEvent, type InputHTMLAttributes, type ReactNode } from 'react'
 import { useLiquefyConfig } from './provider'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 import { useLiquidGlass } from './use-liquid-glass'
+
+// The label, the control and the hint used to be wired together by hand with a
+// generated id threaded through `htmlFor` and `aria-describedby`. Field owns
+// that wiring now, which also means a control put in a form reports its
+// validity through the same parts rather than needing a second set of props.
 
 export type LiquidTextFieldProps = InputHTMLAttributes<HTMLInputElement> & LiquidStyleProps & {
   endAdornment?: ReactNode
@@ -14,7 +20,6 @@ export const LiquidTextField = forwardRef<HTMLInputElement, LiquidTextFieldProps
   className,
   endAdornment,
   hint,
-  id,
   label,
   onChange,
   startAdornment,
@@ -22,9 +27,6 @@ export const LiquidTextField = forwardRef<HTMLInputElement, LiquidTextFieldProps
   styles,
   ...props
 }, ref) => {
-  const generatedId = useId()
-  const inputId = id ?? generatedId
-  const hintId = hint ? `${inputId}-hint` : undefined
   const config = useLiquefyConfig()
   const [controlRef, canvasRef, pulse] = useLiquidGlass<HTMLSpanElement>(undefined, {
     bounce: 0.02,
@@ -42,20 +44,20 @@ export const LiquidTextField = forwardRef<HTMLInputElement, LiquidTextFieldProps
     pulse(0.4)
     onChange?.(event)
   }
-  // The label is the layout box, so it owns className, style and styles alike.
+  // The field is the layout box, so it owns className, style and styles alike.
   const root = useLiquidStyles('lq-text-field', { className, style, styles })
 
   return (
-    <label className={root.className} htmlFor={inputId} style={root.style}>
-      {label && <span className="lq-control-label">{label}</span>}
+    <Field.Root className={root.className} style={root.style}>
+      {label && <Field.Label className="lq-control-label">{label}</Field.Label>}
       <span className="lq-text-field__control" ref={controlRef}>
         {config.webgl && <canvas aria-hidden="true" className="lq-surface__shader" ref={canvasRef} />}
         {startAdornment && <span className="lq-text-field__adornment">{startAdornment}</span>}
-        <input aria-describedby={hintId} id={inputId} onChange={handleChange} ref={ref} {...props} />
+        <Field.Control onChange={handleChange} ref={ref} {...props} />
         {endAdornment && <span className="lq-text-field__adornment">{endAdornment}</span>}
       </span>
-      {hint && <span className="lq-control-hint" id={hintId}>{hint}</span>}
-    </label>
+      {hint && <Field.Description className="lq-control-hint">{hint}</Field.Description>}
+    </Field.Root>
   )
 })
 
