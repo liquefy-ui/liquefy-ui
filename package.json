@@ -26,8 +26,8 @@
     "version-packages": "changeset version"
   },
   "devDependencies": {
-    "@changesets/cli": "3.0.0",
-    "@types/node": "^26.2.0",
+    "@changesets/cli": "3.0.2",
+    "@types/node": "^26.4.1",
     "jsdom": "^30.0.1",
     "typescript": "7.0.2",
     "vitest": "5.0.0"
