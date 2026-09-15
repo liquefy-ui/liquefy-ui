@@ -44,6 +44,12 @@ export const ChevronRightGlyph = (props: GlyphProps): ReactElement => (
   <Glyph {...props}><path d="m9.5 6.5 5 5.5-5 5.5" /></Glyph>
 )
 
+export const CalendarGlyph = (props: GlyphProps): ReactElement => (
+  <Glyph {...props}>
+    <path d="M4.5 8.5h15M8.5 3.5v3m7-3v3M6 5.5h12a1.5 1.5 0 0 1 1.5 1.5v11a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 18V7A1.5 1.5 0 0 1 6 5.5Z" />
+  </Glyph>
+)
+
 export const StarGlyph = ({ size = 16, ...props }: GlyphProps): ReactElement => (
   <svg
     aria-hidden="true"

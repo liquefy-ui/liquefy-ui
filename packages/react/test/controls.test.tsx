@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { LiquidCheckbox } from '../src/liquid-checkbox'
 import { LiquidChip } from '../src/liquid-chip'
+import { LiquidDatePicker } from '../src/liquid-date-picker'
 import { LiquidIconButton } from '../src/liquid-icon-button'
 import { LiquidPagination } from '../src/liquid-pagination'
 import { LiquidProgress, LiquidSpinner } from '../src/liquid-progress'
@@ -306,6 +307,56 @@ describe('text field', () => {
   it('forwards aria-invalid to the input', () => {
     ui(<LiquidTextField aria-invalid label="Email" />)
     expect(screen.getByLabelText('Email').getAttribute('aria-invalid')).toBe('true')
+  })
+})
+
+describe('date picker', () => {
+  const openCalendar = async (name: RegExp) => {
+    await userEvent.click(screen.getByRole('button', { name }))
+    return screen.findByRole('grid')
+  }
+
+  it('names the trigger with its label and the value it is showing', () => {
+    ui(<LiquidDatePicker label="Due date" value="2026-09-15" />)
+    expect(screen.getByRole('button', { name: 'Due date 2026-09-15' })).toBeTruthy()
+  })
+
+  it('marks the chosen day as the selected cell', async () => {
+    ui(<LiquidDatePicker label="Due date" value="2026-09-15" />)
+    const grid = await openCalendar(/Due date/)
+    const chosen = within(grid).getByRole('gridcell', { name: /September 15, 2026/ })
+    expect(chosen.getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('keeps its own value when uncontrolled', async () => {
+    ui(<LiquidDatePicker defaultValue="2026-09-15" label="Due date" />)
+    const grid = await openCalendar(/Due date/)
+    await userEvent.click(within(grid).getByRole('gridcell', { name: /September 16, 2026/ }))
+    expect(screen.getByRole('button', { name: 'Due date 2026-09-16' })).toBeTruthy()
+  })
+
+  it('waits for the owner when controlled', async () => {
+    const onValueChange = vi.fn()
+    ui(<LiquidDatePicker label="Due date" onValueChange={onValueChange} value="2026-09-15" />)
+    const grid = await openCalendar(/Due date/)
+    await userEvent.click(within(grid).getByRole('gridcell', { name: /September 16, 2026/ }))
+    expect(onValueChange).toHaveBeenCalledWith('2026-09-16')
+    expect(screen.getByRole('button', { name: 'Due date 2026-09-15' })).toBeTruthy()
+  })
+
+  it('leaves a day outside min and max unselectable', async () => {
+    ui(<LiquidDatePicker label="Due date" max="2026-09-20" min="2026-09-10" value="2026-09-15" />)
+    const grid = await openCalendar(/Due date/)
+    const outside = within(grid).getByRole('gridcell', { name: /September 9, 2026/ })
+    expect((outside as HTMLButtonElement).disabled).toBe(true)
+    expect((within(grid).getByRole('gridcell', { name: /September 10, 2026/ }) as HTMLButtonElement).disabled)
+      .toBe(false)
+  })
+
+  // The trigger is a button, so a plain form submit would carry nothing without it.
+  it('writes the ISO value to a hidden input when given a name', () => {
+    const { container } = ui(<LiquidDatePicker label="Due date" name="due" value="2026-09-15" />)
+    expect(container.querySelector<HTMLInputElement>('input[name="due"]')?.value).toBe('2026-09-15')
   })
 })
 

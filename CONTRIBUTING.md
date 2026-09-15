@@ -79,8 +79,8 @@ A few of them are worth knowing about before making changes:
 
 Twelve doc pages live in `apps/docs/src/docs/pages/*.tsx`, registered in
 `apps/docs/src/docs/docs-nav.tsx` — one `DocEntry` per page, grouped into sidebar
-categories. The 33 component pages come from `apps/docs/src/docs/catalog-*.tsx`,
-and the shadcn registry publishes 37 items built from the same source. Old
+categories. The 34 component pages come from `apps/docs/src/docs/catalog-*.tsx`,
+and the shadcn registry publishes 38 items built from the same source. Old
 `#/guides/*` links redirect to their `#/docs/*` equivalents.
 
 The site routes on the hash while the analytics script reads `location.pathname` —
