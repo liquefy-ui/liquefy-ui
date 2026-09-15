@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { LiquidAccordion, LiquidAccordionItem } from '../src/liquid-accordion'
 import { LiquidButton } from '../src/liquid-button'
+import { LiquidDatePicker } from '../src/liquid-date-picker'
 import { LiquidDialog } from '../src/liquid-dialog'
 import { LiquidMenu } from '../src/liquid-menu'
 import { LiquidSelect } from '../src/liquid-select'
@@ -141,6 +142,56 @@ describe('keyboard access', () => {
   it('labels the select through Select.Label rather than a loose htmlFor', () => {
     mount(<LiquidSelect label="Material" options={options} />)
     expect(screen.getByRole('combobox', { name: 'Material' })).toBeTruthy()
+  })
+
+  it('opens the calendar on the chosen day and walks it with the arrow keys', async () => {
+    const user = userEvent.setup()
+    const chosen: string[] = []
+    mount(<LiquidDatePicker label="Date" onValueChange={(next) => chosen.push(next)} value="2026-09-15" />)
+
+    await user.click(screen.getByRole('button', { name: /Date/ }))
+    const grid = await screen.findByRole('grid')
+    // On the selected day, not on the first of the month or the previous arrow.
+    expect(focused()).toBe(within(grid).getByRole('gridcell', { name: /September 15, 2026/ }))
+
+    await user.keyboard('{ArrowRight}')
+    expect(focused()).toBe(within(grid).getByRole('gridcell', { name: /September 16, 2026/ }))
+
+    // A week, not a row of the month: down from the 16th is the 23rd.
+    await user.keyboard('{ArrowDown}{Enter}')
+    expect(chosen).toEqual(['2026-09-23'])
+    expect(screen.queryByRole('grid')).toBeNull()
+  })
+
+  it('moves the calendar a month with PageDown and a year with Shift', async () => {
+    const user = userEvent.setup()
+    mount(<LiquidDatePicker label="Date" value="2026-09-15" />)
+
+    await user.click(screen.getByRole('button', { name: /Date/ }))
+    await screen.findByRole('grid')
+
+    await user.keyboard('{PageDown}')
+    expect(screen.getByText('October 2026')).toBeTruthy()
+
+    await user.keyboard('{Shift>}{PageDown}{/Shift}')
+    expect(screen.getByText('October 2027')).toBeTruthy()
+
+    // Home and End are the ends of the week the focus is standing in.
+    await user.keyboard('{Home}')
+    expect(focused()?.getAttribute('aria-label')).toContain('Sunday')
+  })
+
+  it('closes the calendar on Escape and returns focus to the trigger', async () => {
+    const user = userEvent.setup()
+    mount(<LiquidDatePicker label="Date" value="2026-09-15" />)
+
+    const trigger = screen.getByRole('button', { name: /Date/ })
+    await user.click(trigger)
+    expect(await screen.findByRole('grid')).toBeTruthy()
+
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('grid')).toBeNull()
+    expect(focused()).toBe(trigger)
   })
 
   // Base UI deliberately leaves accordion headers in the normal tab order rather

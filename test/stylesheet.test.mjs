@@ -71,8 +71,8 @@ describe('the overlay ladder', () => {
 
   // The positioner is what carries the layer; the popup inside it only inherits
   // the stacking context, so a positioner left behind sinks its own popup.
-  it('keeps the select and menu positioners on the popover rung', () => {
-    for (const selector of ['.lq-select__positioner', '.lq-menu__positioner']) {
+  it('keeps the select, menu and date picker positioners on the popover rung', () => {
+    for (const selector of ['.lq-select__positioner', '.lq-menu__positioner', '.lq-date-picker__positioner']) {
       expect(zIndexOf(selector), selector).toBe(zIndexOf('.lq-popover'))
     }
   })

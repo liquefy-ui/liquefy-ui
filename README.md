@@ -181,12 +181,12 @@ with the token system itself at `#/docs/theming`.
 
 ## Components
 
-33 components and 44 icons, each with live demos and a full prop table at
+34 components and 44 icons, each with live demos and a full prop table at
 [liquefy-ui.com/#/components](https://liquefy-ui.com/#/components).
 
 | Category | Components |
 | --- | --- |
-| Inputs | `LiquidButton`, `LiquidIconButton`, `LiquidCheckbox`, `LiquidRadioGroup` / `LiquidRadio`, `LiquidSwitch`, `LiquidSlider`, `LiquidTextField`, `LiquidTextArea`, `LiquidSelect`, `LiquidSegmented`, `LiquidRating` |
+| Inputs | `LiquidButton`, `LiquidIconButton`, `LiquidCheckbox`, `LiquidRadioGroup` / `LiquidRadio`, `LiquidSwitch`, `LiquidSlider`, `LiquidTextField`, `LiquidTextArea`, `LiquidSelect`, `LiquidDatePicker`, `LiquidSegmented`, `LiquidRating` |
 | Data display | `LiquidAvatar` / `LiquidAvatarGroup`, `LiquidBadge`, `LiquidChip`, `LiquidTooltip`, `LiquidTable` family, `LiquidList` family, `LiquidDivider` |
 | Feedback | `LiquidAlert`, `LiquidProgress`, `LiquidSpinner`, `LiquidSkeleton`, `LiquidToastProvider` / `useLiquidToast`, `LiquidDialog` |
 | Surfaces | `LiquidSurface`, `GlassCard`, `LiquidAccordion` / `LiquidAccordionItem` |

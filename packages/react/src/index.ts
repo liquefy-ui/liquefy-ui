@@ -22,6 +22,7 @@ export {
 export { LiquidButton, type LiquidButtonProps } from './liquid-button'
 export { LiquidCheckbox, type LiquidCheckboxProps } from './liquid-checkbox'
 export { LiquidChip, type LiquidChipProps } from './liquid-chip'
+export { LiquidDatePicker, type LiquidDatePickerProps } from './liquid-date-picker'
 export { LiquidDialog, type LiquidDialogProps } from './liquid-dialog'
 export { LiquidDivider, type LiquidDividerProps } from './liquid-divider'
 export { LiquidDrawer, type LiquidDrawerProps } from './liquid-drawer'

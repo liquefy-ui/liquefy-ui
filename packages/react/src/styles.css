@@ -1004,7 +1004,7 @@
 }
 
 @layer liquefy-ui {
-  /* ---------- Popover base (Select, Menu) ---------- */
+  /* ---------- Popover base (Select, Menu, Date picker) ---------- */
   /* var() fallbacks keep the popover legible even in the rare frame where it
      portals outside a provider (before the container ref resolves). */
   /* The stacking order every overlay in the library shares. Each layer portals
@@ -1015,7 +1015,7 @@
        50  floating dock
        79  dialog and drawer backdrop
        80  dialog and drawer panel
-       85  popover layer — select and menu
+       85  popover layer — select, menu and date picker
        88  tooltip
        90  toast viewport                                                    */
   .lq-popover {
@@ -1364,6 +1364,197 @@
   .lq-select__option[data-disabled] {
     cursor: not-allowed;
     opacity: 0.4;
+  }
+
+  /* ---------- Date picker ---------- */
+  .lq-date-picker {
+    display: grid;
+    gap: 8px;
+    position: relative;
+  }
+
+  /* The trigger is a field, not a button: it has to line up with a text field
+     standing next to it in the same form, so it repeats those measurements
+     rather than inheriting a button's. */
+  .lq-date-picker__trigger {
+    align-items: center;
+    appearance: none;
+    -webkit-backdrop-filter: saturate(1.08);
+    backdrop-filter: saturate(1.08);
+    background: var(--lq-field-fill);
+    border: 1px solid var(--lq-field-line);
+    border-radius: 12px;
+    box-shadow:
+      inset 0 0.75px 0 var(--lq-glass-bright),
+      inset 0 -1px 0 var(--lq-glass-shade),
+      0 8px 20px color-mix(in srgb, var(--lq-shadow-color) 52%, transparent);
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    gap: 10px;
+    justify-content: space-between;
+    min-height: 48px;
+    /* Capped at the container for the reason the select trigger gives. */
+    min-width: min(200px, 100%);
+    overflow: hidden;
+    padding: 0 15px;
+    text-align: left;
+    transition: background 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
+  }
+
+  .lq-date-picker__value {
+    overflow: hidden;
+    position: relative;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    z-index: 3;
+  }
+
+  .lq-date-picker__value[data-placeholder] {
+    color: var(--lq-placeholder);
+  }
+
+  .lq-date-picker__trigger:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline-offset: 3px;
+  }
+
+  .lq-date-picker__trigger[data-popup-open] {
+    background: var(--lq-field-focus-fill);
+    border-color: color-mix(in srgb, var(--lq-accent) 32%, rgba(255, 255, 255, 0.14));
+  }
+
+  .lq-date-picker__trigger[data-disabled] {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .lq-date-picker__icon {
+    color: var(--lq-muted);
+    display: inline-flex;
+    flex: 0 0 auto;
+    position: relative;
+    z-index: 3;
+  }
+
+  .lq-date-picker__positioner {
+    z-index: 85;
+  }
+
+  .lq-date-picker__panel {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    transform-origin: var(--transform-origin);
+    /* Seven columns of comfortable tap target, and never wider than a phone. */
+    width: min(19rem, calc(100vw - 32px));
+  }
+
+  .lq-date-picker__header {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    justify-content: space-between;
+  }
+
+  .lq-date-picker__caption {
+    font-size: 0.86rem;
+    font-weight: 650;
+  }
+
+  .lq-date-picker__nav {
+    align-items: center;
+    appearance: none;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: var(--lq-muted);
+    cursor: pointer;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 32px;
+    justify-content: center;
+    transition: background 160ms ease, color 160ms ease;
+    width: 32px;
+  }
+
+  .lq-date-picker__nav:hover {
+    background: color-mix(in srgb, var(--lq-accent) 12%, transparent);
+    color: var(--lq-foreground);
+  }
+
+  .lq-date-picker__nav:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline-offset: 2px;
+  }
+
+  .lq-date-picker__grid {
+    display: grid;
+    gap: 2px;
+  }
+
+  .lq-date-picker__weekdays,
+  .lq-date-picker__week {
+    display: grid;
+    gap: 2px;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .lq-date-picker__weekday {
+    color: var(--lq-muted);
+    font-size: 0.68rem;
+    font-weight: 650;
+    padding-bottom: 4px;
+    text-align: center;
+  }
+
+  .lq-date-picker__day {
+    align-items: center;
+    appearance: none;
+    aspect-ratio: 1;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    font-size: 0.83rem;
+    font-variant-numeric: tabular-nums;
+    justify-content: center;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+
+  .lq-date-picker__day:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--lq-accent) 14%, transparent);
+  }
+
+  .lq-date-picker__day:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline-offset: -1px;
+  }
+
+  /* Days either side of the month stay legible — they are still selectable — but
+     have to lose the argument about which month this grid is showing. */
+  .lq-date-picker__day[data-outside] {
+    opacity: 0.38;
+  }
+
+  .lq-date-picker__day[data-today] {
+    border-color: color-mix(in srgb, var(--lq-accent) 42%, transparent);
+  }
+
+  .lq-date-picker__day[data-selected] {
+    background: color-mix(in srgb, var(--lq-accent) 34%, transparent);
+    border-color: color-mix(in srgb, var(--lq-accent) 60%, transparent);
+    font-weight: 700;
+    opacity: 1;
+  }
+
+  .lq-date-picker__day:disabled {
+    cursor: not-allowed;
+    opacity: 0.22;
   }
 
   /* ---------- TextArea ---------- */
