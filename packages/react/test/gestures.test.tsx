@@ -138,7 +138,15 @@ describe('select open state', () => {
     await userEvent.click(screen.getByRole('combobox', { name: 'Finish' }))
     expect(onOpenChange).toHaveBeenLastCalledWith(true)
 
-    await userEvent.click(screen.getByRole('option', { name: 'Regular' }))
+    // The popup reaches the DOM before it is open: the positioner renders it
+    // `hidden`, carrying `data-closed`, until the opening transition starts, and
+    // a hidden subtree has no accessible options in it. A synchronous query
+    // therefore races the frame that flips it — it wins on an idle machine and
+    // loses on a loaded runner, which is how this passed here and failed in CI.
+    // Every other overlay in this suite is reached with `findByRole` for the
+    // same reason.
+    const option = await screen.findByRole('option', { name: 'Regular' })
+    await userEvent.click(option)
     expect(onOpenChange).toHaveBeenLastCalledWith(false)
   })
 })
