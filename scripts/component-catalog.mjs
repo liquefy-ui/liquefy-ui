@@ -62,6 +62,7 @@ const descriptions = {
   'liquid-button': 'The primary action control: WebGL rim light, jelly press spring and a loading state.',
   'liquid-checkbox': 'A checkbox with a springy tick, indeterminate state and label support.',
   'liquid-chip': 'A compact tag that can be selected, tinted and dismissed.',
+  'liquid-date-picker': 'A calendar popover on a field trigger: a roving-tabindex month grid and ISO values.',
   'liquid-dialog': 'A modal on Base UI: trapped focus, inert background and wired-up title and description.',
   'liquid-divider': 'A hairline rule, horizontal or vertical, with optional inline content.',
   'liquid-drawer': 'A side panel that slides from the left, right or bottom edge, on Base UI Dialog.',

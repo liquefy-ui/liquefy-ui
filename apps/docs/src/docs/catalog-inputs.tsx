@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   LiquidButton,
   LiquidCheckbox,
+  LiquidDatePicker,
   LiquidIconButton,
   LiquidRadio,
   LiquidRadioGroup,
@@ -60,6 +61,12 @@ const SelectDemo = () => {
       value={value}
     />
   )
+}
+
+const DatePickerDemo = () => {
+  const [value, setValue] = useState('2026-03-14')
+
+  return <LiquidDatePicker label="Launch date" onValueChange={setValue} value={value} />
 }
 
 const RatingDemo = () => {
@@ -336,7 +343,10 @@ export const inputDocs: ComponentDoc[] = [
       { description: 'Visible label above the track.', name: 'label', type: 'string' },
       { description: 'Element rendered before the track.', name: 'startAdornment', type: 'ReactNode' },
       { description: 'Element rendered after the track.', name: 'endAdornment', type: 'ReactNode' },
-      { description: 'All native range-input attributes (min, max, step, value, onChange…).', name: '…InputHTMLAttributes', type: 'InputHTMLAttributes' },
+      { description: 'Bounds and granularity of the track.', name: 'min / max / step', type: 'number' },
+      { description: 'Current value, controlled or not.', name: 'value / defaultValue', type: 'number' },
+      { description: 'Fired as the value moves.', name: 'onValueChange', type: '(value: number) => void' },
+      { description: 'Identifies the slider when a form is submitted.', name: 'name', type: 'string' },
     ],
     propsTitle: 'LiquidSlider',
     slug: 'slider',
@@ -447,6 +457,68 @@ export const inputDocs: ComponentDoc[] = [
     ],
     propsTitle: 'LiquidSelect',
     slug: 'select',
+  },
+  {
+    demos: [
+      {
+        code: `const [value, setValue] = useState('2026-03-14')
+
+<LiquidDatePicker label="Launch date" onValueChange={setValue} value={value} />`,
+        description: 'Values go in and come back as `yyyy-mm-dd`, read in local time — never a UTC day off by one.',
+        render: () => <DatePickerDemo />,
+        stageAlign: 'top',
+        stageMinHeight: 420,
+        title: 'Controlled',
+      },
+      {
+        code: `<LiquidDatePicker
+  defaultValue="2026-04-08"
+  format={(iso) => iso.split('-').reverse().join('/')}
+  label="Delivery"
+  locale="en-GB"
+  max="2026-04-30"
+  min="2026-04-01"
+  weekStartsOn={1}
+/>`,
+        description: 'A window the calendar will not leave, a week that starts on Monday, and a trigger that reads the way the rest of the form does.',
+        render: () => (
+          <LiquidDatePicker
+            defaultValue="2026-04-08"
+            format={(iso) => iso.split('-').reverse().join('/')}
+            label="Delivery"
+            locale="en-GB"
+            max="2026-04-30"
+            min="2026-04-01"
+            weekStartsOn={1}
+          />
+        ),
+        stageAlign: 'top',
+        stageMinHeight: 420,
+        title: 'Range and locale',
+      },
+    ],
+    description: 'A calendar in a glass popover, on a trigger that measures like a text field. The month grid is one tab stop with a roving focus: arrows move a day and a week, Home and End reach the ends of it, PageUp and PageDown change the month and with Shift the year. Values are plain `yyyy-mm-dd` strings, parsed and formatted in local time.',
+    importLine: "import { LiquidDatePicker } from '@liquefy-ui/react'",
+    name: 'Date Picker',
+    props: [
+      { description: 'Controlled value, `yyyy-mm-dd`.', name: 'value', type: 'string' },
+      { description: 'Initial value when uncontrolled.', name: 'defaultValue', type: 'string' },
+      { description: 'Called with the newly chosen date, `yyyy-mm-dd`.', name: 'onValueChange', type: '(value: string) => void' },
+      { description: 'Earliest selectable date. Days before it are disabled.', name: 'min', type: 'string' },
+      { description: 'Latest selectable date. Days after it are disabled.', name: 'max', type: 'string' },
+      { description: 'How the chosen date reads on the trigger. Defaults to the ISO value itself.', name: 'format', type: '(value: string) => string' },
+      { defaultValue: "'en-US'", description: 'BCP 47 tag for the month, weekday and day names. Fixed rather than read from the environment, so a server and a browser format the same markup.', name: 'locale', type: 'string' },
+      { defaultValue: '0', description: 'The day a week starts on, 0 being Sunday.', name: 'weekStartsOn', type: '0 | 1 | 2 | 3 | 4 | 5 | 6' },
+      { description: 'Visible label above the trigger.', name: 'label', type: 'string' },
+      { description: 'Helper text below the trigger.', name: 'hint', type: 'string' },
+      { defaultValue: "'Select a date…'", description: 'Text shown on the trigger while nothing is chosen.', name: 'placeholder', type: 'string' },
+      { description: 'Names a hidden input carrying the ISO value, for a plain form submit.', name: 'name', type: 'string' },
+      { defaultValue: "'Previous month'", description: 'Accessible name of the back arrow.', name: 'previousMonthLabel', type: 'string' },
+      { defaultValue: "'Next month'", description: 'Accessible name of the forward arrow.', name: 'nextMonthLabel', type: 'string' },
+      { description: 'Called when the calendar opens or closes — a sheet holding the picker needs to know.', name: 'onOpenChange', type: '(open: boolean) => void' },
+    ],
+    propsTitle: 'LiquidDatePicker',
+    slug: 'date-picker',
   },
   {
     demos: [

@@ -1,25 +1,14 @@
-import {
-  createContext,
-  forwardRef,
-  useContext,
-  useMemo,
-  useState,
-  type ButtonHTMLAttributes,
-  type HTMLAttributes,
-  type ReactNode,
-} from 'react'
+import { Radio } from '@base-ui/react/radio'
+import { RadioGroup } from '@base-ui/react/radio-group'
+import { forwardRef, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from 'react'
 import { useLiquefyConfig } from './provider'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 import { useLiquidGlass } from './use-liquid-glass'
 
-type RadioGroupContextValue = {
-  disabled?: boolean
-  name: string
-  onValueChange: (value: string) => void
-  value: string | undefined
-}
-
-const RadioGroupContext = createContext<RadioGroupContextValue | null>(null)
+// The group used to be a div of buttons sharing a context, which meant Tab
+// stopped on every option and the arrow keys did nothing at all — the two
+// things a radio group is specified to do. Base UI brings roving focus, the
+// arrow keys, and a hidden input per option so the group submits with a form.
 
 export type LiquidRadioGroupProps = Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'> & LiquidStyleProps & {
   children: ReactNode
@@ -46,31 +35,24 @@ export const LiquidRadioGroup = forwardRef<HTMLDivElement, LiquidRadioGroupProps
   value,
   ...props
 }, ref) => {
-  const [internalValue, setInternalValue] = useState(defaultValue)
-  const resolvedValue = value ?? internalValue
-  const contextValue = useMemo<RadioGroupContextValue>(() => ({
-    disabled,
-    name,
-    onValueChange: (nextValue: string) => {
-      if (value === undefined) setInternalValue(nextValue)
-      onValueChange?.(nextValue)
-    },
-    value: resolvedValue,
-  }), [disabled, name, onValueChange, resolvedValue, value])
   const root = useLiquidStyles('lq-radio-group', { className, style, styles })
 
   return (
-    <div
+    <RadioGroup
       aria-label={label}
       className={root.className}
       data-orientation={orientation}
+      defaultValue={defaultValue}
+      disabled={disabled}
+      name={name}
+      onValueChange={(nextValue) => onValueChange?.(String(nextValue))}
       ref={ref}
-      role="radiogroup"
       style={root.style}
+      value={value}
       {...props}
     >
-      <RadioGroupContext.Provider value={contextValue}>{children}</RadioGroupContext.Provider>
-    </div>
+      {children}
+    </RadioGroup>
   )
 })
 
@@ -87,19 +69,15 @@ export const LiquidRadio = forwardRef<HTMLButtonElement, LiquidRadioProps>(({
   disabled,
   hint,
   label,
-  onClick,
   style,
   styles,
   value,
   ...props
 }, forwardedRef) => {
   const config = useLiquefyConfig()
-  const group = useContext(RadioGroupContext)
-  const isChecked = group?.value === value
-  const isDisabled = disabled ?? group?.disabled
-  const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
+  const [elementRef, canvasRef] = useLiquidGlass<HTMLButtonElement>(forwardedRef, {
     bounce: 0.08,
-    disabled: isDisabled,
+    disabled,
     intensity: config.intensity,
     lens: false,
     motion: config.motion,
@@ -112,26 +90,22 @@ export const LiquidRadio = forwardRef<HTMLButtonElement, LiquidRadioProps>(({
   const root = useLiquidStyles('lq-radio', { className, style, styles })
 
   return (
-    <label className={root.className} data-disabled={isDisabled} style={root.style}>
-      <button
-        aria-checked={isChecked}
+    <label className={root.className} data-disabled={disabled || undefined} style={root.style}>
+      <Radio.Root
         className="lq-radio__control"
-        data-checked={isChecked}
-        data-interacted={isChecked}
-        disabled={isDisabled}
-        onClick={(event) => {
-          onClick?.(event)
-          if (event.defaultPrevented) return
-          group?.onValueChange(value)
-        }}
+        disabled={disabled}
+        nativeButton
         ref={elementRef}
-        role="radio"
-        type="button"
-        {...props}
+        render={<button type="button" />}
+        // `render` swaps the span Base UI would have made for a button, but the
+        // prop types still describe the span. The cast is that swap, written down.
+        {...(props as Radio.Root.Props)}
+        value={value}
       >
         {config.webgl && <canvas aria-hidden="true" className="lq-surface__shader" ref={canvasRef} />}
-        <span className="lq-radio__dot" />
-      </button>
+        {/* The dot scales in from nothing, so it has to be there to scale. */}
+        <Radio.Indicator className="lq-radio__dot" keepMounted />
+      </Radio.Root>
       {(label || hint) && (
         <span className="lq-radio__copy">
           {label && <span className="lq-control-label">{label}</span>}

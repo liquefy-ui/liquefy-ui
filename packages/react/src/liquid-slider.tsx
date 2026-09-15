@@ -1,59 +1,75 @@
+import { Slider } from '@base-ui/react/slider'
 import { SpringValue } from '@liquefy-ui/core'
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  type InputHTMLAttributes,
-  type ReactNode,
-} from 'react'
+import { forwardRef, useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react'
 import { useLiquefyConfig } from './provider'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 
-export type LiquidSliderProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & LiquidStyleProps & {
+// This wrapped a bare `input[type=range]` and painted it through the vendor
+// pseudo-elements, which is why the filled part of the track was a fixed
+// gradient rather than the value: `::-webkit-slider-runnable-track` cannot know
+// where the thumb is. Firefox got a plain grey track instead, because
+// `::-moz-range-track` cannot take the gradient at all. Base UI draws the track,
+// the filled indicator and the thumb as real elements, so the fill follows the
+// value and both browsers get the same slider.
+
+export type LiquidSliderProps = Omit<HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange'> & LiquidStyleProps & {
+  defaultValue?: number
+  disabled?: boolean
   endAdornment?: ReactNode
   label?: string
+  max?: number
+  min?: number
+  name?: string
+  onValueChange?: (value: number) => void
   startAdornment?: ReactNode
+  step?: number
+  value?: number
 }
 
+/** A slider carries one value here; Base UI's array form is for ranged sliders. */
+const single = (value: number | number[]): number => Array.isArray(value) ? value[0] ?? 0 : value
+
 export const LiquidSlider = forwardRef<HTMLInputElement, LiquidSliderProps>(({
+  'aria-label': ariaLabel,
   className,
+  defaultValue,
+  disabled,
   endAdornment,
-  id,
   label,
+  max = 100,
+  min = 0,
+  name,
+  onValueChange,
   startAdornment,
+  step,
   style,
   styles,
+  value,
   ...props
 }, forwardedRef) => {
-  const generatedId = useId()
-  const inputId = id ?? generatedId
   const config = useLiquefyConfig()
-  const inputRef = useRef<HTMLInputElement | null>(null)
-
-  const setRef = useCallback((node: HTMLInputElement | null) => {
-    inputRef.current = node
-    if (typeof forwardedRef === 'function') forwardedRef(node)
-    else if (forwardedRef) forwardedRef.current = node
-  }, [forwardedRef])
+  const thumbRef = useRef<HTMLDivElement>(null)
+  const lastValue = useRef(single(value ?? defaultValue ?? min))
+  // The springs live in an effect, but the value changes arrive as React
+  // callbacks, so the two talk through these.
+  const kick = useRef<(moved: number) => void>(() => {})
+  const settleTo = useRef<(target: number) => void>(() => {})
 
   // Spring-driven thumb squish: every value change kicks a horizontal stretch
   // that springs back, so the thumb wobbles like jelly while you drag it.
   useEffect(() => {
-    const input = inputRef.current
-    if (!input || config.motion === false) return undefined
+    const thumb = thumbRef.current
+    if (!thumb || config.motion === false) return undefined
 
     const wobbliness = config.wobbliness
     const scaleX = new SpringValue(1, { damping: 13, mass: 0.9, stiffness: 340 })
     const scaleY = new SpringValue(1, { damping: 13, mass: 0.9, stiffness: 340 })
     let frame = 0
     let lastTime = performance.now()
-    let lastValue = Number(input.value)
 
     const apply = () => {
-      input.style.setProperty('--lq-thumb-sx', scaleX.current.toFixed(4))
-      input.style.setProperty('--lq-thumb-sy', scaleY.current.toFixed(4))
+      thumb.style.setProperty('--lq-thumb-sx', scaleX.current.toFixed(4))
+      thumb.style.setProperty('--lq-thumb-sy', scaleY.current.toFixed(4))
     }
 
     const tick = (time: number) => {
@@ -71,63 +87,83 @@ export const LiquidSlider = forwardRef<HTMLInputElement, LiquidSliderProps>(({
       frame = requestAnimationFrame(tick)
     }
 
-    const handleInput = () => {
-      const value = Number(input.value)
-      const min = Number(input.min || 0)
-      const max = Number(input.max || 100)
-      const range = Math.max(max - min, 1)
-      const moved = Math.abs(value - lastValue) / range
-      lastValue = value
-      const kick = Math.min(0.35 + moved * 9 * wobbliness, 1.25)
-      scaleX.velocity += kick
-      scaleY.velocity -= kick
+    kick.current = (moved) => {
+      const amount = Math.min(0.35 + moved * 9 * wobbliness, 1.25)
+      scaleX.velocity += amount
+      scaleY.velocity -= amount
       start()
     }
 
-    const grow = () => {
-      scaleX.setTarget(1.16)
-      scaleY.setTarget(1.16)
+    settleTo.current = (target) => {
+      scaleX.setTarget(target)
+      scaleY.setTarget(target)
       start()
     }
 
-    const settle = () => {
-      scaleX.setTarget(1)
-      scaleY.setTarget(1)
-      start()
-    }
-
-    input.addEventListener('input', handleInput)
-    input.addEventListener('pointerdown', grow)
-    input.addEventListener('focus', grow)
-    input.addEventListener('blur', settle)
+    // A drag that ends anywhere on the page still ends the drag.
+    const settle = () => settleTo.current(1)
     window.addEventListener('pointerup', settle)
     window.addEventListener('pointercancel', settle)
 
     return () => {
       cancelAnimationFrame(frame)
-      input.removeEventListener('input', handleInput)
-      input.removeEventListener('pointerdown', grow)
-      input.removeEventListener('focus', grow)
-      input.removeEventListener('blur', settle)
       window.removeEventListener('pointerup', settle)
       window.removeEventListener('pointercancel', settle)
-      input.style.removeProperty('--lq-thumb-sx')
-      input.style.removeProperty('--lq-thumb-sy')
+      kick.current = () => {}
+      settleTo.current = () => {}
+      thumb.style.removeProperty('--lq-thumb-sx')
+      thumb.style.removeProperty('--lq-thumb-sy')
     }
   }, [config.motion, config.wobbliness])
 
-  // The label is the layout box, so it owns className, style and styles alike.
+  // The slider is the layout box, so it owns className, style and styles alike.
   const root = useLiquidStyles('lq-slider', { className, style, styles })
 
   return (
-    <label className={root.className} htmlFor={inputId} style={root.style}>
-      {label && <span className="lq-control-label">{label}</span>}
+    <Slider.Root
+      aria-label={ariaLabel}
+      className={root.className}
+      defaultValue={defaultValue}
+      disabled={disabled}
+      max={max}
+      min={min}
+      name={name}
+      onValueChange={(next) => {
+        const nextValue = single(next)
+        const moved = Math.abs(nextValue - lastValue.current) / Math.max(max - min, 1)
+        lastValue.current = nextValue
+        kick.current(moved)
+        onValueChange?.(nextValue)
+      }}
+      step={step}
+      style={root.style}
+      value={value}
+      {...props}
+    >
+      {label && <Slider.Label className="lq-control-label">{label}</Slider.Label>}
       <span className="lq-slider__row">
         {startAdornment && <span className="lq-slider__adornment">{startAdornment}</span>}
-        <input id={inputId} ref={setRef} type="range" {...props} />
+        <Slider.Control
+          className="lq-slider__control"
+          onPointerDown={() => settleTo.current(1.16)}
+        >
+          <Slider.Track className="lq-slider__track">
+            <Slider.Indicator className="lq-slider__indicator" />
+            <Slider.Thumb
+              className="lq-slider__thumb"
+              // The label names the group; the input inside the thumb is what a
+              // screen reader lands on, and it needs the name too.
+              getAriaLabel={ariaLabel ? () => ariaLabel : undefined}
+              inputRef={forwardedRef}
+              onBlur={() => settleTo.current(1)}
+              onFocus={() => settleTo.current(1.16)}
+              ref={thumbRef}
+            />
+          </Slider.Track>
+        </Slider.Control>
         {endAdornment && <span className="lq-slider__adornment">{endAdornment}</span>}
       </span>
-    </label>
+    </Slider.Root>
   )
 })
 

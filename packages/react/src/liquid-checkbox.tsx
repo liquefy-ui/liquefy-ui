@@ -1,8 +1,14 @@
+import { Checkbox } from '@base-ui/react/checkbox'
 import { forwardRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { CheckGlyph, MinusGlyph } from './internal-glyphs'
 import { useLiquefyConfig } from './provider'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 import { useLiquidGlass } from './use-liquid-glass'
+
+// The hand-rolled version was a `<button role="checkbox">`, which no form ever
+// saw and no `required` ever validated. Base UI keeps the button as the thing
+// you click — the shader canvas needs a box to live in — and puts a real
+// checkbox input beside it.
 
 export type LiquidCheckboxProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> & LiquidStyleProps & {
   checked?: boolean
@@ -22,15 +28,14 @@ export const LiquidCheckbox = forwardRef<HTMLButtonElement, LiquidCheckboxProps>
   indeterminate = false,
   label,
   onCheckedChange,
-  onClick,
   style,
   styles,
   ...props
 }, forwardedRef) => {
   const config = useLiquefyConfig()
+  // The mark has a resting state either way, so the tick should only spring in
+  // once someone has actually ticked it.
   const [hasInteracted, setHasInteracted] = useState(false)
-  const [internalChecked, setInternalChecked] = useState(defaultChecked)
-  const isChecked = checked ?? internalChecked
   const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
     bounce: 0.08,
     disabled,
@@ -46,32 +51,32 @@ export const LiquidCheckbox = forwardRef<HTMLButtonElement, LiquidCheckboxProps>
   const root = useLiquidStyles('lq-checkbox', { className, style, styles })
 
   return (
-    <label className={root.className} data-disabled={disabled} style={root.style}>
-      <button
-        aria-checked={indeterminate ? 'mixed' : isChecked}
+    <label className={root.className} data-disabled={disabled || undefined} style={root.style}>
+      <Checkbox.Root
+        checked={checked}
         className="lq-checkbox__box"
-        data-checked={indeterminate ? 'mixed' : isChecked}
-        data-interacted={hasInteracted}
+        data-interacted={hasInteracted || undefined}
+        defaultChecked={defaultChecked}
         disabled={disabled}
-        onClick={(event) => {
-          onClick?.(event)
-          if (event.defaultPrevented) return
-
+        indeterminate={indeterminate}
+        nativeButton
+        onCheckedChange={(nextChecked) => {
           setHasInteracted(true)
-          const nextChecked = !isChecked
-          if (checked === undefined) setInternalChecked(nextChecked)
           onCheckedChange?.(nextChecked)
         }}
         ref={elementRef}
-        role="checkbox"
-        type="button"
-        {...props}
+        render={<button type="button" />}
+        // `render` swaps the span Base UI would have made for a button, but the
+        // prop types still describe the span. The cast is that swap, written down.
+        {...(props as Checkbox.Root.Props)}
       >
         {config.webgl && <canvas aria-hidden="true" className="lq-surface__shader" ref={canvasRef} />}
-        <span className="lq-checkbox__mark">
+        {/* The mark is faded and scaled by CSS rather than mounted and
+            unmounted, so it has something to animate away from. */}
+        <Checkbox.Indicator className="lq-checkbox__mark" keepMounted>
           {indeterminate ? <MinusGlyph size={13} /> : <CheckGlyph size={13} />}
-        </span>
-      </button>
+        </Checkbox.Indicator>
+      </Checkbox.Root>
       {(label || hint) && (
         <span className="lq-checkbox__copy">
           {label && <span className="lq-control-label">{label}</span>}

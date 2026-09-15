@@ -38,15 +38,21 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      # No `publish` input on purpose: this job has no npm credentials and no
-      # id-token permission, so it cannot publish even by accident.
-      - uses: changesets/action@v1
+      # No `publish-script` input on purpose: this job has no npm credentials and
+      # no id-token permission, so it cannot publish even by accident.
+      #
+      # These input names are the v2 spelling. v2 renamed every one of them —
+      # `branch` to `pr-base-branch`, `commit` to `commit-message`, `title` to
+      # `pr-title` — and rejects the old set outright rather than warning, so the
+      # major bump that arrived on 2026-08-16 failed this job on every push to rc
+      # from then until 2026-09-15. It also stopped reading `GITHUB_TOKEN` from the
+      # environment, which is why the token is an input here now.
+      - uses: changesets/action@v2
         with:
-          branch: rc
-          commit: 'chore: version packages'
-          title: 'chore: version packages'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          pr-base-branch: rc
+          commit-message: 'chore: version packages'
+          pr-title: 'chore: version packages'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # The pull request above is opened by `github-actions[bot]`, and this
       # repository's approval policy is `first_time_contributors` — a bot is never

@@ -1,4 +1,5 @@
-import { forwardRef, useId, type ChangeEvent, type TextareaHTMLAttributes } from 'react'
+import { Field } from '@base-ui/react/field'
+import { forwardRef, type ChangeEvent, type TextareaHTMLAttributes } from 'react'
 import { useLiquefyConfig } from './provider'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 import { useLiquidGlass } from './use-liquid-glass'
@@ -11,7 +12,6 @@ export type LiquidTextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & 
 export const LiquidTextArea = forwardRef<HTMLTextAreaElement, LiquidTextAreaProps>(({
   className,
   hint,
-  id,
   label,
   onChange,
   rows = 4,
@@ -19,9 +19,6 @@ export const LiquidTextArea = forwardRef<HTMLTextAreaElement, LiquidTextAreaProp
   styles,
   ...props
 }, ref) => {
-  const generatedId = useId()
-  const textareaId = id ?? generatedId
-  const hintId = hint ? `${textareaId}-hint` : undefined
   const config = useLiquefyConfig()
   const [controlRef, canvasRef, pulse] = useLiquidGlass<HTMLSpanElement>(undefined, {
     bounce: 0.02,
@@ -39,18 +36,26 @@ export const LiquidTextArea = forwardRef<HTMLTextAreaElement, LiquidTextAreaProp
     pulse(0.35)
     onChange?.(event)
   }
-  // The label is the layout box, so it owns className, style and styles alike.
+  // The field is the layout box, so it owns className, style and styles alike.
   const root = useLiquidStyles(['lq-text-field', 'lq-textarea'], { className, style, styles })
 
   return (
-    <label className={root.className} htmlFor={textareaId} style={root.style}>
-      {label && <span className="lq-control-label">{label}</span>}
+    <Field.Root className={root.className} style={root.style}>
+      {label && <Field.Label className="lq-control-label">{label}</Field.Label>}
       <span className="lq-text-field__control lq-textarea__control" ref={controlRef}>
         {config.webgl && <canvas aria-hidden="true" className="lq-surface__shader" ref={canvasRef} />}
-        <textarea aria-describedby={hintId} id={textareaId} onChange={handleChange} ref={ref} rows={rows} {...props} />
+        {/* Field.Control renders an input unless it is handed something else to
+            render, and the label and hint wiring follows whatever it renders. */}
+        {/* Field.Control is typed for the input it renders by default. Handing
+            it a textarea to render is supported; describing that in the types
+            is not, so the whole set of textarea props is cast across at once. */}
+        <Field.Control
+          render={<textarea />}
+          {...({ onChange: handleChange, ref, rows, ...props } as unknown as Field.Control.Props)}
+        />
       </span>
-      {hint && <span className="lq-control-hint" id={hintId}>{hint}</span>}
-    </label>
+      {hint && <Field.Description className="lq-control-hint">{hint}</Field.Description>}
+    </Field.Root>
   )
 })
 

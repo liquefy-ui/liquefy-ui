@@ -1,3 +1,4 @@
+import { Separator } from '@base-ui/react/separator'
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 
@@ -17,18 +18,16 @@ export const LiquidDivider = forwardRef<HTMLDivElement, LiquidDividerProps>(({
   const root = useLiquidStyles('lq-divider', { className, style, styles })
 
   return (
-    <div
-      aria-orientation={orientation}
+    <Separator
       className={root.className}
-      data-orientation={orientation}
-      data-with-label={Boolean(children)}
+      data-with-label={Boolean(children) || undefined}
+      orientation={orientation}
       ref={ref}
-      role="separator"
       style={root.style}
       {...props}
     >
       {children && <span className="lq-divider__label">{children}</span>}
-    </div>
+    </Separator>
   )
 })
 

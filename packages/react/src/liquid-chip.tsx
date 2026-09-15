@@ -5,6 +5,7 @@ import {
   type ReactNode,
   type Ref,
 } from 'react'
+import { Toggle } from '@base-ui/react/toggle'
 import { XGlyph } from './internal-glyphs'
 import { useLiquefyConfig } from './provider'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
@@ -29,7 +30,7 @@ export const LiquidChip = forwardRef<HTMLSpanElement, LiquidChipProps>(({
   onClick,
   onDelete,
   onPointerEnter,
-  selected = false,
+  selected,
   size = 'md',
   style,
   styles,
@@ -39,7 +40,10 @@ export const LiquidChip = forwardRef<HTMLSpanElement, LiquidChipProps>(({
 }, forwardedRef) => {
   const config = useLiquefyConfig()
   const interactive = Boolean(onClick)
-  const Tag = interactive ? 'button' : 'span'
+  // A chip that carries a `selected` state is a toggle button and should say so
+  // with `aria-pressed`; one that only carries a click is an ordinary button;
+  // one that carries neither is a label with a delete button hanging off it.
+  const Tag = selected === undefined ? (interactive ? 'button' : 'span') : Toggle
   const [elementRef, , pulse] = useLiquidGlass<HTMLElement>(forwardedRef as Ref<HTMLElement>, {
     bounce: 0.09,
     intensity: config.intensity,
@@ -75,6 +79,7 @@ export const LiquidChip = forwardRef<HTMLSpanElement, LiquidChipProps>(({
       ref={elementRef as never}
       style={root.style}
       type={interactive ? 'button' : undefined}
+      {...(Tag === Toggle ? { pressed: selected } : undefined)}
       {...props}
     >
       {icon && <span className="lq-chip__icon">{icon}</span>}
