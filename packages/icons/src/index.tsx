@@ -45,6 +45,13 @@ export const ChevronDownIcon = (props: IconProps): ReactElement => (
   </IconBase>
 )
 
+export const ColumnsIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <rect height="15" rx="2.5" width="18" x="3" y="4.5" />
+    <path d="M9 4.5v15M15 4.5v15" />
+  </IconBase>
+)
+
 export const CommandIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="M9 7V5.5A2.5 2.5 0 1 0 6.5 8H17.5A2.5 2.5 0 1 0 15 5.5V18.5A2.5 2.5 0 1 0 17.5 16H6.5A2.5 2.5 0 1 0 9 18.5V7Z" />
@@ -77,6 +84,13 @@ export const GithubIcon = (props: IconProps): ReactElement => (
 export const PauseIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="M9 7v10M15 7v10" />
+  </IconBase>
+)
+
+export const PinIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <path d="M9 4h6l-.5 5.5 3 2.5v2H6.5v-2l3-2.5L9 4Z" />
+    <path d="M12 14v6" />
   </IconBase>
 )
 
@@ -119,6 +133,14 @@ export const XIcon = (props: IconProps): ReactElement => (
   </IconBase>
 )
 
+export const ArchiveIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <rect height="4" rx="1.5" width="18" x="3" y="4" />
+    <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" />
+    <path d="M10 12h4" />
+  </IconBase>
+)
+
 export const AlertTriangleIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="M10.2 4.6 2.9 17.3a2.1 2.1 0 0 0 1.8 3.2h14.6a2.1 2.1 0 0 0 1.8-3.2L13.8 4.6a2.1 2.1 0 0 0-3.6 0Z" />
@@ -130,6 +152,14 @@ export const BellIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="M18.5 15.5c-1-1-1.5-2.2-1.5-4V9.4A5.2 5.2 0 0 0 12 4.2 5.2 5.2 0 0 0 7 9.4v2.1c0 1.8-.5 3-1.5 4-.6.6-.2 1.7.7 1.7h11.6c.9 0 1.3-1.1.7-1.7Z" />
     <path d="M10 20a2.2 2.2 0 0 0 4 0" />
+  </IconBase>
+)
+
+export const BriefcaseIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <rect height="12" rx="2.5" width="18" x="3" y="7.5" />
+    <path d="M8.5 7.5V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5" />
+    <path d="M3 12.5h18" />
   </IconBase>
 )
 
@@ -239,9 +269,23 @@ export const InfoIcon = (props: IconProps): ReactElement => (
   </IconBase>
 )
 
+export const InboxIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <path d="M6.5 4.5h11l3 9v4.5a1.5 1.5 0 0 1-1.5 1.5h-14A1.5 1.5 0 0 1 3.5 18v-4.5l3-9Z" />
+    <path d="M3.5 13.5h4.5l1.5 2.5h5l1.5-2.5h4.5" />
+  </IconBase>
+)
+
 export const LinkIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="M9.5 14.5 14.5 9.5M8 12l-2.4 2.4a3.6 3.6 0 1 0 5 5L13 17M11 7l2.4-2.4a3.6 3.6 0 1 1 5 5L16 12" />
+  </IconBase>
+)
+
+export const ListIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <path d="M9 6.5h11M9 12h11M9 17.5h11" />
+    <path d="M4.5 6.5h.5M4.5 12h.5M4.5 17.5h.5" />
   </IconBase>
 )
 
