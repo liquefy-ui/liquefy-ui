@@ -36,16 +36,26 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(({
   const config = useLiquefyConfig()
   const resolvedTint = tint ?? config.tint
   const resolvedWebgl = webgl ?? config.webgl
-  // Edge refraction folds the backdrop around the bezel; on control-sized
-  // elements that reads as a mirrored fill, so buttons keep it opt-in.
+  // Opt-in, but no longer because it looked wrong: the bezel used to fold the
+  // backdrop back on itself at this size and read as a mirrored fill, and the
+  // lens cannot do that any more. What is left is cost — every lit button owns
+  // an SVG filter inside backdrop-filter, which is among the most expensive
+  // things a browser composites, and a page of them adds up where one hero
+  // button does not. Turn it on for the ones that carry the design.
   const resolvedLens = lens ?? false
   const isDisabled = disabled || isLoading
   const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
     bounce: 0.075,
     disabled: isDisabled,
+    dispersion: config.dispersion,
+    elasticity: config.elasticity,
+    glow: config.glow,
     intensity: config.intensity,
     lens: resolvedLens && config.transparency,
     motion: config.motion,
+    ripple: config.ripple,
+    shimmer: config.shimmer,
+    sparkle: config.sparkle,
     tilt: 2.4,
     tint: resolvedTint,
     webgl: resolvedWebgl,

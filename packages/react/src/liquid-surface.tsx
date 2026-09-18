@@ -39,6 +39,9 @@ export const LiquidSurface = forwardRef<HTMLDivElement, LiquidSurfaceProps>(({
   const resolvedLens = lens ?? config.lens
   const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
     disabled: !interactive,
+    dispersion: config.dispersion,
+    elasticity: config.elasticity,
+    glow: config.glow,
     intensity: resolvedIntensity,
     lens: resolvedLens && config.transparency,
     lensBlur,
@@ -48,6 +51,9 @@ export const LiquidSurface = forwardRef<HTMLDivElement, LiquidSurfaceProps>(({
     // surface rendered a canvas that nothing ever drew into, and the material
     // was flat glass instead of liquid. It keeps the shine; it just holds still.
     motion: config.motion,
+    ripple: config.ripple,
+    shimmer: config.shimmer,
+    sparkle: config.sparkle,
     tint: resolvedTint,
     webgl: resolvedWebgl,
     wobbliness: config.wobbliness,

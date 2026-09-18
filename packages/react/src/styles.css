@@ -31,6 +31,10 @@
     --lq-quiet-line: rgba(255, 255, 255, 0.13);
     --lq-regular-fill: rgba(255, 255, 255, 0.012);
     --lq-regular-line: rgba(255, 255, 255, 0.18);
+    --lq-rim-bright: rgba(255, 255, 255, 1);
+    --lq-rim-dim: rgba(255, 255, 255, 0.7);
+    --lq-rim-mid: rgba(255, 255, 255, 0.55);
+    --lq-rim-width: 1.6px;
     --lq-shadow-color: rgba(4, 9, 24, 0.14);
     --lq-solid-fill: rgb(30, 38, 60);
     --lq-switch-fill: transparent;
@@ -67,6 +71,10 @@
     --lq-quiet-line: rgba(66, 85, 128, 0.16);
     --lq-regular-fill: rgba(255, 255, 255, 0.015);
     --lq-regular-line: rgba(66, 85, 128, 0.26);
+    --lq-rim-bright: rgba(255, 255, 255, 0.94);
+    --lq-rim-dim: rgba(255, 255, 255, 0.62);
+    --lq-rim-mid: rgba(255, 255, 255, 0.4);
+    --lq-rim-width: 1.6px;
     --lq-shadow-color: rgba(42, 55, 91, 0.1);
     --lq-solid-fill: rgb(239, 244, 255);
     --lq-switch-fill: transparent;
@@ -84,6 +92,9 @@
   .lq-chip,
   .lq-pagination__item,
   .lq-text-field__control {
+    --lq-edge-angle: 145deg;
+    --lq-elastic-x: 0px;
+    --lq-elastic-y: 0px;
     --lq-pointer-x: 50%;
     --lq-pointer-y: 50%;
     --lq-rotate-x: 0deg;
@@ -100,7 +111,10 @@
     isolation: isolate;
     position: relative;
     transform: perspective(900px)
-      translate3d(var(--lq-magnet-x), calc(var(--lq-lift) + var(--lq-magnet-y)), 0)
+      translate3d(
+        calc(var(--lq-magnet-x) + var(--lq-elastic-x)),
+        calc(var(--lq-lift) + var(--lq-magnet-y) + var(--lq-elastic-y)),
+        0)
       rotateX(var(--lq-rotate-x))
       rotateY(var(--lq-rotate-y))
       skewX(var(--lq-skew-x))
@@ -184,7 +198,7 @@
   }
 
   .lq-surface[data-liquid-variant='clear'] > .lq-surface__edge {
-    opacity: 0.42;
+    opacity: 0.88;
   }
 
   .lq-surface[data-liquid-variant='tinted'] {
@@ -202,6 +216,27 @@
       inset 0 -1px 0 var(--lq-glass-shade);
   }
 
+  /* The lit rim. Two stacked rings rather than one: `screen` lifts the line off
+     a dark backdrop, `overlay` keeps it alive on a bright one, and a single
+     blend mode can only do one of those. Both are drawn with padding plus
+     mask-exclude so the line follows the corner radius exactly — a box-shadow
+     rounds on its own terms and drifts away from the silhouette at the ends.
+     `--lq-edge-angle` is written by the motion controller, so the bright
+     quarter of the ring swings toward the pointer. */
+  .lq-surface__edge,
+  .lq-surface__edge::after {
+    border-radius: inherit;
+    content: '';
+    inset: 0;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    padding: var(--lq-rim-width);
+    pointer-events: none;
+    position: absolute;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+  }
+
   .lq-surface__edge {
     background:
       radial-gradient(
@@ -211,36 +246,36 @@
         transparent 72%
       ),
       linear-gradient(
-        135deg,
-        var(--lq-glass-bright) 0%,
-        var(--lq-glass-soft) 25%,
-        transparent 47%,
-        var(--lq-glass-shade) 74%,
-        rgba(255, 255, 255, 0.18) 100%
+        var(--lq-edge-angle),
+        var(--lq-rim-bright) 0%,
+        var(--lq-rim-mid) 34%,
+        var(--lq-glass-shade) 62%,
+        var(--lq-rim-dim) 100%
       );
-    border-radius: inherit;
-    inset: 0;
-    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    mask-composite: exclude;
     filter: drop-shadow(0 0 2px color-mix(in srgb, var(--lq-tint, var(--lq-button-tint)) 8%, transparent));
-    opacity: 0.72;
-    padding: 0.9px;
-    pointer-events: none;
-    position: absolute;
+    mix-blend-mode: screen;
     transition: opacity 260ms ease;
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
     z-index: 2;
+  }
+
+  .lq-surface__edge::after {
+    background: linear-gradient(
+      var(--lq-edge-angle),
+      color-mix(in srgb, var(--lq-rim-bright) 80%, transparent) 0%,
+      color-mix(in srgb, var(--lq-rim-mid) 80%, transparent) 34%,
+      transparent 62%,
+      color-mix(in srgb, var(--lq-rim-dim) 80%, transparent) 100%
+    );
+    mix-blend-mode: overlay;
   }
 
   .lq-surface[data-liquid-interactive='false'] > .lq-surface__edge {
     background: linear-gradient(
-      135deg,
-      var(--lq-glass-bright) 0%,
-      var(--lq-glass-soft) 25%,
-      transparent 47%,
-      var(--lq-glass-shade) 74%,
-      rgba(255, 255, 255, 0.18) 100%
+      145deg,
+      var(--lq-rim-bright) 0%,
+      var(--lq-rim-mid) 34%,
+      var(--lq-glass-shade) 62%,
+      var(--lq-rim-dim) 100%
     );
   }
 
@@ -279,6 +314,23 @@
   .lq-surface__content > * {
     position: relative;
     z-index: 3;
+  }
+
+  /* LiquidGlass: a surface whose optics are set per instance. It reuses the
+     surface's structure wholesale and only adds what it owns — its own padding,
+     and the darkening that keeps glass legible on a bright backdrop. */
+  .lq-glass {
+    --lq-glass-padding: 0;
+    padding: var(--lq-glass-padding);
+  }
+
+  .lq-glass[data-liquid-over-light='true'] {
+    --lq-fill: rgba(0, 0, 0, 0.16);
+    --lq-glow: 0.04;
+    box-shadow:
+      0 18px 60px color-mix(in srgb, var(--lq-shadow-color) 92%, transparent),
+      inset 0 1px 0 var(--lq-glass-bright),
+      inset 0 -1.25px 0 var(--lq-glass-shade);
   }
 
   .lq-button {
@@ -962,6 +1014,10 @@
       --lq-quiet-line: rgba(66, 85, 128, 0.16);
       --lq-regular-fill: rgba(255, 255, 255, 0.015);
       --lq-regular-line: rgba(66, 85, 128, 0.26);
+      --lq-rim-bright: rgba(255, 255, 255, 0.94);
+      --lq-rim-dim: rgba(255, 255, 255, 0.62);
+      --lq-rim-mid: rgba(255, 255, 255, 0.4);
+      --lq-rim-width: 1.6px;
       --lq-shadow-color: rgba(42, 55, 91, 0.1);
       --lq-solid-fill: rgb(239, 244, 255);
       --lq-switch-fill: transparent;

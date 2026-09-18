@@ -33,6 +33,9 @@ uniform float u_wobble;
 uniform vec2 u_stretch;
 uniform vec4 u_ripple;
 uniform float u_press;
+// x glow, y ripple, z sparkle, w shimmer — each 0 or 1, so a surface can be
+// stripped back to the plain refracting material one ornament at a time.
+uniform vec4 u_ornaments;
 
 const float TAU = 6.28318530718;
 
@@ -103,12 +106,12 @@ void main() {
 
   vec3 color = vec3(0.0);
   color += rim * rimStrength;
-  color += shimmer * u_intensity;
+  color += shimmer * u_intensity * u_ornaments.w;
   color += mix(white, u_tint, 0.35) * bezel * (0.015 + u_active * 0.02) * u_intensity;
-  color += white * (glow * 0.13 + core * 0.22) * u_intensity;
-  color += (white * 0.75 + u_tint * 0.25) * ripple * 0.4 * u_intensity;
+  color += white * (glow * 0.13 + core * 0.22) * u_intensity * u_ornaments.x;
+  color += (white * 0.75 + u_tint * 0.25) * ripple * 0.4 * u_intensity * u_ornaments.y;
   color += white * sheen * u_intensity;
-  color += white * sparkle * u_intensity;
+  color += white * sparkle * u_intensity * u_ornaments.z;
 
   color *= inside;
   float alpha = clamp(max(color.r, max(color.g, color.b)), 0.0, 0.85);
@@ -118,6 +121,7 @@ void main() {
 
 type FrameState = {
   active: number
+  ornaments: readonly [number, number, number, number]
   dpr: number
   height: number
   intensity: number
@@ -166,7 +170,7 @@ class SharedGlassContext {
     this.gl = gl
     this.program = program
     for (const name of [
-      'active', 'dpr', 'intensity', 'pointer', 'press', 'radius',
+      'active', 'dpr', 'intensity', 'ornaments', 'pointer', 'press', 'radius',
       'resolution', 'ripple', 'stretch', 'time', 'tint', 'wobble',
     ]) {
       this.uniforms[name] = gl.getUniformLocation(program, `u_${name}`)
@@ -209,6 +213,10 @@ class SharedGlassContext {
     gl.uniform2f(this.uniforms.stretch ?? null, state.stretch[0], state.stretch[1])
     gl.uniform1f(this.uniforms.press ?? null, state.press)
     gl.uniform4f(this.uniforms.ripple ?? null, state.ripple[0], state.ripple[1], state.ripple[2], state.ripple[3])
+    gl.uniform4f(
+      this.uniforms.ornaments ?? null,
+      state.ornaments[0], state.ornaments[1], state.ornaments[2], state.ornaments[3],
+    )
     gl.drawArrays(gl.TRIANGLES, 0, 6)
     return true
   }
@@ -222,6 +230,7 @@ export class LiquidRenderer {
   private hovering = false
   private intensity: number
   private lastTime = 0
+  private readonly ornaments: readonly [number, number, number, number]
   private pointer: readonly [number, number] = [0.5, 0.5]
   private press = 0
   private pressTarget = 0
@@ -237,6 +246,12 @@ export class LiquidRenderer {
 
   public constructor(private readonly canvas: HTMLCanvasElement, options: LiquidRendererOptions = {}) {
     this.intensity = clamp(options.intensity ?? 0.72, 0, 1.4)
+    this.ornaments = [
+      options.glow === false ? 0 : 1,
+      options.ripple === false ? 0 : 1,
+      options.sparkle === false ? 0 : 1,
+      options.shimmer === false ? 0 : 1,
+    ]
     this.radius = options.radius ?? 16
     this.tint = hexToRgb(options.tint ?? '#8eb9ff')
     this.resizeObserver = typeof ResizeObserver === 'undefined'
@@ -341,6 +356,7 @@ export class LiquidRenderer {
       dpr: this.pixelRatio,
       height,
       intensity: this.intensity,
+      ornaments: this.ornaments,
       pointer: this.pointer,
       press: this.press,
       radius: this.radius,

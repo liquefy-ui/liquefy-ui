@@ -70,7 +70,7 @@ export const attachLiquidLens = (
   const dispersion = clamp(options.dispersion ?? 0.6, 0, 1)
   const blur = clamp(options.blur ?? 0.6, 0, 24)
   const saturation = clamp(options.saturation ?? 1.24, 0, 3)
-  const strength = clamp(options.strength ?? 1, 0, 2)
+  const strength = clamp(options.strength ?? 1, 0, 1)
 
   const id = `lq-lens-${(filterCount += 1)}`
   const filter = createElement('filter', {
@@ -158,7 +158,14 @@ export const attachLiquidLens = (
     const parsedRadius = Number.parseFloat(computed.borderTopLeftRadius)
     const radius = options.radius ?? (Number.isFinite(parsedRadius) ? parsedRadius : 16)
 
-    const lensMap = createLensMap({ height, radius, strength, width })
+    const lensMap = createLensMap({
+      bezel: options.bezel,
+      curve: options.curve,
+      height,
+      radius,
+      strength,
+      width,
+    })
     if (!lensMap) return
 
     filter.setAttribute('width', String(width))

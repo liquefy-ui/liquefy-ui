@@ -3,9 +3,23 @@ import { createContext, useContext, useMemo, useState, type CSSProperties, type 
 export type LiquefyConfig = {
   /** Minimum widths behind the responsive form of the `styles` prop. */
   breakpoints: LiquefyBreakpoints
+  /** How far apart the red and blue channels are pulled at the rim, 0 to 1. */
+  dispersion: number
+  /** How far a surface leans toward a pointer that has not reached it yet. */
+  elasticity: number
+  /**
+   * The four ornaments. They are what makes the material read as liquefy-ui
+   * rather than plain glass, and they are separable because a product that
+   * wants the optics without the personality should not have to fork the
+   * stylesheet to get it.
+   */
+  glow: boolean
   intensity: number
   lens: boolean
   motion: boolean
+  ripple: boolean
+  shimmer: boolean
+  sparkle: boolean
   /** One spacing unit. `styles={{ p: 3 }}` resolves to three of these. */
   spacing: number | string
   theme: LiquefyTheme
@@ -36,9 +50,15 @@ export const defaultBreakpoints: LiquefyBreakpoints = {
 
 const defaultConfig: LiquefyConfig = {
   breakpoints: defaultBreakpoints,
+  dispersion: 0.6,
+  elasticity: 0.16,
+  glow: true,
   intensity: 0.72,
   lens: true,
   motion: true,
+  ripple: true,
+  shimmer: true,
+  sparkle: true,
   spacing: 4,
   theme: 'system',
   tint: '#8eb9ff',
@@ -60,9 +80,15 @@ export const LiquefyProvider = ({
   breakpoints,
   children,
   className,
+  dispersion = defaultConfig.dispersion,
+  elasticity = defaultConfig.elasticity,
+  glow = defaultConfig.glow,
   intensity = defaultConfig.intensity,
   lens = defaultConfig.lens,
   motion = defaultConfig.motion,
+  ripple = defaultConfig.ripple,
+  shimmer = defaultConfig.shimmer,
+  sparkle = defaultConfig.sparkle,
   spacing = defaultConfig.spacing,
   theme = defaultConfig.theme,
   tint = defaultConfig.tint,
@@ -82,9 +108,15 @@ export const LiquefyProvider = ({
   const value = useMemo(
     () => ({
       breakpoints: resolvedBreakpoints,
+      dispersion,
+      elasticity,
+      glow,
       intensity,
       lens,
       motion,
+      ripple,
+      shimmer,
+      sparkle,
       spacing,
       theme,
       tint,
@@ -92,7 +124,10 @@ export const LiquefyProvider = ({
       webgl,
       wobbliness,
     }),
-    [resolvedBreakpoints, intensity, lens, motion, spacing, theme, tint, transparency, webgl, wobbliness],
+    [
+      resolvedBreakpoints, dispersion, elasticity, glow, intensity, lens, motion, ripple,
+      shimmer, sparkle, spacing, theme, tint, transparency, webgl, wobbliness,
+    ],
   )
   const style: CustomProperties = {
     '--lq-accent': tint,

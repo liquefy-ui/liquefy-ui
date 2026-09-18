@@ -154,6 +154,14 @@ const SamplePanel = () => {
 
 const THEME_OPTIONS = THEME_ORDER.map((value) => ({ label: THEME_LABELS[value], value }))
 
+/** The four ornaments, which are separable from the optics underneath them. */
+const ORNAMENTS = [
+  { key: 'glow', label: 'Rim glow' },
+  { key: 'ripple', label: 'Press ripple' },
+  { key: 'shimmer', label: 'Iridescence' },
+  { key: 'sparkle', label: 'Sparkle' },
+] as const satisfies readonly { key: 'glow' | 'ripple' | 'shimmer' | 'sparkle'; label: string }[]
+
 type ControlRailProps = {
   onToggleCode: () => void
   showCode: boolean
@@ -218,6 +226,43 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
         />
       </div>
 
+      <div className="pg-rail__row pg-rail__row--stacked">
+        <span className="pg-rail__label">Elasticity<em>{config.elasticity.toFixed(2)}</em></span>
+        <LiquidSlider
+          aria-label="Elasticity"
+          max={0.6}
+          min={0}
+          onValueChange={(value) => config.setMaterial('elasticity', value)}
+          step={0.01}
+          value={config.elasticity}
+        />
+      </div>
+
+      <div className="pg-rail__row pg-rail__row--stacked">
+        <span className="pg-rail__label">Dispersion<em>{config.dispersion.toFixed(2)}</em></span>
+        <LiquidSlider
+          aria-label="Dispersion"
+          max={1}
+          min={0}
+          onValueChange={(value) => config.setMaterial('dispersion', value)}
+          step={0.05}
+          value={config.dispersion}
+        />
+      </div>
+
+      <div className="pg-rail__switches">
+        {ORNAMENTS.map((ornament) => (
+          <div className="pg-rail__row" key={ornament.key}>
+            <span>{ornament.label}</span>
+            <LiquidSwitch
+              checked={config[ornament.key]}
+              label={ornament.label}
+              onCheckedChange={(next) => config.setMaterial(ornament.key, next)}
+            />
+          </div>
+        ))}
+      </div>
+
       <div className="pg-rail__switches">
         <div className="pg-rail__row">
           <span>Jelly motion</span>
@@ -267,10 +312,13 @@ const providerSnippet = (config: ReturnType<typeof useSiteConfig>) => {
     `  tint="${config.tint}"`,
     `  intensity={${config.intensity.toFixed(2)}}`,
     `  wobbliness={${config.wobbliness.toFixed(1)}}`,
+    `  elasticity={${config.elasticity.toFixed(2)}}`,
+    `  dispersion={${config.dispersion.toFixed(2)}}`,
     flag('lens', config.lens),
     flag('motion', config.motionOn),
     flag('transparency', config.transparency),
     flag('webgl', config.webgl),
+    ...ORNAMENTS.map((ornament) => flag(ornament.key, config[ornament.key])),
     '>',
     '  <App />',
     '</LiquefyProvider>',

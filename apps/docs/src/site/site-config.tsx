@@ -21,8 +21,14 @@ import {
  * which is the whole point of showing the controls first.
  */
 export type MaterialConfig = {
+  dispersion: number
+  elasticity: number
+  glow: boolean
   intensity: number
   lens: boolean
+  ripple: boolean
+  shimmer: boolean
+  sparkle: boolean
   tint: string
   transparency: boolean
   webgl: boolean
@@ -59,8 +65,14 @@ export const TINTS = [
 ] as const
 
 const DEFAULT_MATERIAL: MaterialConfig = {
+  dispersion: 0.6,
+  elasticity: 0.16,
+  glow: true,
   intensity: 0.72,
   lens: true,
+  ripple: true,
+  shimmer: true,
+  sparkle: true,
   tint: TINTS[0].value,
   transparency: true,
   webgl: true,
@@ -83,9 +95,15 @@ export const SubProvider = ({
   return (
     <LiquefyProvider
       breakpoints={config.breakpoints}
+      dispersion={config.dispersion}
+      elasticity={config.elasticity}
+      glow={config.glow}
       intensity={config.intensity}
       lens={config.lens}
       motion={config.motion}
+      ripple={config.ripple}
+      shimmer={config.shimmer}
+      sparkle={config.sparkle}
       spacing={config.spacing}
       theme={config.theme}
       tint={config.tint}
@@ -216,10 +234,16 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
   return (
     <SiteConfigContext.Provider value={value}>
       <LiquefyProvider
+        dispersion={material.dispersion}
+        elasticity={material.elasticity}
+        glow={material.glow}
         intensity={material.intensity}
         lens={material.lens}
         motion={motion}
         theme={theme}
+        ripple={material.ripple}
+        shimmer={material.shimmer}
+        sparkle={material.sparkle}
         tint={material.tint}
         transparency={material.transparency}
         webgl={material.webgl}
