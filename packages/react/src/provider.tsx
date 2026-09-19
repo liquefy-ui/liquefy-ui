@@ -7,6 +7,8 @@ export type LiquefyConfig = {
   dispersion: number
   /** How far a surface leans toward a pointer that has not reached it yet. */
   elasticity: number
+  /** Backdrop blur added to every glass, in pixels. Each surface keeps the blur its own job needs on top. */
+  frost: number
   /**
    * The four ornaments. They are what makes the material read as liquefy-ui
    * rather than plain glass, and they are separable because a product that
@@ -52,6 +54,7 @@ const defaultConfig: LiquefyConfig = {
   breakpoints: defaultBreakpoints,
   dispersion: 0.8,
   elasticity: 0,
+  frost: 0,
   glow: true,
   intensity: 0.42,
   lens: false,
@@ -82,6 +85,7 @@ export const LiquefyProvider = ({
   className,
   dispersion = defaultConfig.dispersion,
   elasticity = defaultConfig.elasticity,
+  frost = defaultConfig.frost,
   glow = defaultConfig.glow,
   intensity = defaultConfig.intensity,
   lens = defaultConfig.lens,
@@ -110,6 +114,7 @@ export const LiquefyProvider = ({
       breakpoints: resolvedBreakpoints,
       dispersion,
       elasticity,
+      frost,
       glow,
       intensity,
       lens,
@@ -125,12 +130,13 @@ export const LiquefyProvider = ({
       wobbliness,
     }),
     [
-      resolvedBreakpoints, dispersion, elasticity, glow, intensity, lens, motion, ripple,
+      resolvedBreakpoints, dispersion, elasticity, frost, glow, intensity, lens, motion, ripple,
       shimmer, sparkle, spacing, theme, tint, transparency, webgl, wobbliness,
     ],
   )
   const style: CustomProperties = {
     '--lq-accent': tint,
+    '--lq-frost': `${frost}px`,
     '--lq-intensity': intensity,
     '--lq-space': typeof spacing === 'number' ? `${spacing}px` : spacing,
   }

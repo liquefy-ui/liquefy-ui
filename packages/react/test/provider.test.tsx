@@ -36,6 +36,7 @@ describe('provider defaults', () => {
       breakpoints: defaultBreakpoints,
       dispersion: 0.8,
       elasticity: 0,
+      frost: 0,
       glow: true,
       intensity: 0.42,
       lens: false,

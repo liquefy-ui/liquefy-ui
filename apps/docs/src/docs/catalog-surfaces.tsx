@@ -121,7 +121,8 @@ export const surfaceDocs: ComponentDoc[] = [
     name: 'Glass',
     props: [
       { defaultValue: '1', description: 'How much of the bend the material can take without folding to spend, 0 to 1.', name: 'refraction', type: 'number' },
-      { description: 'How far the glass softens what it refracts, in pixels.', name: 'frost', type: 'number' },
+      { description: 'Backdrop blur in pixels. Set outright here, rather than added to the provider\'s.', name: 'frost', type: 'number' },
+      { description: 'How far the lens softens what it refracts, in pixels. Not the backdrop blur.', name: 'softness', type: 'number' },
       { defaultValue: '0.8', description: 'How far apart the red and blue channels are pulled at the rim, 0 to 1.', name: 'dispersion', type: 'number' },
       { description: 'Width of the refracting band at the rim. Defaults to 22% of the short side.', name: 'bezel', type: 'number' },
       { defaultValue: '2', description: 'Exponent of the bezel cross-section: 1 is an even ramp, higher piles the bend against the rim.', name: 'curve', type: 'number' },

@@ -2805,13 +2805,28 @@ kbd {
     font-size: clamp(2rem, 9vw, 2.6rem);
   }
 
+  /* The custom property, not `height`: the sticky card and every scene are
+     sized from it too, so overriding only the box left the card centred in a
+     taller box than the one it was being viewed through. */
   .pg-stage {
-    height: 300px;
+    --pg-stage-h: 340px;
   }
 
+  /* Smaller as well as shorter. At this width the card was covering most of the
+     stage, which leaves nothing of the scene it is supposed to be held over. */
   .pg-card {
-    padding: 20px 22px;
-    width: min(420px, 88%);
+    gap: 8px;
+    padding: 18px 20px;
+    width: min(420px, 86%);
+  }
+
+  .pg-card__title {
+    font-size: 1.08rem;
+  }
+
+  .pg-card__body {
+    font-size: 0.8rem;
+    line-height: 1.5;
   }
 }
 

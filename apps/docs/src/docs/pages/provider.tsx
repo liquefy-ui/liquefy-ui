@@ -66,6 +66,12 @@ const propRows: PropRow[] = [
     type: 'number',
   },
   {
+    defaultValue: '0',
+    description: 'Backdrop blur added to every glass, in pixels. It adds to whatever each surface asks for, so a dialog stays thicker than a card however far this is turned up.',
+    name: 'frost',
+    type: 'number',
+  },
+  {
     defaultValue: 'false',
     description: 'The SVG displacement lens at the bezel. Off keeps the blur but drops the refraction. It is the most expensive thing the material can do, so it is opt-in.',
     name: 'lens',

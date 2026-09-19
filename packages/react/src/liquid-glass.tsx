@@ -13,7 +13,7 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps
   dispersion?: number
   /** How far the surface leans toward a pointer that has not reached it yet. */
   elasticity?: number
-  /** How far the glass softens what it refracts, in pixels. */
+  /** Backdrop blur, in pixels. What frosted glass actually is. */
   frost?: number
   /** Lit rim glow that follows the pointer. Off here, unlike LiquidSurface. */
   glow?: boolean
@@ -30,6 +30,8 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps
   saturation?: number
   /** Iridescent colour shift across the rim while wobbling. Off here. */
   shimmer?: boolean
+  /** How far the lens softens what it refracts, in pixels. Not the backdrop blur — that is `frost`. */
+  softness?: number
   /** Drifting specular glints across the face. Off here. */
   sparkle?: boolean
   tint?: string
@@ -62,6 +64,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
   ripple = false,
   saturation,
   shimmer = false,
+  softness,
   sparkle = false,
   style,
   styles,
@@ -85,7 +88,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
     glow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,
-    lensBlur: frost,
+    lensBlur: softness,
     lensStrength: refraction,
     motion: config.motion,
     ripple,
@@ -105,6 +108,10 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
   if (padding !== undefined) {
     vars['--lq-glass-padding'] = typeof padding === 'number' ? `${padding}px` : padding
   }
+  // Set outright rather than added to the provider's, because a component that
+  // names its own frost is saying what it wants to be, not how much more than
+  // everything else.
+  if (frost !== undefined) vars['--lq-blur'] = `${frost}px`
   const root = useLiquidStyles(['lq-surface', 'lq-glass'], { className, style, styles, vars })
 
   return (

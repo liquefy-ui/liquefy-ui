@@ -23,6 +23,7 @@ import {
 export type MaterialConfig = {
   dispersion: number
   elasticity: number
+  frost: number
   glow: boolean
   intensity: number
   lens: boolean
@@ -67,6 +68,7 @@ export const TINTS = [
 const DEFAULT_MATERIAL: MaterialConfig = {
   dispersion: 0.8,
   elasticity: 0,
+  frost: 0,
   glow: true,
   intensity: 0.42,
   lens: false,
@@ -97,6 +99,7 @@ export const SubProvider = ({
       breakpoints={config.breakpoints}
       dispersion={config.dispersion}
       elasticity={config.elasticity}
+      frost={config.frost}
       glow={config.glow}
       intensity={config.intensity}
       lens={config.lens}
@@ -236,6 +239,7 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
       <LiquefyProvider
         dispersion={material.dispersion}
         elasticity={material.elasticity}
+        frost={material.frost}
         glow={material.glow}
         intensity={material.intensity}
         lens={material.lens}

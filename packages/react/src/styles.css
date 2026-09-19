@@ -170,7 +170,7 @@
      standard property survives the pass, and Safari versions old enough to want
      the prefix still find it. */
   .lq-surface {
-    --lq-blur: 1.5px;
+    --lq-blur: calc(1.5px + var(--lq-frost, 0px));
     --lq-saturate: 1.4;
     --lq-brighten: 1.05;
     --lq-glow: 0.4;
@@ -191,7 +191,7 @@
   }
 
   .lq-surface[data-liquid-variant='clear'] {
-    --lq-blur: 0px;
+    --lq-blur: var(--lq-frost, 0px);
     --lq-saturate: 1.08;
     --lq-brighten: 1;
     --lq-glow: 0.1;
@@ -202,7 +202,7 @@
   }
 
   .lq-surface[data-liquid-variant='tinted'] {
-    --lq-blur: 2px;
+    --lq-blur: calc(2px + var(--lq-frost, 0px));
     --lq-fill: color-mix(in srgb, var(--lq-tint) 14%, transparent);
     --lq-line: color-mix(in srgb, var(--lq-tint) 48%, rgba(255, 255, 255, 0.12));
   }
@@ -600,6 +600,11 @@
     flex: 0 0 auto;
   }
 
+  /* Inset by half a thumb. Base UI centres the thumb on its value, so at either
+     end half of it hangs outside the track — which is fine until the slider sits
+     in anything that clips, and then the handle is sliced down the middle at the
+     one value where it matters most. Padding the control shortens the track by
+     exactly that much, so the thumb's outer edge lands on the control's own. */
   .lq-slider__control {
     align-items: center;
     cursor: pointer;
@@ -607,6 +612,7 @@
     flex: 1;
     height: 28px;
     min-width: 80px;
+    padding-inline: 11px;
     /* The drag reads the pointer directly, so the browser must not claim the
        gesture for a scroll first. */
     touch-action: none;
@@ -1137,7 +1143,7 @@
      provider for a panel with no glass at all. */
   .lq-surface.lq-dialog__surface,
   .lq-surface.lq-drawer__surface {
-    --lq-blur: 20px;
+    --lq-blur: calc(20px + var(--lq-frost, 0px));
     --lq-saturate: 1.7;
     --lq-brighten: 1.06;
     --lq-glow: 0.5;
@@ -3493,7 +3499,7 @@
   .lq-provider[data-liquid-theme='light'] .lq-accordion,
   .lq-provider[data-liquid-theme='light'] .lq-table-container,
   .lq-provider[data-liquid-theme='light'] .lq-list {
-    --lq-blur: 7px;
+    --lq-blur: calc(7px + var(--lq-frost, 0px));
     --lq-saturate: 1.7;
     --lq-brighten: 1;
     --lq-glow: 0.1;
@@ -3560,7 +3566,7 @@
     .lq-provider[data-liquid-theme='system'] .lq-accordion,
     .lq-provider[data-liquid-theme='system'] .lq-table-container,
     .lq-provider[data-liquid-theme='system'] .lq-list {
-      --lq-blur: 7px;
+      --lq-blur: calc(7px + var(--lq-frost, 0px));
       --lq-saturate: 1.7;
       --lq-brighten: 1;
       --lq-glow: 0.1;

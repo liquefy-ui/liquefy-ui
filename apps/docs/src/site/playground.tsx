@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import {
   GlassCard,
   LiquidBadge,
@@ -32,6 +32,61 @@ const SCENES = [
   { credit: 'Stefan Kunze', id: 'coast', label: 'Coast at dusk', note: 'soft light, long gradients' },
 ] as const
 
+/** Long enough to read a scene, short enough that nobody waits for the next. */
+const AUTO_ADVANCE_MS = 2600
+
+/** Anything that says the visitor has taken over. */
+const HANDOVER = ['pointerdown', 'wheel', 'touchstart', 'keydown'] as const
+
+/**
+ * Walks the scenes once, on its own, and then gets out of the way.
+ *
+ * Three things keep this from being the kind of carousel people disable:
+ * it starts only when the stage is actually on screen, it stops the moment the
+ * visitor touches it, and it stops for good at the last scene rather than
+ * looping — so nothing is still moving when they come to read the page. A
+ * reduced-motion preference skips it entirely, because this is movement they
+ * did not ask for, whatever the library's own stance on animation is.
+ */
+const useSceneAutoplay = (scrollerRef: { current: HTMLDivElement | null }) => {
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller) return undefined
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined
+
+    let timer = 0
+    let index = 0
+    let observer: IntersectionObserver | undefined
+
+    const stop = () => {
+      window.clearTimeout(timer)
+      observer?.disconnect()
+      for (const type of HANDOVER) scroller.removeEventListener(type, stop)
+    }
+
+    const advance = () => {
+      index += 1
+      if (index >= SCENES.length) {
+        stop()
+        return
+      }
+      scroller.scrollTo({ behavior: 'smooth', top: index * scroller.clientHeight })
+      timer = window.setTimeout(advance, AUTO_ADVANCE_MS)
+    }
+
+    for (const type of HANDOVER) scroller.addEventListener(type, stop, { passive: true })
+
+    observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return
+      observer?.disconnect()
+      timer = window.setTimeout(advance, AUTO_ADVANCE_MS)
+    }, { threshold: 0.5 })
+    observer.observe(scroller)
+
+    return stop
+  }, [scrollerRef])
+}
+
 /**
  * A panel of glass held still while the world moves behind it.
  *
@@ -41,9 +96,13 @@ const SCENES = [
  * would be a dead spot in the middle of the very thing the visitor is trying
  * to move.
  */
-const LensStage = () => (
+const LensStage = () => {
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  useSceneAutoplay(scrollerRef)
+
+  return (
   <div className="pg-stage">
-    <div className="pg-stage__scroll">
+    <div className="pg-stage__scroll" ref={scrollerRef}>
       <div className="pg-stage__sticky">
         <LiquidSurface className="pg-card" radius={28}>
           <p className="pg-card__eyebrow">Live material</p>
@@ -80,7 +139,8 @@ const LensStage = () => (
       the switch for it is on the right.
     </span>
   </div>
-)
+  )
+}
 
 
 const SAMPLE_TABS = [
@@ -243,6 +303,18 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
       </div>
 
       <div className="pg-rail__row pg-rail__row--stacked">
+        <span className="pg-rail__label">Frost<em>{config.frost}px</em></span>
+        <LiquidSlider
+          aria-label="Frost"
+          max={24}
+          min={0}
+          onValueChange={(value) => config.setMaterial('frost', value)}
+          step={1}
+          value={config.frost}
+        />
+      </div>
+
+      <div className="pg-rail__row pg-rail__row--stacked">
         <span className="pg-rail__label">Dispersion<em>{config.dispersion.toFixed(2)}</em></span>
         <LiquidSlider
           aria-label="Dispersion"
@@ -317,6 +389,7 @@ const providerSnippet = (config: ReturnType<typeof useSiteConfig>) => {
     `  intensity={${config.intensity.toFixed(2)}}`,
     `  wobbliness={${config.wobbliness.toFixed(1)}}`,
     `  elasticity={${config.elasticity.toFixed(2)}}`,
+    `  frost={${config.frost}}`,
     `  dispersion={${config.dispersion.toFixed(2)}}`,
     flag('lens', config.lens),
     flag('motion', config.motionOn),
