@@ -245,7 +245,7 @@ export class LiquidRenderer {
   private wobble = 0
 
   public constructor(private readonly canvas: HTMLCanvasElement, options: LiquidRendererOptions = {}) {
-    this.intensity = clamp(options.intensity ?? 0.42, 0, 1.4)
+    this.intensity = clamp(options.intensity ?? 1.2, 0, 1.4)
     this.ornaments = [
       options.glow === false ? 0 : 1,
       options.ripple === false ? 0 : 1,

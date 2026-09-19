@@ -66,18 +66,18 @@ export const TINTS = [
 ] as const
 
 const DEFAULT_MATERIAL: MaterialConfig = {
-  dispersion: 0.8,
+  dispersion: 0.55,
   elasticity: 0,
   frost: 0,
   glow: true,
-  intensity: 0.42,
-  lens: false,
+  intensity: 1.2,
+  lens: true,
   ripple: true,
   shimmer: true,
   sparkle: true,
   tint: TINTS[0].value,
   transparency: true,
-  webgl: false,
+  webgl: true,
   wobbliness: 0.1,
 }
 

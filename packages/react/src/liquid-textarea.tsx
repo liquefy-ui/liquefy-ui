@@ -26,7 +26,7 @@ export const LiquidTextArea = forwardRef<HTMLTextAreaElement, LiquidTextAreaProp
     elasticity: config.elasticity,
     glow: config.glow,
     intensity: config.intensity,
-    lens: false,
+    lens: config.lens && config.transparency,
     motion: config.motion,
     ripple: config.ripple,
     shimmer: config.shimmer,

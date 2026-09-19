@@ -52,12 +52,12 @@ export const defaultBreakpoints: LiquefyBreakpoints = {
 
 const defaultConfig: LiquefyConfig = {
   breakpoints: defaultBreakpoints,
-  dispersion: 0.8,
+  dispersion: 0.55,
   elasticity: 0,
   frost: 0,
   glow: true,
-  intensity: 0.42,
-  lens: false,
+  intensity: 1.2,
+  lens: true,
   motion: true,
   ripple: true,
   shimmer: true,
@@ -66,7 +66,7 @@ const defaultConfig: LiquefyConfig = {
   theme: 'system',
   tint: '#8f8f8f',
   transparency: true,
-  webgl: false,
+  webgl: true,
   wobbliness: 0.1,
 }
 

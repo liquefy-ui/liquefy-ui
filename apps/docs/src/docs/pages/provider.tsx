@@ -18,7 +18,7 @@ const propRows: PropRow[] = [
     type: 'string',
   },
   {
-    defaultValue: '0.42',
+    defaultValue: '1.2',
     description: 'Optical strength of the material: blur, saturation, and the brightness of the bezel. Useful range is roughly 0.2 to 1.2.',
     name: 'intensity',
     type: 'number',
@@ -42,7 +42,7 @@ const propRows: PropRow[] = [
     type: 'boolean',
   },
   {
-    defaultValue: 'false',
+    defaultValue: 'true',
     description: 'The WebGL shine pass, and with it the four ornaments below. Off falls back to CSS-only glass with no canvas element created at all.',
     name: 'webgl',
     type: 'boolean',
@@ -60,7 +60,7 @@ const propRows: PropRow[] = [
     type: 'number',
   },
   {
-    defaultValue: '0.8',
+    defaultValue: '0.55',
     description: 'How far apart the red and blue channels are pulled at the rim. Only visible while lens is on.',
     name: 'dispersion',
     type: 'number',
@@ -72,7 +72,7 @@ const propRows: PropRow[] = [
     type: 'number',
   },
   {
-    defaultValue: 'false',
+    defaultValue: 'true',
     description: 'The SVG displacement lens at the bezel. Off keeps the blur but drops the refraction. It is the most expensive thing the material can do, so it is opt-in.',
     name: 'lens',
     type: 'boolean',

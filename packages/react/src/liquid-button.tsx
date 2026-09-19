@@ -36,13 +36,12 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(({
   const config = useLiquefyConfig()
   const resolvedTint = tint ?? config.tint
   const resolvedWebgl = webgl ?? config.webgl
-  // Opt-in, but no longer because it looked wrong: the bezel used to fold the
-  // backdrop back on itself at this size and read as a mirrored fill, and the
-  // lens cannot do that any more. What is left is cost — every lit button owns
-  // an SVG filter inside backdrop-filter, which is among the most expensive
-  // things a browser composites, and a page of them adds up where one hero
-  // button does not. Turn it on for the ones that carry the design.
-  const resolvedLens = lens ?? false
+  // Follows the provider now. It used to be forced off because the bezel folded
+  // the backdrop back on itself at this size and read as a mirrored fill, which
+  // the lens cannot do any more. It is still the most expensive thing the
+  // material does — an SVG filter inside backdrop-filter, per button — so a page
+  // dense with buttons is the one to set `lens={false}` on the provider for.
+  const resolvedLens = lens ?? config.lens
   const isDisabled = disabled || isLoading
   const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
     bounce: 0.075,

@@ -14,9 +14,7 @@ export const LiquidTableContainer = forwardRef<HTMLDivElement, LiquidTableContai
   <LiquidSurface
     className={['lq-table-container', className].filter(Boolean).join(' ')}
     interactive={false}
-    lens={false}
     ref={ref}
-    webgl={false}
     {...props}
   >
     <div className="lq-table-scroll">{children}</div>
