@@ -883,7 +883,9 @@ pre {
    ink whatever the page theme is, because it is always over imagery. Every
    other control still reaches it; only the floor is fixed. */
 .pg-card {
-  --lq-blur: 16px;
+  /* A floor, not a fixed value: the frost control still raises it, it just
+     cannot take the panel below what its own text needs. */
+  --lq-blur: max(16px, var(--lq-frost, 0px));
   --lq-saturate: 1.5;
   --lq-fill: rgba(9, 11, 18, 0.3);
   --lq-line: rgba(255, 255, 255, 0.24);
