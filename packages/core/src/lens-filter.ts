@@ -67,7 +67,7 @@ export const attachLiquidLens = (
     && mediaQuery('(prefers-reduced-transparency: reduce)').matches
   ) return null
 
-  const dispersion = clamp(options.dispersion ?? 0.6, 0, 1)
+  const dispersion = clamp(options.dispersion ?? 0.8, 0, 1)
   const blur = clamp(options.blur ?? 0.6, 0, 24)
   const saturation = clamp(options.saturation ?? 1.24, 0, 3)
   const strength = clamp(options.strength ?? 1, 0, 1)

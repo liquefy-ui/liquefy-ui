@@ -832,10 +832,94 @@ pre {
 .pg-stage {
   border: 1px solid var(--line);
   border-radius: 26px;
-  min-height: 300px;
+  height: clamp(320px, 48vh, 460px);
   overflow: hidden;
   position: relative;
-  touch-action: none;
+}
+
+/* The scenes scroll inside the stage while the lens sits above them, so the
+   stage itself must not scroll and must not swallow touch either: the handle
+   claims `touch-action` for the drag, and everything else here is free to be a
+   normal scrolling region. */
+.pg-stage__scroll {
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: absolute;
+  scroll-snap-type: y proximity;
+}
+
+.pg-scene {
+  height: 100%;
+  position: relative;
+  scroll-snap-align: start;
+}
+
+.pg-scene__tag {
+  top: 18px;
+  color: var(--fg-muted);
+  font-size: 0.68rem;
+  font-weight: 650;
+  left: 18px;
+  letter-spacing: 0.1em;
+  position: absolute;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+.pg-scene__tag em {
+  display: block;
+  font-style: normal;
+  font-weight: 450;
+  letter-spacing: 0.02em;
+  opacity: 0.68;
+  text-transform: none;
+}
+
+/* Fine rules in both axes. A gradient can hide a bend of several pixels; a 9px
+   grid cannot, which is why this is the scene to judge refraction on. */
+.pg-scene--rules {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 8px, var(--line-strong) 8px 9px),
+    repeating-linear-gradient(90deg, transparent 0 8px, var(--line) 8px 9px),
+    linear-gradient(160deg, var(--bg-soft), var(--bg));
+}
+
+/* Saturated, hard-edged bands: dispersion is a colour effect, and it has
+   nothing to separate on a neutral ground. */
+.pg-scene--chroma {
+  background: linear-gradient(
+    118deg,
+    #ff2d55 0 17%,
+    #ff9f0a 17% 34%,
+    #ffd60a 34% 50%,
+    #30d158 50% 66%,
+    #0a84ff 66% 83%,
+    #bf5af2 83% 100%
+  );
+}
+
+.pg-scene--paper {
+  background:
+    radial-gradient(120% 90% at 20% 10%, rgba(255, 255, 255, 0.9), transparent 60%),
+    linear-gradient(170deg, #f4f5f8, #e7eaf1);
+}
+
+.pg-scene--ink {
+  background:
+    radial-gradient(90% 70% at 78% 14%, rgba(255, 255, 255, 0.16), transparent 62%),
+    linear-gradient(170deg, #0a0c12, #05070c);
+}
+
+/* The scenes that bring their own ground bring their own ink with it: the page
+   foreground is right for exactly one of them at a time. */
+.pg-scene--chroma .pg-scene__tag,
+.pg-scene--paper .pg-scene__tag {
+  color: rgba(16, 21, 36, 0.66);
+}
+
+.pg-scene--ink .pg-scene__tag {
+  color: rgba(238, 242, 252, 0.6);
 }
 
 /* The lens can only show off against something with structure, so the stage
@@ -903,8 +987,21 @@ pre {
   right: 0;
 }
 
+.pg-stage__caption::before {
+  background: linear-gradient(transparent, color-mix(in srgb, var(--bg) 94%, transparent) 58%);
+  bottom: -14px;
+  content: '';
+  height: 76px;
+  left: -18px;
+  pointer-events: none;
+  position: absolute;
+  right: -18px;
+  z-index: -1;
+}
+
 .pg-stage__caption {
   bottom: 14px;
+  z-index: 3;
   color: var(--fg-faint);
   font-size: 0.72rem;
   left: 18px;
@@ -915,6 +1012,7 @@ pre {
 .pg-lens-handle {
   cursor: grab;
   position: absolute;
+  touch-action: none;
   transform: translate(-50%, -50%);
   z-index: 2;
 }
@@ -2671,7 +2769,7 @@ kbd {
   }
 
   .pg-stage {
-    min-height: 240px;
+    height: 300px;
   }
 
   .pg-lens {

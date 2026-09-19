@@ -245,7 +245,7 @@ export class LiquidRenderer {
   private wobble = 0
 
   public constructor(private readonly canvas: HTMLCanvasElement, options: LiquidRendererOptions = {}) {
-    this.intensity = clamp(options.intensity ?? 0.72, 0, 1.4)
+    this.intensity = clamp(options.intensity ?? 0.42, 0, 1.4)
     this.ornaments = [
       options.glow === false ? 0 : 1,
       options.ripple === false ? 0 : 1,
@@ -253,7 +253,7 @@ export class LiquidRenderer {
       options.shimmer === false ? 0 : 1,
     ]
     this.radius = options.radius ?? 16
-    this.tint = hexToRgb(options.tint ?? '#8eb9ff')
+    this.tint = hexToRgb(options.tint ?? '#8f8f8f')
     this.resizeObserver = typeof ResizeObserver === 'undefined'
       ? null
       : new ResizeObserver(() => this.resize())

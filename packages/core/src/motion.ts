@@ -27,7 +27,7 @@ export const attachLiquidMotion = (
   const prefersReducedMotion = mediaQuery('(prefers-reduced-motion: reduce)')
   const reducedMotion = (): boolean => options.respectReducedMotion === true && prefersReducedMotion.matches
 
-  const wobbliness = clamp(options.wobbliness ?? 1, 0, 1.5)
+  const wobbliness = clamp(options.wobbliness ?? 0.1, 0, 1.5)
   const bounce = clamp(options.bounce ?? 0.05, 0, 0.16)
   const tilt = clamp(options.tilt ?? 3.5, 0, 12)
 
@@ -49,7 +49,7 @@ export const attachLiquidMotion = (
   // be, and letting it arrive under the same underdamped springs as everything
   // else is what makes it overshoot and settle like set jelly instead of
   // gliding there on a transition.
-  const elasticity = clamp(options.elasticity ?? 0.16, 0, 1)
+  const elasticity = clamp(options.elasticity ?? 0, 0, 1)
   const elasticX = new SpringValue(0, { damping: jellyDamping * 1.1, mass: 1.1, stiffness: 190 })
   const elasticY = new SpringValue(0, { damping: jellyDamping * 1.1, mass: 1.1, stiffness: 190 })
   const elasticStretchX = new SpringValue(0, { damping: jellyDamping, mass: 1, stiffness: 210 })

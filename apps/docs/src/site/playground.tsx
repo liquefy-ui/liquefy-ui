@@ -21,6 +21,20 @@ import { THEME_LABELS, THEME_ORDER, TINTS, useSiteConfig } from './site-config'
  * does, so it sits at the top of the playground where a first-time visitor's
  * pointer already is.
  */
+/**
+ * What the lens is dragged over. Each scene is here because glass behaves
+ * differently against it, and the notes say which property it is for — a
+ * gradient hides displacement that fine rules make obvious, a bright ground
+ * swallows the rim that a dark one shows off.
+ */
+const SCENES = [
+  { id: 'mark', label: 'The wordmark', note: 'soft ink, wide shapes' },
+  { id: 'rules', label: 'Fine rules', note: 'where displacement shows' },
+  { id: 'chroma', label: 'Saturated colour', note: 'where dispersion shows' },
+  { id: 'paper', label: 'Near white', note: 'where a rim usually disappears' },
+  { id: 'ink', label: 'Near black', note: 'where a rim carries the shape' },
+] as const
+
 const LensStage = () => {
   const stageRef = useRef<HTMLDivElement>(null)
   const draggingRef = useRef(false)
@@ -55,11 +69,27 @@ const LensStage = () => {
 
   return (
     <div className="pg-stage" ref={stageRef}>
-      <div aria-hidden="true" className="pg-stage__backdrop">
-        <LiquefyLockup className="pg-stage__word" />
-        <span className="pg-stage__orb pg-stage__orb--one" />
-        <span className="pg-stage__orb pg-stage__orb--two" />
-        <span className="pg-stage__rule" />
+      {/* The scenes scroll; the lens does not. Glass only tells you anything
+          against something, and it tells you different things against
+          different somethings — so each scene is picked for one property the
+          material has to survive, and the lens stays put while they pass. */}
+      <div className="pg-stage__scroll">
+        {SCENES.map((scene) => (
+          <section className={`pg-scene pg-scene--${scene.id}`} key={scene.id}>
+            {scene.id === 'mark' ? (
+              <div aria-hidden="true" className="pg-stage__backdrop">
+                <LiquefyLockup className="pg-stage__word" />
+                <span className="pg-stage__orb pg-stage__orb--one" />
+                <span className="pg-stage__orb pg-stage__orb--two" />
+                <span className="pg-stage__rule" />
+              </div>
+            ) : null}
+            <span className="pg-scene__tag">
+              {scene.label}
+              <em>{scene.note}</em>
+            </span>
+          </section>
+        ))}
       </div>
       <div
         className="pg-lens-handle"
@@ -74,7 +104,10 @@ const LensStage = () => {
           <span className="pg-lens__hint">drag me</span>
         </LiquidSurface>
       </div>
-      <span className="pg-stage__caption">A WebGL displacement lens bending the live backdrop at its bezel.</span>
+      <span className="pg-stage__caption">
+        Scroll the scenes past the lens, and drag the lens across them. Edge
+        refraction is off by default — the switch for it is on the right.
+      </span>
     </div>
   )
 }

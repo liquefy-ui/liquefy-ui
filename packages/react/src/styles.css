@@ -1,6 +1,6 @@
 @layer liquefy-ui {
   :root {
-    --lq-accent: #8eb9ff;
+    --lq-accent: #8f8f8f;
     --lq-space: 4px;
     --lq-radius-default: 18px;
     --lq-duration: 420ms;

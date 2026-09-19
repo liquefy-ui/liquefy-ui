@@ -50,21 +50,21 @@ export const defaultBreakpoints: LiquefyBreakpoints = {
 
 const defaultConfig: LiquefyConfig = {
   breakpoints: defaultBreakpoints,
-  dispersion: 0.6,
-  elasticity: 0.16,
+  dispersion: 0.8,
+  elasticity: 0,
   glow: true,
-  intensity: 0.72,
-  lens: true,
+  intensity: 0.42,
+  lens: false,
   motion: true,
   ripple: true,
   shimmer: true,
   sparkle: true,
   spacing: 4,
   theme: 'system',
-  tint: '#8eb9ff',
+  tint: '#8f8f8f',
   transparency: true,
-  webgl: true,
-  wobbliness: 1,
+  webgl: false,
+  wobbliness: 0.1,
 }
 
 const LiquefyContext = createContext<LiquefyConfig>(defaultConfig)

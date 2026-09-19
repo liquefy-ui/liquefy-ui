@@ -122,10 +122,10 @@ export const surfaceDocs: ComponentDoc[] = [
     props: [
       { defaultValue: '1', description: 'How much of the bend the material can take without folding to spend, 0 to 1.', name: 'refraction', type: 'number' },
       { description: 'How far the glass softens what it refracts, in pixels.', name: 'frost', type: 'number' },
-      { defaultValue: '0.6', description: 'How far apart the red and blue channels are pulled at the rim, 0 to 1.', name: 'dispersion', type: 'number' },
+      { defaultValue: '0.8', description: 'How far apart the red and blue channels are pulled at the rim, 0 to 1.', name: 'dispersion', type: 'number' },
       { description: 'Width of the refracting band at the rim. Defaults to 22% of the short side.', name: 'bezel', type: 'number' },
       { defaultValue: '2', description: 'Exponent of the bezel cross-section: 1 is an even ramp, higher piles the bend against the rim.', name: 'curve', type: 'number' },
-      { defaultValue: '0.16', description: 'How far the surface leans toward a pointer that has not reached it yet.', name: 'elasticity', type: 'number' },
+      { defaultValue: '0', description: 'How far the surface leans toward a pointer that has not reached it yet.', name: 'elasticity', type: 'number' },
       { defaultValue: 'false', description: 'Lit rim glow, click ripple, iridescent shimmer and drifting sparkle.', name: 'glow / ripple / shimmer / sparkle', type: 'boolean' },
       { defaultValue: 'false', description: 'Dims the glass for a surface sitting on a bright backdrop.', name: 'overLight', type: 'boolean' },
       { description: 'Corner radius (px or CSS value).', name: 'radius', type: 'number | string' },

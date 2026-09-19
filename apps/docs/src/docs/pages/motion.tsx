@@ -58,7 +58,7 @@ export const motionDoc: DocEntry = {
         <GuideTable
           headers={['Prop', 'Range', 'What it changes']}
           rows={[
-            [<code>wobbliness</code>, <>0 – 1.5 (default <code>1</code>)</>, 'Damping of the jelly springs. 0 removes the overshoot but keeps the movement; 1.5 is comically loose.'],
+            [<code>wobbliness</code>, <>0 – 1.5 (default <code>0.1</code>)</>, 'Damping of the jelly springs. 0 removes the overshoot but keeps the movement; 1.5 is comically loose.'],
             [<code>motion</code>, 'boolean', 'Master switch. Off detaches the springs entirely and leaves the CSS transitions, so states are still legible.'],
             [<code>interactive</code>, 'boolean, per surface', 'Off on a surface means it never tracks the pointer at all — the right call for a static container.'],
           ]}
