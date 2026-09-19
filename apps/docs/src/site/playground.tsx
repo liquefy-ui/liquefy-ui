@@ -33,112 +33,126 @@ const SCENES = [
 ] as const
 
 /** Long enough to read a scene, short enough that nobody waits for the next. */
-const AUTO_ADVANCE_MS = 2600
-
-/** Anything that says the visitor has taken over. */
-const HANDOVER = ['pointerdown', 'wheel', 'touchstart', 'keydown'] as const
-
-/**
- * Walks the scenes once, on its own, and then gets out of the way.
- *
- * Three things keep this from being the kind of carousel people disable:
- * it starts only when the stage is actually on screen, it stops the moment the
- * visitor touches it, and it stops for good at the last scene rather than
- * looping — so nothing is still moving when they come to read the page. A
- * reduced-motion preference skips it entirely, because this is movement they
- * did not ask for, whatever the library's own stance on animation is.
- */
-const useSceneAutoplay = (scrollerRef: { current: HTMLDivElement | null }) => {
-  useEffect(() => {
-    const scroller = scrollerRef.current
-    if (!scroller) return undefined
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined
-
-    let timer = 0
-    let index = 0
-    let observer: IntersectionObserver | undefined
-
-    const stop = () => {
-      window.clearTimeout(timer)
-      observer?.disconnect()
-      for (const type of HANDOVER) scroller.removeEventListener(type, stop)
-    }
-
-    const advance = () => {
-      index += 1
-      if (index >= SCENES.length) {
-        stop()
-        return
-      }
-      scroller.scrollTo({ behavior: 'smooth', top: index * scroller.clientHeight })
-      timer = window.setTimeout(advance, AUTO_ADVANCE_MS)
-    }
-
-    for (const type of HANDOVER) scroller.addEventListener(type, stop, { passive: true })
-
-    observer = new IntersectionObserver((entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return
-      observer?.disconnect()
-      timer = window.setTimeout(advance, AUTO_ADVANCE_MS)
-    }, { threshold: 0.5 })
-    observer.observe(scroller)
-
-    return stop
-  }, [scrollerRef])
-}
+const AUTO_ADVANCE_MS = 2800
 
 /**
  * A panel of glass held still while the world moves behind it.
  *
- * The card is inside the scroll container rather than floating over it, stuck
- * to the middle with a zero-height sticky box. That is what lets a wheel over
- * the card still scroll the scenes: a card positioned outside the scroller
- * would be a dead spot in the middle of the very thing the visitor is trying
- * to move.
+ * The scenes are driven, never dragged. An earlier version let the wheel scroll
+ * them, which turned the stage into a trap: with the pointer over it the page
+ * itself would not move until all six scenes had been wound past, and the very
+ * first notch of that wheel was also read as "the visitor has taken over", so
+ * the slideshow stopped before it had started. Now the scroller is not
+ * user-scrollable at all — it advances on its own and on the dots, and the page
+ * scrolls straight past it the way every other block does.
  */
 const LensStage = () => {
   const scrollerRef = useRef<HTMLDivElement>(null)
-  useSceneAutoplay(scrollerRef)
+  const [index, setIndex] = useState(0)
+  const [taken, setTaken] = useState(false)
+
+  const show = (next: number) => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    setIndex(next)
+    scroller.scrollTo({ behavior: 'smooth', top: next * scroller.clientHeight })
+  }
+
+  /**
+   * One pass, and then it leaves the page alone. It waits until the stage is on
+   * screen so nobody misses it, stops for good at the last scene rather than
+   * looping, and does not run at all under a reduced-motion preference — this
+   * is movement the visitor did not ask for, whatever the library's own stance
+   * on animation is.
+   */
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller || taken) return undefined
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined
+
+    let at = 0
+    let timer = 0
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return
+      observer.disconnect()
+      timer = window.setTimeout(function step() {
+        at += 1
+        if (at >= SCENES.length) return
+        setIndex(at)
+        scroller.scrollTo({ behavior: 'smooth', top: at * scroller.clientHeight })
+        timer = window.setTimeout(step, AUTO_ADVANCE_MS)
+      }, AUTO_ADVANCE_MS)
+    }, { threshold: 0.4 })
+    observer.observe(scroller)
+
+    return () => {
+      window.clearTimeout(timer)
+      observer.disconnect()
+    }
+  }, [taken])
+
+  /** A resize changes what one scene is worth, so the offset has to be redone. */
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller) return undefined
+    const reflow = () => { scroller.scrollTop = index * scroller.clientHeight }
+    window.addEventListener('resize', reflow)
+    return () => window.removeEventListener('resize', reflow)
+  }, [index])
 
   return (
-  <div className="pg-stage">
-    <div className="pg-stage__scroll" ref={scrollerRef}>
-      <div className="pg-stage__sticky">
-        <LiquidSurface className="pg-card" radius={28}>
-          <p className="pg-card__eyebrow">Live material</p>
-          <h3 className="pg-card__title">Nothing behind it is hidden.</h3>
-          <p className="pg-card__body">
-            This panel is the same LiquidSurface every component is built on, held
-            over whatever happens to be passing. Scroll it across a photograph, a
-            grid and a wall of colour — the material has to survive all three, and
-            the controls on the right change it everywhere at once.
-          </p>
-        </LiquidSurface>
+    <div className="pg-stage">
+      <div className="pg-stage__scroll" ref={scrollerRef}>
+        <div className="pg-stage__sticky">
+          <LiquidSurface className="pg-card" radius={28}>
+            <p className="pg-card__eyebrow">Live material</p>
+            <h3 className="pg-card__title">Nothing behind it is hidden.</h3>
+            <p className="pg-card__body">
+              This panel is the same LiquidSurface every component is built on, held
+              over whatever happens to be passing. A photograph, a grid and a wall of
+              colour — the material has to survive all three, and the controls on the
+              right change it everywhere at once.
+            </p>
+          </LiquidSurface>
+        </div>
+
+        {SCENES.map((scene) => (
+          <section className={`pg-scene pg-scene--${scene.id}`} key={scene.id}>
+            {scene.id === 'mark' ? (
+              <div aria-hidden="true" className="pg-stage__backdrop">
+                <LiquefyLockup className="pg-stage__word" />
+                <span className="pg-stage__orb pg-stage__orb--one" />
+                <span className="pg-stage__orb pg-stage__orb--two" />
+                <span className="pg-stage__rule" />
+              </div>
+            ) : null}
+            <span className="pg-scene__tag">
+              {scene.label}
+              <em>{scene.note}</em>
+              {'credit' in scene ? <em className="pg-scene__credit">Photo by {scene.credit}</em> : null}
+            </span>
+          </section>
+        ))}
       </div>
 
-      {SCENES.map((scene) => (
-        <section className={`pg-scene pg-scene--${scene.id}`} key={scene.id}>
-          {scene.id === 'mark' ? (
-            <div aria-hidden="true" className="pg-stage__backdrop">
-              <LiquefyLockup className="pg-stage__word" />
-              <span className="pg-stage__orb pg-stage__orb--one" />
-              <span className="pg-stage__orb pg-stage__orb--two" />
-              <span className="pg-stage__rule" />
-            </div>
-          ) : null}
-          <span className="pg-scene__tag">
-            {scene.label}
-            <em>{scene.note}</em>
-            {'credit' in scene ? <em className="pg-scene__credit">Photo by {scene.credit}</em> : null}
-          </span>
-        </section>
-      ))}
+      <div aria-label="Scenes" className="pg-dots" role="group">
+        {SCENES.map((scene, position) => (
+          <button
+            aria-current={position === index ? 'true' : undefined}
+            aria-label={scene.label}
+            className="pg-dots__dot"
+            key={scene.id}
+            onClick={() => { setTaken(true); show(position) }}
+            type="button"
+          />
+        ))}
+      </div>
+
+      <span className="pg-stage__caption">
+        {(SCENES[index] ?? SCENES[0]).label} — {index + 1} of {SCENES.length}. Edge refraction is
+        on by default; every switch for it is on the right.
+      </span>
     </div>
-    <span className="pg-stage__caption">
-      Scroll the scenes behind the glass. Edge refraction is off by default —
-      the switch for it is on the right.
-    </span>
-  </div>
   )
 }
 

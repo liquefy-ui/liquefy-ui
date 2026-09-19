@@ -845,12 +845,60 @@ pre {
    stage itself must not scroll and must not swallow touch either: the handle
    claims `touch-action` for the drag, and everything else here is free to be a
    normal scrolling region. */
+/* Not user-scrollable. It is still a scroll container — `scrollTop` is how the
+   slideshow moves — but the wheel belongs to the page, which is exactly what an
+   inner scroller sitting mid-article would otherwise steal. */
 .pg-stage__scroll {
   inset: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   position: absolute;
-  scroll-snap-type: y proximity;
+}
+
+.pg-dots {
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  position: absolute;
+  right: 10px;
+  top: 0;
+  z-index: 3;
+}
+
+/* A 7px dot inside a 22px target: the mark can be small, the thing you hit
+   cannot be. */
+.pg-dots__dot {
+  appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  height: 22px;
+  padding: 0;
+  place-items: center;
+  width: 22px;
+}
+
+.pg-dots__dot::before {
+  background: rgba(255, 255, 255, 0.46);
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
+  content: '';
+  height: 7px;
+  transition: background 200ms ease, height 200ms ease;
+  width: 7px;
+}
+
+.pg-dots__dot[aria-current]::before {
+  background: #fff;
+  height: 18px;
+}
+
+.pg-dots__dot:focus-visible {
+  border-radius: 999px;
+  outline: 2px solid var(--lq-accent);
+  outline-offset: -1px;
 }
 
 .pg-scene {
@@ -858,7 +906,6 @@ pre {
   background-size: cover;
   height: var(--pg-stage-h);
   position: relative;
-  scroll-snap-align: start;
 }
 
 /* A zero-flow sticky box: it fills one scroll viewport, stays pinned to it, and
@@ -1081,6 +1128,7 @@ pre {
 
 .pg-stage__caption {
   bottom: 14px;
+  padding-right: 26px;
   z-index: 3;
   color: var(--fg-faint);
   font-size: 0.72rem;
