@@ -42,7 +42,7 @@ const propRows: PropRow[] = [
     type: 'boolean',
   },
   {
-    defaultValue: 'true',
+    defaultValue: 'false',
     description: 'The WebGL shine pass, and with it the four ornaments below. Off falls back to CSS-only glass with no canvas element created at all.',
     name: 'webgl',
     type: 'boolean',
@@ -78,7 +78,7 @@ const propRows: PropRow[] = [
     type: 'number',
   },
   {
-    defaultValue: 'true',
+    defaultValue: 'false',
     description: 'The SVG displacement lens at the bezel. Off keeps the blur but drops the refraction. It is the most expensive thing the material can do, so it is opt-in.',
     name: 'lens',
     type: 'boolean',

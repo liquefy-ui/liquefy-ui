@@ -59,7 +59,7 @@ const defaultConfig: LiquefyConfig = {
   frost: 6,
   glow: true,
   intensity: 1.2,
-  lens: true,
+  lens: false,
   motion: true,
   refraction: 0.7,
   ripple: false,
@@ -69,7 +69,7 @@ const defaultConfig: LiquefyConfig = {
   theme: 'system',
   tint: '#8f8f8f',
   transparency: true,
-  webgl: true,
+  webgl: false,
   wobbliness: 0.1,
 }
 

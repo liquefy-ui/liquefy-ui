@@ -64,14 +64,14 @@ const DEFAULT_MATERIAL: MaterialConfig = {
   frost: 6,
   glow: true,
   intensity: 1.2,
-  lens: true,
+  lens: false,
   refraction: 0.7,
   ripple: false,
   shimmer: true,
   sparkle: false,
   tint: '#8f8f8f',
   transparency: true,
-  webgl: true,
+  webgl: false,
   wobbliness: 0.1,
 }
 
