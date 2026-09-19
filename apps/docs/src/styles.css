@@ -830,12 +830,223 @@ pre {
 }
 
 .pg-stage {
+  /* Held in a custom property because the sticky card has to be exactly this
+     tall and cancel exactly this much flow: a percentage margin would resolve
+     against the width, which is the wrong axis and a very quiet bug. */
+  --pg-stage-h: clamp(360px, 54vh, 520px);
   border: 1px solid var(--line);
   border-radius: 26px;
-  min-height: 300px;
+  height: var(--pg-stage-h);
   overflow: hidden;
   position: relative;
-  touch-action: none;
+}
+
+/* The scenes scroll inside the stage while the lens sits above them, so the
+   stage itself must not scroll and must not swallow touch either: the handle
+   claims `touch-action` for the drag, and everything else here is free to be a
+   normal scrolling region. */
+.pg-stage__scroll {
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: absolute;
+  scroll-snap-type: y proximity;
+}
+
+.pg-dots {
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  position: absolute;
+  right: 10px;
+  top: 0;
+  z-index: 3;
+}
+
+/* A 7px dot inside a 22px target: the mark can be small, the thing you hit
+   cannot be. */
+.pg-dots__dot {
+  appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  height: 22px;
+  padding: 0;
+  place-items: center;
+  width: 22px;
+}
+
+.pg-dots__dot::before {
+  background: rgba(255, 255, 255, 0.46);
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
+  content: '';
+  height: 7px;
+  transition: background 200ms ease, height 200ms ease;
+  width: 7px;
+}
+
+.pg-dots__dot[aria-current]::before {
+  background: #fff;
+  height: 18px;
+}
+
+.pg-dots__dot:focus-visible {
+  border-radius: 999px;
+  outline: 2px solid var(--lq-accent);
+  outline-offset: -1px;
+}
+
+.pg-scene {
+  background-position: center;
+  background-size: cover;
+  height: var(--pg-stage-h);
+  position: relative;
+  scroll-snap-align: start;
+}
+
+/* A zero-flow sticky box: it fills one scroll viewport, stays pinned to it, and
+   takes its own height back out of the flow so the scenes below start where
+   they would have anyway. The card lives inside the scroller rather than over
+   it so that a wheel on the card still scrolls the scenes. */
+.pg-stage__sticky {
+  display: grid;
+  height: var(--pg-stage-h);
+  margin-bottom: calc(var(--pg-stage-h) * -1);
+  place-items: center;
+  pointer-events: none;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* The one place the clear material cannot carry its own text. Its default has
+   no blur on purpose — clarity over blur is the whole pitch — and a photograph
+   will cheerfully put a white cloud behind white type. So this panel sets a
+   legibility floor the way a product would: real frost, a dark fill, and light
+   ink whatever the page theme is, because it is always over imagery. Every
+   other control still reaches it; only the floor is fixed. */
+.pg-card {
+  /* A floor, not a fixed value: the frost control still raises it, it just
+     cannot take the panel below what its own text needs. */
+  --lq-blur: max(16px, var(--lq-frost, 0px));
+  --lq-saturate: 1.5;
+  --lq-fill: rgba(9, 11, 18, 0.3);
+  --lq-line: rgba(255, 255, 255, 0.24);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 26px 28px;
+  pointer-events: auto;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.42);
+  width: min(420px, 78%);
+}
+
+.pg-card__eyebrow {
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.66rem;
+  font-weight: 680;
+  letter-spacing: 0.14em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.pg-card__title {
+  font-size: 1.22rem;
+  font-weight: 740;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.pg-card__body {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.pg-scene--fjord { background-image: url('/scenes/fjord.jpg'); }
+.pg-scene--summit { background-image: url('/scenes/summit.jpg'); }
+.pg-scene--coast { background-image: url('/scenes/coast.jpg'); }
+
+.pg-scene__credit {
+  margin-top: 4px;
+  opacity: 0.5;
+}
+
+.pg-scene__tag {
+  top: 18px;
+  color: var(--fg-muted);
+  font-size: 0.68rem;
+  font-weight: 650;
+  left: 18px;
+  letter-spacing: 0.1em;
+  position: absolute;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+.pg-scene__tag em {
+  display: block;
+  font-style: normal;
+  font-weight: 450;
+  letter-spacing: 0.02em;
+  opacity: 0.68;
+  text-transform: none;
+}
+
+/* Fine rules in both axes. A gradient can hide a bend of several pixels; a 9px
+   grid cannot, which is why this is the scene to judge refraction on. */
+.pg-scene--rules {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 8px, var(--line-strong) 8px 9px),
+    repeating-linear-gradient(90deg, transparent 0 8px, var(--line) 8px 9px),
+    linear-gradient(160deg, var(--bg-soft), var(--bg));
+}
+
+/* Saturated, hard-edged bands: dispersion is a colour effect, and it has
+   nothing to separate on a neutral ground. */
+.pg-scene--chroma {
+  background: linear-gradient(
+    118deg,
+    #ff2d55 0 17%,
+    #ff9f0a 17% 34%,
+    #ffd60a 34% 50%,
+    #30d158 50% 66%,
+    #0a84ff 66% 83%,
+    #bf5af2 83% 100%
+  );
+}
+
+.pg-scene--paper {
+  background:
+    radial-gradient(120% 90% at 20% 10%, rgba(255, 255, 255, 0.9), transparent 60%),
+    linear-gradient(170deg, #f4f5f8, #e7eaf1);
+}
+
+.pg-scene--ink {
+  background:
+    radial-gradient(90% 70% at 78% 14%, rgba(255, 255, 255, 0.16), transparent 62%),
+    linear-gradient(170deg, #0a0c12, #05070c);
+}
+
+/* The scenes that bring their own ground bring their own ink with it: the page
+   foreground is right for exactly one of them at a time. */
+.pg-scene--chroma .pg-scene__tag,
+.pg-scene--paper .pg-scene__tag {
+  color: rgba(16, 21, 36, 0.66);
+}
+
+.pg-scene--ink .pg-scene__tag,
+.pg-scene--fjord .pg-scene__tag,
+.pg-scene--summit .pg-scene__tag,
+.pg-scene--coast .pg-scene__tag {
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
 }
 
 /* The lens can only show off against something with structure, so the stage
@@ -903,53 +1114,27 @@ pre {
   right: 0;
 }
 
+.pg-stage__caption::before {
+  background: linear-gradient(transparent, color-mix(in srgb, var(--bg) 94%, transparent) 58%);
+  bottom: -14px;
+  content: '';
+  height: 76px;
+  left: -18px;
+  pointer-events: none;
+  position: absolute;
+  right: -18px;
+  z-index: -1;
+}
+
 .pg-stage__caption {
   bottom: 14px;
+  padding-right: 26px;
+  z-index: 3;
   color: var(--fg-faint);
   font-size: 0.72rem;
   left: 18px;
   position: absolute;
   right: 18px;
-}
-
-.pg-lens-handle {
-  cursor: grab;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-}
-
-.pg-lens-handle:active {
-  cursor: grabbing;
-}
-
-.pg-lens {
-  align-items: center;
-  display: flex;
-  height: 128px;
-  justify-content: center;
-  width: 168px;
-}
-
-.pg-lens .lq-surface__content {
-  align-items: center;
-  display: flex;
-  height: 100%;
-  justify-content: center;
-  width: 100%;
-}
-
-.pg-lens__hint {
-  color: var(--fg-muted);
-  font-size: 0.68rem;
-  font-weight: 650;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  transition: opacity 400ms ease;
-}
-
-.pg-lens-handle[data-touched='true'] .pg-lens__hint {
-  opacity: 0;
 }
 
 .pg-sample,
@@ -1072,34 +1257,6 @@ pre {
   flex-direction: column;
   gap: 12px;
   padding-top: 16px;
-}
-
-.pg-tints {
-  display: flex;
-  gap: 8px;
-  /* Room for the selected ring, which the scrolling rail would otherwise clip. */
-  padding: 4px;
-}
-
-.pg-tints button {
-  appearance: none;
-  background: var(--swatch);
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  cursor: pointer;
-  height: 26px;
-  padding: 0;
-  transition: transform 320ms cubic-bezier(0.3, 1.5, 0.4, 1), box-shadow 200ms ease;
-  width: 26px;
-}
-
-.pg-tints button:hover {
-  transform: scale(1.12);
-}
-
-.pg-tints button[aria-pressed='true'] {
-  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--fg);
 }
 
 .pg-rail__actions {
@@ -2670,13 +2827,28 @@ kbd {
     font-size: clamp(2rem, 9vw, 2.6rem);
   }
 
+  /* The custom property, not `height`: the sticky card and every scene are
+     sized from it too, so overriding only the box left the card centred in a
+     taller box than the one it was being viewed through. */
   .pg-stage {
-    min-height: 240px;
+    --pg-stage-h: 340px;
   }
 
-  .pg-lens {
-    height: 104px;
-    width: 132px;
+  /* Smaller as well as shorter. At this width the card was covering most of the
+     stage, which leaves nothing of the scene it is supposed to be held over. */
+  .pg-card {
+    gap: 8px;
+    padding: 18px 20px;
+    width: min(420px, 86%);
+  }
+
+  .pg-card__title {
+    font-size: 1.08rem;
+  }
+
+  .pg-card__body {
+    font-size: 0.8rem;
+    line-height: 1.5;
   }
 }
 

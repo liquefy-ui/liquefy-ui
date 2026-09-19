@@ -127,31 +127,41 @@ const glideToTile = async (locator, gap, duration) => {
   }, [node, gap, duration])
 }
 
-// ── The lens ────────────────────────────────────────────────────────────────────
+// ── The glass, with the world moving behind it ──────────────────────────────────
 const stage = page.locator('.pg-stage')
-const handle = page.locator('.pg-lens-handle')
+const scroller = '.pg-stage__scroll'
 await stage.scrollIntoViewIfNeeded()
 await page.waitForTimeout(900)
 
 const stageBox = await stage.boundingBox()
-const home = await centre(handle)
+const sceneHeight = await page.evaluate(
+  (selector) => document.querySelector(selector).clientHeight,
+  scroller,
+)
 
 const lead = LEAD_MS - (Date.now() - started)
 if (lead > 0) await page.waitForTimeout(lead)
 
-await page.mouse.move(home.x, home.y)
-await page.mouse.down()
-let at = home
+const glide = async (from, to, steps, frameMs) => {
+  for (let index = 1; index <= steps; index++) {
+    const t = easeInOut(index / steps)
+    await page.evaluate(
+      ([selector, y]) => { document.querySelector(selector).scrollTop = y },
+      [scroller, from + (to - from) * t],
+    )
+    if (frameMs > 0) await page.waitForTimeout(frameMs)
+  }
+}
+
+let at = 0
 for (const [to, steps, frameMs] of [
-  [{ x: home.x - 300, y: home.y + 18 }, 20, 10], // slow pass: letters bend under the bezel
-  [{ x: home.x + 230, y: home.y - 28 }, 12, 0], // fast sweep back: the one that wobbles
-  [{ x: home.x + 30, y: home.y + 36 }, 7, 0], // flick down
-  [home, 11, 6],
+  [sceneHeight * 1, 20, 8], // out to the photograph
+  [sceneHeight * 2, 14, 4], // past the grid, where the bend reads
+  [0, 22, 0], // home, so the clip can loop
 ]) {
-  await sweep(at, to, steps, frameMs)
+  await glide(at, to, steps, frameMs)
   at = to
 }
-await page.mouse.up()
 await page.mouse.move(stageBox.x + 40, stageBox.y + stageBox.height - 24)
 await page.waitForTimeout(900)
 

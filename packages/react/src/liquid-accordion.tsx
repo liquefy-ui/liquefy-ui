@@ -33,9 +33,7 @@ export const LiquidAccordion = forwardRef<HTMLDivElement, LiquidAccordionProps>(
       <LiquidSurface
         className={['lq-accordion', className].filter(Boolean).join(' ')}
         interactive={false}
-        lens={false}
         ref={ref}
-        webgl={false}
         {...props}
       />
     )}

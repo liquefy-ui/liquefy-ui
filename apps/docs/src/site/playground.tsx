@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
+import { useRef, useState } from 'react'
 import {
   GlassCard,
   LiquidBadge,
@@ -14,70 +14,104 @@ import {
 import { HeartIcon, SearchIcon, SparklesIcon } from '@liquefy-ui/icons'
 import { CopyButton } from './chrome'
 import { LiquefyLockup } from './lockup'
-import { THEME_LABELS, THEME_ORDER, TINTS, useSiteConfig } from './site-config'
+import { THEME_LABELS, THEME_ORDER, useSiteConfig } from './site-config'
 
 /**
- * The draggable lens. It is the fastest way to feel what the library actually
- * does, so it sits at the top of the playground where a first-time visitor's
- * pointer already is.
+ * What the glass is held over. Photographs first, because that is what a real
+ * product puts behind a panel, and synthetic scenes between them because a
+ * photograph is bad at proving one specific thing: a 9px grid shows a bend a
+ * soft gradient would hide, and hard-edged colour shows a dispersion that a
+ * neutral ground has nothing to separate.
+ */
+const SCENES = [
+  { id: 'mark', label: 'The wordmark', note: 'soft ink, wide shapes' },
+  { credit: 'Alexey Topolyanskiy', id: 'fjord', label: 'Fjord', note: 'deep water, hard rock' },
+  { id: 'rules', label: 'Fine rules', note: 'where displacement shows' },
+  { credit: 'Wolfgang Lutz', id: 'summit', label: 'Summit', note: 'where a rim usually disappears' },
+  { id: 'chroma', label: 'Saturated colour', note: 'where dispersion shows' },
+  { credit: 'Stefan Kunze', id: 'coast', label: 'Coast at dusk', note: 'soft light, long gradients' },
+] as const
+
+/**
+ * A panel of glass held still while the world moves behind it.
+ *
+ * The scenes scroll freely. The card is inside the scroll container rather than
+ * floating over it, stuck to the middle by a zero-flow sticky box — a card
+ * positioned outside would be a dead spot for the wheel in the middle of the
+ * very thing the visitor is trying to move. The dots follow the scroll and can
+ * jump it; `overscroll-behavior` is left alone, so once the last scene is
+ * reached the page carries on the way it would over any embedded scroller.
  */
 const LensStage = () => {
-  const stageRef = useRef<HTMLDivElement>(null)
-  const draggingRef = useRef(false)
-  const [position, setPosition] = useState({ x: 0.62, y: 0.46 })
-  const [touched, setTouched] = useState(false)
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [index, setIndex] = useState(0)
 
-  const moveTo = (clientX: number, clientY: number) => {
-    const stage = stageRef.current
-    if (!stage) return
-    const bounds = stage.getBoundingClientRect()
-    setPosition({
-      x: Math.min(0.86, Math.max(0.14, (clientX - bounds.left) / bounds.width)),
-      y: Math.min(0.78, Math.max(0.22, (clientY - bounds.top) / bounds.height)),
-    })
+  const onScroll = () => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    const at = Math.round(scroller.scrollTop / Math.max(scroller.clientHeight, 1))
+    setIndex(Math.min(Math.max(at, 0), SCENES.length - 1))
   }
-
-  const handleDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    draggingRef.current = true
-    setTouched(true)
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId)
-    } catch {
-      // Synthetic pointer events have no active pointer to capture.
-    }
-    moveTo(event.clientX, event.clientY)
-  }
-
-  const lensStyle = {
-    left: `${(position.x * 100).toFixed(2)}%`,
-    top: `${(position.y * 100).toFixed(2)}%`,
-  } as CSSProperties
 
   return (
-    <div className="pg-stage" ref={stageRef}>
-      <div aria-hidden="true" className="pg-stage__backdrop">
-        <LiquefyLockup className="pg-stage__word" />
-        <span className="pg-stage__orb pg-stage__orb--one" />
-        <span className="pg-stage__orb pg-stage__orb--two" />
-        <span className="pg-stage__rule" />
+    <div className="pg-stage">
+      <div className="pg-stage__scroll" onScroll={onScroll} ref={scrollerRef}>
+        <div className="pg-stage__sticky">
+          <LiquidSurface className="pg-card" radius={28}>
+            <p className="pg-card__eyebrow">Live material</p>
+            <h3 className="pg-card__title">Nothing behind it is hidden.</h3>
+            <p className="pg-card__body">
+              This panel is the same LiquidSurface every component is built on, held
+              over whatever happens to be passing. A photograph, a grid and a wall of
+              colour — the material has to survive all three, and the controls on the
+              right change it everywhere at once.
+            </p>
+          </LiquidSurface>
+        </div>
+
+        {SCENES.map((scene) => (
+          <section className={`pg-scene pg-scene--${scene.id}`} key={scene.id}>
+            {scene.id === 'mark' ? (
+              <div aria-hidden="true" className="pg-stage__backdrop">
+                <LiquefyLockup className="pg-stage__word" />
+                <span className="pg-stage__orb pg-stage__orb--one" />
+                <span className="pg-stage__orb pg-stage__orb--two" />
+                <span className="pg-stage__rule" />
+              </div>
+            ) : null}
+            <span className="pg-scene__tag">
+              {scene.label}
+              <em>{scene.note}</em>
+              {'credit' in scene ? <em className="pg-scene__credit">Photo by {scene.credit}</em> : null}
+            </span>
+          </section>
+        ))}
       </div>
-      <div
-        className="pg-lens-handle"
-        data-touched={touched}
-        onPointerCancel={() => { draggingRef.current = false }}
-        onPointerDown={handleDown}
-        onPointerMove={(event) => { if (draggingRef.current) moveTo(event.clientX, event.clientY) }}
-        onPointerUp={() => { draggingRef.current = false }}
-        style={lensStyle}
-      >
-        <LiquidSurface className="pg-lens" radius={72} variant="clear">
-          <span className="pg-lens__hint">drag me</span>
-        </LiquidSurface>
+
+      <div aria-label="Scenes" className="pg-dots" role="group">
+        {SCENES.map((scene, position) => (
+          <button
+            aria-current={position === index ? 'true' : undefined}
+            aria-label={scene.label}
+            className="pg-dots__dot"
+            key={scene.id}
+            onClick={() => scrollerRef.current?.scrollTo({
+              behavior: 'smooth',
+              top: position * scrollerRef.current.clientHeight,
+            })}
+            type="button"
+          />
+        ))}
       </div>
-      <span className="pg-stage__caption">A WebGL displacement lens bending the live backdrop at its bezel.</span>
+
+      <span className="pg-stage__caption">
+        {(SCENES[index] ?? SCENES[0]).label} — {index + 1} of {SCENES.length}. Scroll
+        the scenes, or pick one on the right.
+      </span>
     </div>
   )
 }
+
 
 const SAMPLE_TABS = [
   { label: 'Card', value: 'card' },
@@ -154,6 +188,14 @@ const SamplePanel = () => {
 
 const THEME_OPTIONS = THEME_ORDER.map((value) => ({ label: THEME_LABELS[value], value }))
 
+/** The four ornaments, which are separable from the optics underneath them. */
+const ORNAMENTS = [
+  { key: 'glow', label: 'Rim glow' },
+  { key: 'ripple', label: 'Press ripple' },
+  { key: 'shimmer', label: 'Iridescence' },
+  { key: 'sparkle', label: 'Sparkle' },
+] as const satisfies readonly { key: 'glow' | 'ripple' | 'shimmer' | 'sparkle'; label: string }[]
+
 type ControlRailProps = {
   onToggleCode: () => void
   showCode: boolean
@@ -173,25 +215,6 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
           options={THEME_OPTIONS}
           value={config.themeChoice}
         />
-      </div>
-
-      <div className="pg-rail__row pg-rail__row--stacked">
-        <span className="pg-rail__label">
-          Tint
-          <em>{TINTS.find((entry) => entry.value === config.tint)?.label ?? config.tint}</em>
-        </span>
-        <div className="pg-tints">
-          {TINTS.map((tint) => (
-            <button
-              aria-label={`Set tint to ${tint.label}`}
-              aria-pressed={config.tint === tint.value}
-              key={tint.value}
-              onClick={() => config.setMaterial('tint', tint.value)}
-              style={{ '--swatch': tint.value } as CSSProperties}
-              type="button"
-            />
-          ))}
-        </div>
       </div>
 
       <div className="pg-rail__row pg-rail__row--stacked">
@@ -216,6 +239,55 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
           step={0.1}
           value={config.wobbliness}
         />
+      </div>
+
+      <div className="pg-rail__row pg-rail__row--stacked">
+        <span className="pg-rail__label">Elasticity<em>{config.elasticity.toFixed(2)}</em></span>
+        <LiquidSlider
+          aria-label="Elasticity"
+          max={0.6}
+          min={0}
+          onValueChange={(value) => config.setMaterial('elasticity', value)}
+          step={0.01}
+          value={config.elasticity}
+        />
+      </div>
+
+      <div className="pg-rail__row pg-rail__row--stacked">
+        <span className="pg-rail__label">Frost<em>{config.frost}px</em></span>
+        <LiquidSlider
+          aria-label="Frost"
+          max={24}
+          min={0}
+          onValueChange={(value) => config.setMaterial('frost', value)}
+          step={1}
+          value={config.frost}
+        />
+      </div>
+
+      <div className="pg-rail__row pg-rail__row--stacked">
+        <span className="pg-rail__label">Dispersion<em>{config.dispersion.toFixed(2)}</em></span>
+        <LiquidSlider
+          aria-label="Dispersion"
+          max={1}
+          min={0}
+          onValueChange={(value) => config.setMaterial('dispersion', value)}
+          step={0.05}
+          value={config.dispersion}
+        />
+      </div>
+
+      <div className="pg-rail__switches">
+        {ORNAMENTS.map((ornament) => (
+          <div className="pg-rail__row" key={ornament.key}>
+            <span>{ornament.label}</span>
+            <LiquidSwitch
+              checked={config[ornament.key]}
+              label={ornament.label}
+              onCheckedChange={(next) => config.setMaterial(ornament.key, next)}
+            />
+          </div>
+        ))}
       </div>
 
       <div className="pg-rail__switches">
@@ -264,13 +336,16 @@ const providerSnippet = (config: ReturnType<typeof useSiteConfig>) => {
   return [
     '<LiquefyProvider',
     `  theme="${config.themeChoice}"`,
-    `  tint="${config.tint}"`,
     `  intensity={${config.intensity.toFixed(2)}}`,
     `  wobbliness={${config.wobbliness.toFixed(1)}}`,
+    `  elasticity={${config.elasticity.toFixed(2)}}`,
+    `  frost={${config.frost}}`,
+    `  dispersion={${config.dispersion.toFixed(2)}}`,
     flag('lens', config.lens),
     flag('motion', config.motionOn),
     flag('transparency', config.transparency),
     flag('webgl', config.webgl),
+    ...ORNAMENTS.map((ornament) => flag(ornament.key, config[ornament.key])),
     '>',
     '  <App />',
     '</LiquefyProvider>',

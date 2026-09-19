@@ -29,11 +29,10 @@ import { join } from 'node:path'
  * Dark theme: the displacement and the dispersion at the rim are both low-contrast
  * effects, and a light backdrop swallows them.
  *
- * One unbroken drag: the handle tracks pointer *movement*, and it stops tracking
- * after a single step if the button is released and pressed again — so a route
- * with a release in the middle can never bring the lens home, and the loop jumps
- * on every repeat. The pointer also has to leave the lens before the last frames,
- * because the lit rim is hover and hover does not fade while it sits there.
+ * Ending where it started: the scenes have to come back to the top, or the GIF
+ * jumps on every repeat. The pointer also has to leave the card before the last
+ * frames, because the lit rim is hover and hover does not fade while it sits
+ * there.
  */
 
 const URL_ = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
@@ -72,54 +71,60 @@ const page = await context.newPage()
 await page.goto(URL_, { waitUntil: 'networkidle' })
 
 const stage = page.locator('.pg-stage')
-const handle = page.locator('.pg-lens-handle')
+const scroller = '.pg-stage__scroll'
 await stage.scrollIntoViewIfNeeded()
 await page.waitForTimeout(900)
 
 const box = await stage.boundingBox()
-const rest = await handle.boundingBox()
-const home = { x: rest.x + rest.width / 2, y: rest.y + rest.height / 2 }
+const sceneHeight = await page.evaluate(
+  (selector) => document.querySelector(selector).clientHeight,
+  scroller,
+)
 
 const lead = LEAD_MS - (Date.now() - started)
 if (lead > 0) await page.waitForTimeout(lead)
 
 const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) ** 2) / 2)
 
-/** Pointer speed is what the springs read, and each step already costs ~45ms of
- *  driver overhead — so the step count sets the pace more than `frameMs` does. */
-const sweep = async (from, to, steps, frameMs) => {
+/** Each step costs ~45ms of driver overhead, so the step count sets the pace far
+ *  more than `frameMs` does. */
+const glide = async (from, to, steps, frameMs) => {
   for (let index = 1; index <= steps; index++) {
     const t = easeInOut(index / steps)
-    await page.mouse.move(from.x + (to.x - from.x) * t, from.y + (to.y - from.y) * t)
+    await page.evaluate(
+      ([selector, y]) => { document.querySelector(selector).scrollTop = y },
+      [scroller, from + (to - from) * t],
+    )
     if (frameMs > 0) await page.waitForTimeout(frameMs)
   }
 }
 
+// Out to the photograph, past the grid, and home again. Slow on the way down so
+// the frost has time to read, quicker coming back.
 const route = [
-  [{ x: home.x - 300, y: home.y + 20 }, 20, 10], // slow pass left, letters bending under the bezel
-  [{ x: home.x + 210, y: home.y - 26 }, 13, 0], // fast sweep back: the one that wobbles
-  [{ x: home.x + 40, y: home.y + 34 }, 8, 0], // flick down
-  [home, 12, 8], // ease home, so the last frame matches the first
+  [sceneHeight * 1, 22, 8],
+  [sceneHeight * 2, 16, 4],
+  [sceneHeight * 3, 16, 4],
+  [0, 26, 0],
 ]
 
-await page.mouse.move(home.x, home.y)
-await page.mouse.down()
-let at = home
+let at = 0
 for (const [to, steps, frameMs] of route) {
-  await sweep(at, to, steps, frameMs)
+  await glide(at, to, steps, frameMs)
   at = to
 }
-await page.mouse.up()
 await page.mouse.move(box.x + 40, box.y + box.height - 30)
 await page.waitForTimeout(1300)
 
-const end = await handle.boundingBox()
-const drift = Math.hypot((end.x + end.width / 2) - home.x, (end.y + end.height / 2) - home.y)
+const end = await page.evaluate(
+  (selector) => document.querySelector(selector).scrollTop,
+  scroller,
+)
 await context.close()
 await browser.close()
 
-if (drift > 5) {
-  console.error(`The lens ended ${Math.round(drift)}px from where it started; the loop would jump.`)
+if (end > 5) {
+  console.error(`The scenes ended ${Math.round(end)}px from the top; the loop would jump.`)
   process.exit(1)
 }
 

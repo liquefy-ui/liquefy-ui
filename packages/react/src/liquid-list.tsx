@@ -18,9 +18,7 @@ export const LiquidList = forwardRef<HTMLDivElement, LiquidListProps>(({
     className={['lq-list', className].filter(Boolean).join(' ')}
     data-inset={inset}
     interactive={false}
-    lens={false}
     ref={ref}
-    webgl={false}
     {...props}
   >
     <ul className="lq-list__items" role="list">{children}</ul>

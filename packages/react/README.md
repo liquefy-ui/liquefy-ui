@@ -7,7 +7,7 @@ import { LiquefyProvider, LiquidButton } from '@liquefy-ui/react'
 import { ArrowRightIcon } from '@liquefy-ui/icons'
 import '@liquefy-ui/react/styles.css'
 
-<LiquefyProvider theme="system" tint="#8f8f8f" intensity={0.72}>
+<LiquefyProvider theme="system" tint="#8f8f8f" intensity={1.2}>
   <LiquidButton iconAfter={<ArrowRightIcon />} size="lg">Continue</LiquidButton>
 </LiquefyProvider>
 ```

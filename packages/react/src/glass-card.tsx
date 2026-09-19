@@ -23,7 +23,7 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(({
   ...props
 }, ref) => {
   return (
-    <LiquidSurface className={['lq-card', className].filter(Boolean).join(' ')} lens={false} ref={ref} {...props}>
+    <LiquidSurface className={['lq-card', className].filter(Boolean).join(' ')} ref={ref} {...props}>
       {(eyebrow || title || description) && (
         <header className="lq-card__header">
           {eyebrow && <span className="lq-card__eyebrow">{eyebrow}</span>}

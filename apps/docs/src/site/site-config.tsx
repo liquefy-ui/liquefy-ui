@@ -21,8 +21,16 @@ import {
  * which is the whole point of showing the controls first.
  */
 export type MaterialConfig = {
+  dispersion: number
+  elasticity: number
+  frost: number
+  glow: boolean
+  refraction: number
   intensity: number
   lens: boolean
+  ripple: boolean
+  shimmer: boolean
+  sparkle: boolean
   tint: string
   transparency: boolean
   webgl: boolean
@@ -50,21 +58,21 @@ export type SiteConfig = MaterialConfig & {
   themeChoice: LiquefyTheme
 }
 
-export const TINTS = [
-  { label: 'Graphite', value: '#8f8f8f' },
-  { label: 'Azure', value: '#6f9dff' },
-  { label: 'Violet', value: '#a98cff' },
-  { label: 'Mint', value: '#5ccfae' },
-  { label: 'Blush', value: '#ff93a6' },
-] as const
-
 const DEFAULT_MATERIAL: MaterialConfig = {
-  intensity: 0.72,
-  lens: true,
-  tint: TINTS[0].value,
+  dispersion: 0.1,
+  elasticity: 0.02,
+  frost: 6,
+  glow: true,
+  intensity: 1.2,
+  lens: false,
+  refraction: 0.7,
+  ripple: false,
+  shimmer: true,
+  sparkle: false,
+  tint: '#8f8f8f',
   transparency: true,
-  webgl: true,
-  wobbliness: 1,
+  webgl: false,
+  wobbliness: 0.1,
 }
 
 /**
@@ -83,9 +91,17 @@ export const SubProvider = ({
   return (
     <LiquefyProvider
       breakpoints={config.breakpoints}
+      dispersion={config.dispersion}
+      elasticity={config.elasticity}
+      frost={config.frost}
+      glow={config.glow}
       intensity={config.intensity}
       lens={config.lens}
       motion={config.motion}
+      refraction={config.refraction}
+      ripple={config.ripple}
+      shimmer={config.shimmer}
+      sparkle={config.sparkle}
       spacing={config.spacing}
       theme={config.theme}
       tint={config.tint}
@@ -216,10 +232,18 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
   return (
     <SiteConfigContext.Provider value={value}>
       <LiquefyProvider
+        dispersion={material.dispersion}
+        elasticity={material.elasticity}
+        frost={material.frost}
+        glow={material.glow}
         intensity={material.intensity}
         lens={material.lens}
         motion={motion}
         theme={theme}
+        refraction={material.refraction}
+        ripple={material.ripple}
+        shimmer={material.shimmer}
+        sparkle={material.sparkle}
         tint={material.tint}
         transparency={material.transparency}
         webgl={material.webgl}

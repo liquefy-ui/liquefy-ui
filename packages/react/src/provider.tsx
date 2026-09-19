@@ -3,9 +3,27 @@ import { createContext, useContext, useMemo, useState, type CSSProperties, type 
 export type LiquefyConfig = {
   /** Minimum widths behind the responsive form of the `styles` prop. */
   breakpoints: LiquefyBreakpoints
+  /** How far apart the red and blue channels are pulled at the rim, 0 to 1. */
+  dispersion: number
+  /** How far a surface leans toward a pointer that has not reached it yet. */
+  elasticity: number
+  /** Backdrop blur added to every glass, in pixels. Each surface keeps the blur its own job needs on top. */
+  frost: number
+  /**
+   * The four ornaments. They are what makes the material read as liquefy-ui
+   * rather than plain glass, and they are separable because a product that
+   * wants the optics without the personality should not have to fork the
+   * stylesheet to get it.
+   */
+  glow: boolean
   intensity: number
   lens: boolean
   motion: boolean
+  /** How much of the bend the material can take without folding to spend, 0 to 1. */
+  refraction: number
+  ripple: boolean
+  shimmer: boolean
+  sparkle: boolean
   /** One spacing unit. `styles={{ p: 3 }}` resolves to three of these. */
   spacing: number | string
   theme: LiquefyTheme
@@ -36,15 +54,23 @@ export const defaultBreakpoints: LiquefyBreakpoints = {
 
 const defaultConfig: LiquefyConfig = {
   breakpoints: defaultBreakpoints,
-  intensity: 0.72,
-  lens: true,
+  dispersion: 0.1,
+  elasticity: 0.02,
+  frost: 6,
+  glow: true,
+  intensity: 1.2,
+  lens: false,
   motion: true,
+  refraction: 0.7,
+  ripple: false,
+  shimmer: true,
+  sparkle: false,
   spacing: 4,
   theme: 'system',
-  tint: '#8eb9ff',
+  tint: '#8f8f8f',
   transparency: true,
-  webgl: true,
-  wobbliness: 1,
+  webgl: false,
+  wobbliness: 0.1,
 }
 
 const LiquefyContext = createContext<LiquefyConfig>(defaultConfig)
@@ -60,9 +86,17 @@ export const LiquefyProvider = ({
   breakpoints,
   children,
   className,
+  dispersion = defaultConfig.dispersion,
+  elasticity = defaultConfig.elasticity,
+  frost = defaultConfig.frost,
+  glow = defaultConfig.glow,
   intensity = defaultConfig.intensity,
   lens = defaultConfig.lens,
   motion = defaultConfig.motion,
+  refraction = defaultConfig.refraction,
+  ripple = defaultConfig.ripple,
+  shimmer = defaultConfig.shimmer,
+  sparkle = defaultConfig.sparkle,
   spacing = defaultConfig.spacing,
   theme = defaultConfig.theme,
   tint = defaultConfig.tint,
@@ -82,9 +116,17 @@ export const LiquefyProvider = ({
   const value = useMemo(
     () => ({
       breakpoints: resolvedBreakpoints,
+      dispersion,
+      elasticity,
+      frost,
+      glow,
       intensity,
       lens,
       motion,
+      refraction,
+      ripple,
+      shimmer,
+      sparkle,
       spacing,
       theme,
       tint,
@@ -92,10 +134,14 @@ export const LiquefyProvider = ({
       webgl,
       wobbliness,
     }),
-    [resolvedBreakpoints, intensity, lens, motion, spacing, theme, tint, transparency, webgl, wobbliness],
+    [
+      resolvedBreakpoints, dispersion, elasticity, frost, glow, intensity, lens, motion, ripple,
+      refraction, shimmer, sparkle, spacing, theme, tint, transparency, webgl, wobbliness,
+    ],
   )
   const style: CustomProperties = {
     '--lq-accent': tint,
+    '--lq-frost': `${frost}px`,
     '--lq-intensity': intensity,
     '--lq-space': typeof spacing === 'number' ? `${spacing}px` : spacing,
   }

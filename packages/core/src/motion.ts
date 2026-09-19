@@ -1,4 +1,5 @@
 import { clamp } from './math'
+import { elasticPull, observeElasticPointer } from './elastic'
 import { mediaQuery } from './media'
 import { LiquidRenderer } from './renderer'
 import { SpringValue } from './spring'
@@ -26,7 +27,7 @@ export const attachLiquidMotion = (
   const prefersReducedMotion = mediaQuery('(prefers-reduced-motion: reduce)')
   const reducedMotion = (): boolean => options.respectReducedMotion === true && prefersReducedMotion.matches
 
-  const wobbliness = clamp(options.wobbliness ?? 1, 0, 1.5)
+  const wobbliness = clamp(options.wobbliness ?? 0.1, 0, 1.5)
   const bounce = clamp(options.bounce ?? 0.05, 0, 0.16)
   const tilt = clamp(options.tilt ?? 3.5, 0, 12)
 
@@ -43,10 +44,25 @@ export const attachLiquidMotion = (
   const lift = new SpringValue(0, { damping: 20, mass: 0.8, stiffness: 230 })
   const presence = new SpringValue(0, { damping: 24, stiffness: 210 })
 
+  // The lean toward an approaching pointer. Held in springs rather than applied
+  // straight from the pointer position: the target is where the surface wants to
+  // be, and letting it arrive under the same underdamped springs as everything
+  // else is what makes it overshoot and settle like set jelly instead of
+  // gliding there on a transition.
+  const elasticity = clamp(options.elasticity ?? 0.02, 0, 1)
+  const elasticX = new SpringValue(0, { damping: jellyDamping * 1.1, mass: 1.1, stiffness: 190 })
+  const elasticY = new SpringValue(0, { damping: jellyDamping * 1.1, mass: 1.1, stiffness: 190 })
+  const elasticStretchX = new SpringValue(0, { damping: jellyDamping, mass: 1, stiffness: 210 })
+  const elasticStretchY = new SpringValue(0, { damping: jellyDamping, mass: 1, stiffness: 210 })
+
   const renderer = canvas && options.webgl !== false && !reducedMotion()
     ? new LiquidRenderer(canvas, {
+      glow: options.glow,
       intensity: options.intensity,
       radius: readRadius(element),
+      ripple: options.ripple,
+      shimmer: options.shimmer,
+      sparkle: options.sparkle,
       tint: options.tint,
     })
     : null
@@ -59,7 +75,10 @@ export const attachLiquidMotion = (
     const delta = (time - lastTime) / 1000
     lastTime = time
     let moving = false
-    for (const spring of [pointerX, pointerY, scaleX, scaleY, skew, tiltX, tiltY, lift, presence]) {
+    for (const spring of [
+      pointerX, pointerY, scaleX, scaleY, skew, tiltX, tiltY, lift, presence,
+      elasticX, elasticY, elasticStretchX, elasticStretchY,
+    ]) {
       if (spring.step(delta)) moving = true
     }
 
@@ -77,8 +96,18 @@ export const attachLiquidMotion = (
     element.style.setProperty('--lq-pointer-y', `${(pointerY.current * 100).toFixed(3)}%`)
     element.style.setProperty('--lq-rotate-x', `${tiltX.current.toFixed(3)}deg`)
     element.style.setProperty('--lq-rotate-y', `${tiltY.current.toFixed(3)}deg`)
-    element.style.setProperty('--lq-scale-x', scaleX.current.toFixed(4))
-    element.style.setProperty('--lq-scale-y', scaleY.current.toFixed(4))
+    // The lean multiplies the gesture scales rather than replacing them, so a
+    // press still squashes while the surface is leaning.
+    element.style.setProperty('--lq-scale-x', (scaleX.current * (1 + elasticStretchX.current)).toFixed(4))
+    element.style.setProperty('--lq-scale-y', (scaleY.current * (1 + elasticStretchY.current)).toFixed(4))
+    element.style.setProperty('--lq-elastic-x', `${elasticX.current.toFixed(3)}px`)
+    element.style.setProperty('--lq-elastic-y', `${elasticY.current.toFixed(3)}px`)
+    // Swing the lit quarter of the rim toward the pointer, so the highlight
+    // reads as one light source the surface is turning under.
+    element.style.setProperty(
+      '--lq-edge-angle',
+      `${(145 + normalizedX * 38 + normalizedY * 16).toFixed(2)}deg`,
+    )
     element.style.setProperty('--lq-skew-x', `${skew.current.toFixed(3)}deg`)
     element.style.setProperty('--lq-lift', `${lift.current.toFixed(3)}px`)
     element.style.setProperty('--lq-magnet-x', `${(normalizedX * magnetStrength).toFixed(3)}px`)
@@ -203,6 +232,20 @@ export const attachLiquidMotion = (
     }, 140)
   }
 
+  // Pointer movement anywhere on the page, not just over the element: leaning
+  // toward a pointer that has not arrived yet is the whole point of the effect.
+  const releaseElastic = elasticity > 0
+    ? observeElasticPointer(element, (bounds, clientX, clientY) => {
+      if (disabled || reducedMotion()) return
+      const pull = elasticPull(bounds, clientX, clientY, { elasticity, reach: options.reach })
+      elasticX.setTarget(pull.offsetX)
+      elasticY.setTarget(pull.offsetY)
+      elasticStretchX.setTarget(pull.stretchX)
+      elasticStretchY.setTarget(pull.stretchY)
+      start()
+    })
+    : null
+
   element.addEventListener('pointerenter', enter)
   element.addEventListener('pointermove', updatePointer)
   element.addEventListener('pointerleave', leave)
@@ -214,6 +257,7 @@ export const attachLiquidMotion = (
     destroy: () => {
       cancelAnimationFrame(frame)
       window.clearTimeout(releaseTimeout)
+      releaseElastic?.()
       renderer?.destroy()
       element.removeEventListener('pointerenter', enter)
       element.removeEventListener('pointermove', updatePointer)
