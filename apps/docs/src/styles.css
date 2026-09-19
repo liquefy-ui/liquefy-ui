@@ -830,9 +830,13 @@ pre {
 }
 
 .pg-stage {
+  /* Held in a custom property because the sticky card has to be exactly this
+     tall and cancel exactly this much flow: a percentage margin would resolve
+     against the width, which is the wrong axis and a very quiet bug. */
+  --pg-stage-h: clamp(360px, 54vh, 520px);
   border: 1px solid var(--line);
   border-radius: 26px;
-  height: clamp(320px, 48vh, 460px);
+  height: var(--pg-stage-h);
   overflow: hidden;
   position: relative;
 }
@@ -850,9 +854,79 @@ pre {
 }
 
 .pg-scene {
-  height: 100%;
+  background-position: center;
+  background-size: cover;
+  height: var(--pg-stage-h);
   position: relative;
   scroll-snap-align: start;
+}
+
+/* A zero-flow sticky box: it fills one scroll viewport, stays pinned to it, and
+   takes its own height back out of the flow so the scenes below start where
+   they would have anyway. The card lives inside the scroller rather than over
+   it so that a wheel on the card still scrolls the scenes. */
+.pg-stage__sticky {
+  display: grid;
+  height: var(--pg-stage-h);
+  margin-bottom: calc(var(--pg-stage-h) * -1);
+  place-items: center;
+  pointer-events: none;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* The one place the clear material cannot carry its own text. Its default has
+   no blur on purpose — clarity over blur is the whole pitch — and a photograph
+   will cheerfully put a white cloud behind white type. So this panel sets a
+   legibility floor the way a product would: real frost, a dark fill, and light
+   ink whatever the page theme is, because it is always over imagery. Every
+   other control still reaches it; only the floor is fixed. */
+.pg-card {
+  --lq-blur: 16px;
+  --lq-saturate: 1.5;
+  --lq-fill: rgba(9, 11, 18, 0.3);
+  --lq-line: rgba(255, 255, 255, 0.24);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 26px 28px;
+  pointer-events: auto;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.42);
+  width: min(420px, 78%);
+}
+
+.pg-card__eyebrow {
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.66rem;
+  font-weight: 680;
+  letter-spacing: 0.14em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.pg-card__title {
+  font-size: 1.22rem;
+  font-weight: 740;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.pg-card__body {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.pg-scene--fjord { background-image: url('/scenes/fjord.jpg'); }
+.pg-scene--summit { background-image: url('/scenes/summit.jpg'); }
+.pg-scene--coast { background-image: url('/scenes/coast.jpg'); }
+
+.pg-scene__credit {
+  margin-top: 4px;
+  opacity: 0.5;
 }
 
 .pg-scene__tag {
@@ -918,8 +992,12 @@ pre {
   color: rgba(16, 21, 36, 0.66);
 }
 
-.pg-scene--ink .pg-scene__tag {
-  color: rgba(238, 242, 252, 0.6);
+.pg-scene--ink .pg-scene__tag,
+.pg-scene--fjord .pg-scene__tag,
+.pg-scene--summit .pg-scene__tag,
+.pg-scene--coast .pg-scene__tag {
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
 }
 
 /* The lens can only show off against something with structure, so the stage
@@ -1007,47 +1085,6 @@ pre {
   left: 18px;
   position: absolute;
   right: 18px;
-}
-
-.pg-lens-handle {
-  cursor: grab;
-  position: absolute;
-  touch-action: none;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-}
-
-.pg-lens-handle:active {
-  cursor: grabbing;
-}
-
-.pg-lens {
-  align-items: center;
-  display: flex;
-  height: 128px;
-  justify-content: center;
-  width: 168px;
-}
-
-.pg-lens .lq-surface__content {
-  align-items: center;
-  display: flex;
-  height: 100%;
-  justify-content: center;
-  width: 100%;
-}
-
-.pg-lens__hint {
-  color: var(--fg-muted);
-  font-size: 0.68rem;
-  font-weight: 650;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  transition: opacity 400ms ease;
-}
-
-.pg-lens-handle[data-touched='true'] .pg-lens__hint {
-  opacity: 0;
 }
 
 .pg-sample,
@@ -2772,9 +2809,9 @@ kbd {
     height: 300px;
   }
 
-  .pg-lens {
-    height: 104px;
-    width: 132px;
+  .pg-card {
+    padding: 20px 22px;
+    width: min(420px, 88%);
   }
 }
 

@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
+import { useState, type CSSProperties } from 'react'
 import {
   GlassCard,
   LiquidBadge,
@@ -17,100 +17,71 @@ import { LiquefyLockup } from './lockup'
 import { THEME_LABELS, THEME_ORDER, TINTS, useSiteConfig } from './site-config'
 
 /**
- * The draggable lens. It is the fastest way to feel what the library actually
- * does, so it sits at the top of the playground where a first-time visitor's
- * pointer already is.
- */
-/**
- * What the lens is dragged over. Each scene is here because glass behaves
- * differently against it, and the notes say which property it is for — a
- * gradient hides displacement that fine rules make obvious, a bright ground
- * swallows the rim that a dark one shows off.
+ * What the glass is held over. Photographs first, because that is what a real
+ * product puts behind a panel, and synthetic scenes between them because a
+ * photograph is bad at proving one specific thing: a 9px grid shows a bend a
+ * soft gradient would hide, and hard-edged colour shows a dispersion that a
+ * neutral ground has nothing to separate.
  */
 const SCENES = [
   { id: 'mark', label: 'The wordmark', note: 'soft ink, wide shapes' },
+  { credit: 'Alexey Topolyanskiy', id: 'fjord', label: 'Fjord', note: 'deep water, hard rock' },
   { id: 'rules', label: 'Fine rules', note: 'where displacement shows' },
+  { credit: 'Wolfgang Lutz', id: 'summit', label: 'Summit', note: 'where a rim usually disappears' },
   { id: 'chroma', label: 'Saturated colour', note: 'where dispersion shows' },
-  { id: 'paper', label: 'Near white', note: 'where a rim usually disappears' },
-  { id: 'ink', label: 'Near black', note: 'where a rim carries the shape' },
+  { credit: 'Stefan Kunze', id: 'coast', label: 'Coast at dusk', note: 'soft light, long gradients' },
 ] as const
 
-const LensStage = () => {
-  const stageRef = useRef<HTMLDivElement>(null)
-  const draggingRef = useRef(false)
-  const [position, setPosition] = useState({ x: 0.62, y: 0.46 })
-  const [touched, setTouched] = useState(false)
-
-  const moveTo = (clientX: number, clientY: number) => {
-    const stage = stageRef.current
-    if (!stage) return
-    const bounds = stage.getBoundingClientRect()
-    setPosition({
-      x: Math.min(0.86, Math.max(0.14, (clientX - bounds.left) / bounds.width)),
-      y: Math.min(0.78, Math.max(0.22, (clientY - bounds.top) / bounds.height)),
-    })
-  }
-
-  const handleDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    draggingRef.current = true
-    setTouched(true)
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId)
-    } catch {
-      // Synthetic pointer events have no active pointer to capture.
-    }
-    moveTo(event.clientX, event.clientY)
-  }
-
-  const lensStyle = {
-    left: `${(position.x * 100).toFixed(2)}%`,
-    top: `${(position.y * 100).toFixed(2)}%`,
-  } as CSSProperties
-
-  return (
-    <div className="pg-stage" ref={stageRef}>
-      {/* The scenes scroll; the lens does not. Glass only tells you anything
-          against something, and it tells you different things against
-          different somethings — so each scene is picked for one property the
-          material has to survive, and the lens stays put while they pass. */}
-      <div className="pg-stage__scroll">
-        {SCENES.map((scene) => (
-          <section className={`pg-scene pg-scene--${scene.id}`} key={scene.id}>
-            {scene.id === 'mark' ? (
-              <div aria-hidden="true" className="pg-stage__backdrop">
-                <LiquefyLockup className="pg-stage__word" />
-                <span className="pg-stage__orb pg-stage__orb--one" />
-                <span className="pg-stage__orb pg-stage__orb--two" />
-                <span className="pg-stage__rule" />
-              </div>
-            ) : null}
-            <span className="pg-scene__tag">
-              {scene.label}
-              <em>{scene.note}</em>
-            </span>
-          </section>
-        ))}
-      </div>
-      <div
-        className="pg-lens-handle"
-        data-touched={touched}
-        onPointerCancel={() => { draggingRef.current = false }}
-        onPointerDown={handleDown}
-        onPointerMove={(event) => { if (draggingRef.current) moveTo(event.clientX, event.clientY) }}
-        onPointerUp={() => { draggingRef.current = false }}
-        style={lensStyle}
-      >
-        <LiquidSurface className="pg-lens" radius={72} variant="clear">
-          <span className="pg-lens__hint">drag me</span>
+/**
+ * A panel of glass held still while the world moves behind it.
+ *
+ * The card is inside the scroll container rather than floating over it, stuck
+ * to the middle with a zero-height sticky box. That is what lets a wheel over
+ * the card still scroll the scenes: a card positioned outside the scroller
+ * would be a dead spot in the middle of the very thing the visitor is trying
+ * to move.
+ */
+const LensStage = () => (
+  <div className="pg-stage">
+    <div className="pg-stage__scroll">
+      <div className="pg-stage__sticky">
+        <LiquidSurface className="pg-card" radius={28}>
+          <p className="pg-card__eyebrow">Live material</p>
+          <h3 className="pg-card__title">Nothing behind it is hidden.</h3>
+          <p className="pg-card__body">
+            This panel is the same LiquidSurface every component is built on, held
+            over whatever happens to be passing. Scroll it across a photograph, a
+            grid and a wall of colour — the material has to survive all three, and
+            the controls on the right change it everywhere at once.
+          </p>
         </LiquidSurface>
       </div>
-      <span className="pg-stage__caption">
-        Scroll the scenes past the lens, and drag the lens across them. Edge
-        refraction is off by default — the switch for it is on the right.
-      </span>
+
+      {SCENES.map((scene) => (
+        <section className={`pg-scene pg-scene--${scene.id}`} key={scene.id}>
+          {scene.id === 'mark' ? (
+            <div aria-hidden="true" className="pg-stage__backdrop">
+              <LiquefyLockup className="pg-stage__word" />
+              <span className="pg-stage__orb pg-stage__orb--one" />
+              <span className="pg-stage__orb pg-stage__orb--two" />
+              <span className="pg-stage__rule" />
+            </div>
+          ) : null}
+          <span className="pg-scene__tag">
+            {scene.label}
+            <em>{scene.note}</em>
+            {'credit' in scene ? <em className="pg-scene__credit">Photo by {scene.credit}</em> : null}
+          </span>
+        </section>
+      ))}
     </div>
-  )
-}
+    <span className="pg-stage__caption">
+      Scroll the scenes behind the glass. Edge refraction is off by default —
+      the switch for it is on the right.
+    </span>
+  </div>
+)
+
 
 const SAMPLE_TABS = [
   { label: 'Card', value: 'card' },
