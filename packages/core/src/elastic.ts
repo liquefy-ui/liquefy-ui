@@ -22,7 +22,7 @@ export const elasticPull = (
   pointerY: number,
   options: ElasticOptions = {},
 ): ElasticPull => {
-  const elasticity = clamp(options.elasticity ?? 0, 0, 1)
+  const elasticity = clamp(options.elasticity ?? 0.02, 0, 1)
   const reach = Math.max(1, options.reach ?? 180)
   if (elasticity === 0 || bounds.width < 1 || bounds.height < 1) return atRest
 

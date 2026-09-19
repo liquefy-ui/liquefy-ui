@@ -19,6 +19,8 @@ export type LiquefyConfig = {
   intensity: number
   lens: boolean
   motion: boolean
+  /** How much of the bend the material can take without folding to spend, 0 to 1. */
+  refraction: number
   ripple: boolean
   shimmer: boolean
   sparkle: boolean
@@ -52,16 +54,17 @@ export const defaultBreakpoints: LiquefyBreakpoints = {
 
 const defaultConfig: LiquefyConfig = {
   breakpoints: defaultBreakpoints,
-  dispersion: 0.55,
-  elasticity: 0,
-  frost: 0,
+  dispersion: 0.1,
+  elasticity: 0.02,
+  frost: 6,
   glow: true,
   intensity: 1.2,
   lens: true,
   motion: true,
-  ripple: true,
+  refraction: 0.7,
+  ripple: false,
   shimmer: true,
-  sparkle: true,
+  sparkle: false,
   spacing: 4,
   theme: 'system',
   tint: '#8f8f8f',
@@ -90,6 +93,7 @@ export const LiquefyProvider = ({
   intensity = defaultConfig.intensity,
   lens = defaultConfig.lens,
   motion = defaultConfig.motion,
+  refraction = defaultConfig.refraction,
   ripple = defaultConfig.ripple,
   shimmer = defaultConfig.shimmer,
   sparkle = defaultConfig.sparkle,
@@ -119,6 +123,7 @@ export const LiquefyProvider = ({
       intensity,
       lens,
       motion,
+      refraction,
       ripple,
       shimmer,
       sparkle,
@@ -131,7 +136,7 @@ export const LiquefyProvider = ({
     }),
     [
       resolvedBreakpoints, dispersion, elasticity, frost, glow, intensity, lens, motion, ripple,
-      shimmer, sparkle, spacing, theme, tint, transparency, webgl, wobbliness,
+      refraction, shimmer, sparkle, spacing, theme, tint, transparency, webgl, wobbliness,
     ],
   )
   const style: CustomProperties = {

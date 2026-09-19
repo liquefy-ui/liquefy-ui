@@ -15,7 +15,7 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps
   elasticity?: number
   /** Backdrop blur, in pixels. What frosted glass actually is. */
   frost?: number
-  /** Lit rim glow that follows the pointer. Off here, unlike LiquidSurface. */
+  /** Lit rim glow that follows the pointer. Defaults to the provider. */
   glow?: boolean
   interactive?: boolean
   /** Dims the glass for a surface sitting on a bright backdrop. */
@@ -24,15 +24,15 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps
   radius?: number | string
   /** How much of the bend the material can take without folding to spend, 0 to 1. */
   refraction?: number
-  /** Ring that travels out from a press. Off here, unlike LiquidSurface. */
+  /** Ring that travels out from a press. Defaults to the provider. */
   ripple?: boolean
   /** How much the glass lifts the colour of what it refracts. */
   saturation?: number
-  /** Iridescent colour shift across the rim while wobbling. Off here. */
+  /** Iridescent colour shift across the rim while wobbling. Defaults to the provider. */
   shimmer?: boolean
   /** How far the lens softens what it refracts, in pixels. Not the backdrop blur — that is `frost`. */
   softness?: number
-  /** Drifting specular glints across the face. Off here. */
+  /** Drifting specular glints across the face. Defaults to the provider. */
   sparkle?: boolean
   tint?: string
   wobbliness?: number
@@ -44,8 +44,8 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps
  * `LiquidSurface` is the one to reach for in a product: it takes its whole
  * configuration from the provider and carries liquefy-ui's own character. This
  * one is for when the glass *is* the design — refraction, frost, dispersion and
- * the bezel are set per instance, and the four ornaments that make a surface
- * read as liquefy-ui rather than as plain glass start out switched off.
+ * the bezel are set per instance rather than taken from the provider. Anything
+ * left unset still falls back to it, so a page keeps one material.
  */
 export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
   bezel,
@@ -55,17 +55,17 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
   dispersion,
   elasticity,
   frost,
-  glow = false,
+  glow,
   interactive = true,
   overLight = false,
   padding,
   radius,
   refraction,
-  ripple = false,
+  ripple,
   saturation,
-  shimmer = false,
+  shimmer,
   softness,
-  sparkle = false,
+  sparkle,
   style,
   styles,
   tint,
@@ -76,7 +76,13 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
   const resolvedTint = tint ?? config.tint
   // With every ornament off there is nothing for the shader to draw, so the
   // canvas — and the WebGL context behind it — is not mounted at all.
-  const hasOrnaments = glow || ripple || shimmer || sparkle
+  const ornaments = {
+    glow: glow ?? config.glow,
+    ripple: ripple ?? config.ripple,
+    shimmer: shimmer ?? config.shimmer,
+    sparkle: sparkle ?? config.sparkle,
+  }
+  const hasOrnaments = Object.values(ornaments).some(Boolean)
   const resolvedWebgl = config.webgl && hasOrnaments
 
   const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
@@ -85,16 +91,16 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
     disabled: !interactive,
     dispersion: dispersion ?? config.dispersion,
     elasticity: elasticity ?? config.elasticity,
-    glow,
+    glow: ornaments.glow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,
     lensBlur: softness,
-    lensStrength: refraction,
+    lensStrength: refraction ?? config.refraction,
     motion: config.motion,
-    ripple,
+    ripple: ornaments.ripple,
     saturation,
-    shimmer,
-    sparkle,
+    shimmer: ornaments.shimmer,
+    sparkle: ornaments.sparkle,
     tint: resolvedTint,
     webgl: resolvedWebgl,
     wobbliness: wobbliness ?? config.wobbliness,

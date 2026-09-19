@@ -25,6 +25,7 @@ export type MaterialConfig = {
   elasticity: number
   frost: number
   glow: boolean
+  refraction: number
   intensity: number
   lens: boolean
   ripple: boolean
@@ -57,25 +58,18 @@ export type SiteConfig = MaterialConfig & {
   themeChoice: LiquefyTheme
 }
 
-export const TINTS = [
-  { label: 'Graphite', value: '#8f8f8f' },
-  { label: 'Azure', value: '#6f9dff' },
-  { label: 'Violet', value: '#a98cff' },
-  { label: 'Mint', value: '#5ccfae' },
-  { label: 'Blush', value: '#ff93a6' },
-] as const
-
 const DEFAULT_MATERIAL: MaterialConfig = {
-  dispersion: 0.55,
-  elasticity: 0,
-  frost: 0,
+  dispersion: 0.1,
+  elasticity: 0.02,
+  frost: 6,
   glow: true,
   intensity: 1.2,
   lens: true,
-  ripple: true,
+  refraction: 0.7,
+  ripple: false,
   shimmer: true,
-  sparkle: true,
-  tint: TINTS[0].value,
+  sparkle: false,
+  tint: '#8f8f8f',
   transparency: true,
   webgl: true,
   wobbliness: 0.1,
@@ -104,6 +98,7 @@ export const SubProvider = ({
       intensity={config.intensity}
       lens={config.lens}
       motion={config.motion}
+      refraction={config.refraction}
       ripple={config.ripple}
       shimmer={config.shimmer}
       sparkle={config.sparkle}
@@ -245,6 +240,7 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
         lens={material.lens}
         motion={motion}
         theme={theme}
+        refraction={material.refraction}
         ripple={material.ripple}
         shimmer={material.shimmer}
         sparkle={material.sparkle}

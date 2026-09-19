@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useRef, useState } from 'react'
 import {
   GlassCard,
   LiquidBadge,
@@ -14,7 +14,7 @@ import {
 import { HeartIcon, SearchIcon, SparklesIcon } from '@liquefy-ui/icons'
 import { CopyButton } from './chrome'
 import { LiquefyLockup } from './lockup'
-import { THEME_LABELS, THEME_ORDER, TINTS, useSiteConfig } from './site-config'
+import { THEME_LABELS, THEME_ORDER, useSiteConfig } from './site-config'
 
 /**
  * What the glass is held over. Photographs first, because that is what a real
@@ -32,77 +32,30 @@ const SCENES = [
   { credit: 'Stefan Kunze', id: 'coast', label: 'Coast at dusk', note: 'soft light, long gradients' },
 ] as const
 
-/** Long enough to read a scene, short enough that nobody waits for the next. */
-const AUTO_ADVANCE_MS = 2800
-
 /**
  * A panel of glass held still while the world moves behind it.
  *
- * The scenes are driven, never dragged. An earlier version let the wheel scroll
- * them, which turned the stage into a trap: with the pointer over it the page
- * itself would not move until all six scenes had been wound past, and the very
- * first notch of that wheel was also read as "the visitor has taken over", so
- * the slideshow stopped before it had started. Now the scroller is not
- * user-scrollable at all — it advances on its own and on the dots, and the page
- * scrolls straight past it the way every other block does.
+ * The scenes scroll freely. The card is inside the scroll container rather than
+ * floating over it, stuck to the middle by a zero-flow sticky box — a card
+ * positioned outside would be a dead spot for the wheel in the middle of the
+ * very thing the visitor is trying to move. The dots follow the scroll and can
+ * jump it; `overscroll-behavior` is left alone, so once the last scene is
+ * reached the page carries on the way it would over any embedded scroller.
  */
 const LensStage = () => {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
-  const [taken, setTaken] = useState(false)
 
-  const show = (next: number) => {
+  const onScroll = () => {
     const scroller = scrollerRef.current
     if (!scroller) return
-    setIndex(next)
-    scroller.scrollTo({ behavior: 'smooth', top: next * scroller.clientHeight })
+    const at = Math.round(scroller.scrollTop / Math.max(scroller.clientHeight, 1))
+    setIndex(Math.min(Math.max(at, 0), SCENES.length - 1))
   }
-
-  /**
-   * One pass, and then it leaves the page alone. It waits until the stage is on
-   * screen so nobody misses it, stops for good at the last scene rather than
-   * looping, and does not run at all under a reduced-motion preference — this
-   * is movement the visitor did not ask for, whatever the library's own stance
-   * on animation is.
-   */
-  useEffect(() => {
-    const scroller = scrollerRef.current
-    if (!scroller || taken) return undefined
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined
-
-    let at = 0
-    let timer = 0
-    const observer = new IntersectionObserver((entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return
-      observer.disconnect()
-      timer = window.setTimeout(function step() {
-        at += 1
-        if (at >= SCENES.length) return
-        setIndex(at)
-        scroller.scrollTo({ behavior: 'smooth', top: at * scroller.clientHeight })
-        timer = window.setTimeout(step, AUTO_ADVANCE_MS)
-      }, AUTO_ADVANCE_MS)
-    }, { threshold: 0.4 })
-    observer.observe(scroller)
-
-    return () => {
-      window.clearTimeout(timer)
-      observer.disconnect()
-    }
-  }, [taken])
-
-  /** A resize changes what one scene is worth, so the offset has to be redone. */
-  useEffect(() => {
-    const scroller = scrollerRef.current
-    if (!scroller) return undefined
-    const reflow = () => { scroller.scrollTop = index * scroller.clientHeight }
-    window.addEventListener('resize', reflow)
-    return () => window.removeEventListener('resize', reflow)
-  }, [index])
 
   return (
     <div className="pg-stage">
-      <div className="pg-stage__scroll" ref={scrollerRef}>
+      <div className="pg-stage__scroll" onScroll={onScroll} ref={scrollerRef}>
         <div className="pg-stage__sticky">
           <LiquidSurface className="pg-card" radius={28}>
             <p className="pg-card__eyebrow">Live material</p>
@@ -142,15 +95,18 @@ const LensStage = () => {
             aria-label={scene.label}
             className="pg-dots__dot"
             key={scene.id}
-            onClick={() => { setTaken(true); show(position) }}
+            onClick={() => scrollerRef.current?.scrollTo({
+              behavior: 'smooth',
+              top: position * scrollerRef.current.clientHeight,
+            })}
             type="button"
           />
         ))}
       </div>
 
       <span className="pg-stage__caption">
-        {(SCENES[index] ?? SCENES[0]).label} — {index + 1} of {SCENES.length}. Edge refraction is
-        on by default; every switch for it is on the right.
+        {(SCENES[index] ?? SCENES[0]).label} — {index + 1} of {SCENES.length}. Scroll
+        the scenes, or pick one on the right.
       </span>
     </div>
   )
@@ -259,25 +215,6 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
           options={THEME_OPTIONS}
           value={config.themeChoice}
         />
-      </div>
-
-      <div className="pg-rail__row pg-rail__row--stacked">
-        <span className="pg-rail__label">
-          Tint
-          <em>{TINTS.find((entry) => entry.value === config.tint)?.label ?? config.tint}</em>
-        </span>
-        <div className="pg-tints">
-          {TINTS.map((tint) => (
-            <button
-              aria-label={`Set tint to ${tint.label}`}
-              aria-pressed={config.tint === tint.value}
-              key={tint.value}
-              onClick={() => config.setMaterial('tint', tint.value)}
-              style={{ '--swatch': tint.value } as CSSProperties}
-              type="button"
-            />
-          ))}
-        </div>
       </div>
 
       <div className="pg-rail__row pg-rail__row--stacked">
@@ -399,7 +336,6 @@ const providerSnippet = (config: ReturnType<typeof useSiteConfig>) => {
   return [
     '<LiquefyProvider',
     `  theme="${config.themeChoice}"`,
-    `  tint="${config.tint}"`,
     `  intensity={${config.intensity.toFixed(2)}}`,
     `  wobbliness={${config.wobbliness.toFixed(1)}}`,
     `  elasticity={${config.elasticity.toFixed(2)}}`,

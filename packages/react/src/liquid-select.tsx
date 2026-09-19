@@ -54,6 +54,7 @@ export const LiquidSelect = forwardRef<HTMLButtonElement, LiquidSelectProps>(({
     glow: config.glow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,
+    lensStrength: config.refraction,
     motion: config.motion,
     ripple: config.ripple,
     shimmer: config.shimmer,

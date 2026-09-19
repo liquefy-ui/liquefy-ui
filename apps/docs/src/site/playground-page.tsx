@@ -4,7 +4,6 @@ import { Playground } from './playground'
 
 const MAPPING: [string, string, string][] = [
   ['Appearance', 'theme', 'Explicit light or dark. In an app, theme="system" follows the OS instead.'],
-  ['Tint', 'tint', 'The accent every surface tints against, written out as --lq-accent.'],
   ['Optical intensity', 'intensity', 'Strength of the glass: blur, saturation, and the brightness of the bezel.'],
   ['Wobbliness', 'wobbliness', 'Spring looseness. 0 keeps transitions but stops the jelly overshoot.'],
   ['Elasticity', 'elasticity', 'How far a surface leans toward a pointer that has not reached it yet. 0 is rigid.'],

@@ -186,7 +186,7 @@ export const createLensMap = (options: LensMapOptions): LensMap | null => {
   const radius = clamp(options.radius, 0, minimumSide / 2)
   const bezel = clamp(options.bezel ?? Math.max(10, minimumSide * 0.22), 4, minimumSide / 2)
   const curve = clamp(options.curve ?? defaultBezelCurve, 0.5, 4)
-  const strength = clamp(options.strength ?? 1, 0, 1)
+  const strength = clamp(options.strength ?? 0.7, 0, 1)
 
   // Walking inward from the rim by one pixel moves the sampled point by
   // `1 - maximumDisplacement * profile'(t) / bezel`. Once that goes negative the

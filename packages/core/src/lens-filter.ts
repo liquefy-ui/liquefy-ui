@@ -67,10 +67,10 @@ export const attachLiquidLens = (
     && mediaQuery('(prefers-reduced-transparency: reduce)').matches
   ) return null
 
-  const dispersion = clamp(options.dispersion ?? 0.55, 0, 1)
+  const dispersion = clamp(options.dispersion ?? 0.1, 0, 1)
   const blur = clamp(options.blur ?? 0.6, 0, 24)
   const saturation = clamp(options.saturation ?? 1.24, 0, 3)
-  const strength = clamp(options.strength ?? 1, 0, 1)
+  const strength = clamp(options.strength ?? 0.7, 0, 1)
 
   const id = `lq-lens-${(filterCount += 1)}`
   const filter = createElement('filter', {
