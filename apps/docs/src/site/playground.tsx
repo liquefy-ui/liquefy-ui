@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useRef, useState, type CSSProperties } from 'react'
 import {
   GlassCard,
   LiquidBadge,
@@ -32,77 +32,42 @@ const SCENES = [
   { credit: 'Stefan Kunze', id: 'coast', label: 'Coast at dusk', note: 'soft light, long gradients' },
 ] as const
 
-/** Long enough to read a scene, short enough that nobody waits for the next. */
-const AUTO_ADVANCE_MS = 2800
-
 /**
  * A panel of glass held still while the world moves behind it.
  *
- * The scenes are driven, never dragged. An earlier version let the wheel scroll
- * them, which turned the stage into a trap: with the pointer over it the page
- * itself would not move until all six scenes had been wound past, and the very
- * first notch of that wheel was also read as "the visitor has taken over", so
- * the slideshow stopped before it had started. Now the scroller is not
- * user-scrollable at all — it advances on its own and on the dots, and the page
- * scrolls straight past it the way every other block does.
+ * The scenes are the visitor's to move: the stage is an ordinary scrolling
+ * region and nothing snaps it afterwards, so it can be left halfway between two
+ * scenes with the glass straddling both — which is the one arrangement that
+ * shows what the material does to an edge, and the one a slideshow can never
+ * produce. The dots are a shortcut to a scene, not a set of positions the
+ * scroll is allowed to rest on.
  */
 const LensStage = () => {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
-  const [taken, setTaken] = useState(false)
 
   const show = (next: number) => {
     const scroller = scrollerRef.current
     if (!scroller) return
-    setIndex(next)
     scroller.scrollTo({ behavior: 'smooth', top: next * scroller.clientHeight })
   }
 
   /**
-   * One pass, and then it leaves the page alone. It waits until the stage is on
-   * screen so nobody misses it, stops for good at the last scene rather than
-   * looping, and does not run at all under a reduced-motion preference — this
-   * is movement the visitor did not ask for, whatever the library's own stance
-   * on animation is.
+   * Which scene the dots point at is read back off the scroll rather than
+   * remembered from the last jump, so it stays honest while the visitor
+   * scrolls by hand — and rounding is only ever applied to this readout, never
+   * to `scrollTop` itself.
    */
-  useEffect(() => {
+  const handleScroll = () => {
     const scroller = scrollerRef.current
-    if (!scroller || taken) return undefined
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined
-
-    let at = 0
-    let timer = 0
-    const observer = new IntersectionObserver((entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return
-      observer.disconnect()
-      timer = window.setTimeout(function step() {
-        at += 1
-        if (at >= SCENES.length) return
-        setIndex(at)
-        scroller.scrollTo({ behavior: 'smooth', top: at * scroller.clientHeight })
-        timer = window.setTimeout(step, AUTO_ADVANCE_MS)
-      }, AUTO_ADVANCE_MS)
-    }, { threshold: 0.4 })
-    observer.observe(scroller)
-
-    return () => {
-      window.clearTimeout(timer)
-      observer.disconnect()
-    }
-  }, [taken])
-
-  /** A resize changes what one scene is worth, so the offset has to be redone. */
-  useEffect(() => {
-    const scroller = scrollerRef.current
-    if (!scroller) return undefined
-    const reflow = () => { scroller.scrollTop = index * scroller.clientHeight }
-    window.addEventListener('resize', reflow)
-    return () => window.removeEventListener('resize', reflow)
-  }, [index])
+    if (!scroller || scroller.clientHeight === 0) return
+    const at = Math.round(scroller.scrollTop / scroller.clientHeight)
+    setIndex(Math.min(Math.max(at, 0), SCENES.length - 1))
+  }
 
   return (
     <div className="pg-stage">
-      <div className="pg-stage__scroll" ref={scrollerRef}>
+      <div className="pg-stage__scroll" onScroll={handleScroll} ref={scrollerRef}>
         <div className="pg-stage__sticky">
           <LiquidSurface className="pg-card" radius={28}>
             <p className="pg-card__eyebrow">Live material</p>
@@ -142,7 +107,7 @@ const LensStage = () => {
             aria-label={scene.label}
             className="pg-dots__dot"
             key={scene.id}
-            onClick={() => { setTaken(true); show(position) }}
+            onClick={() => show(position)}
             type="button"
           />
         ))}
@@ -340,6 +305,18 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
         />
       </div>
 
+      <div className="pg-rail__row pg-rail__row--stacked">
+        <span className="pg-rail__label">Refraction<em>{config.refraction.toFixed(2)}</em></span>
+        <LiquidSlider
+          aria-label="Refraction"
+          max={1}
+          min={0}
+          onValueChange={(value) => config.setMaterial('refraction', value)}
+          step={0.05}
+          value={config.refraction}
+        />
+      </div>
+
       <div className="pg-rail__switches">
         {ORNAMENTS.map((ornament) => (
           <div className="pg-rail__row" key={ornament.key}>
@@ -405,6 +382,7 @@ const providerSnippet = (config: ReturnType<typeof useSiteConfig>) => {
     `  elasticity={${config.elasticity.toFixed(2)}}`,
     `  frost={${config.frost}}`,
     `  dispersion={${config.dispersion.toFixed(2)}}`,
+    `  refraction={${config.refraction.toFixed(2)}}`,
     flag('lens', config.lens),
     flag('motion', config.motionOn),
     flag('transparency', config.transparency),

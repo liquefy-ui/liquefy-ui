@@ -177,8 +177,8 @@
     --lq-fill: var(--lq-clear-fill);
     --lq-line: var(--lq-clear-line);
     --lq-shadow: 0 16px 40px var(--lq-shadow-color), 0 2px 8px color-mix(in srgb, var(--lq-shadow-color) 52%, transparent);
-    -webkit-backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten));
-    backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten));
+    -webkit-backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten)) var(--lq-lens, );
+    backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten)) var(--lq-lens, );
     background: var(--lq-fill);
     border: 1px solid var(--lq-line);
     border-radius: calc(var(--lq-radius) + var(--lq-squish) * 6px);
@@ -338,8 +338,8 @@
     --lq-button-radius: 14px;
     align-items: center;
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: transparent;
     border: 1px solid color-mix(in srgb, var(--lq-button-tint) 16%, rgba(255, 255, 255, 0.08));
     border-radius: calc(var(--lq-button-radius) + var(--lq-squish) * 5px);
@@ -494,8 +494,8 @@
 
   .lq-switch {
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-switch-fill);
     border: 1px solid var(--lq-switch-line);
     border-radius: 10px;
@@ -663,8 +663,8 @@
 
   .lq-text-field__control {
     align-items: center;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-field-fill);
     border: 1px solid var(--lq-field-line);
     border-radius: 12px;
@@ -790,8 +790,8 @@
   }
 
   .lq-dialog__backdrop {
-    -webkit-backdrop-filter: blur(7px) saturate(0.86);
-    backdrop-filter: blur(7px) saturate(0.86);
+    -webkit-backdrop-filter: blur(7px) saturate(0.86) var(--lq-lens, );
+    backdrop-filter: blur(7px) saturate(0.86) var(--lq-lens, );
     background: rgba(2, 5, 16, 0.42);
     inset: 0;
     position: fixed;
@@ -1081,8 +1081,8 @@
        88  tooltip
        90  toast viewport                                                    */
   .lq-popover {
-    -webkit-backdrop-filter: blur(14px) saturate(1.5) brightness(1.04);
-    backdrop-filter: blur(14px) saturate(1.5) brightness(1.04);
+    -webkit-backdrop-filter: blur(14px) saturate(1.5) brightness(1.04) var(--lq-lens, );
+    backdrop-filter: blur(14px) saturate(1.5) brightness(1.04) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-solid-fill, rgb(30, 38, 60)) 72%, transparent);
     border: 1px solid var(--lq-regular-line, rgba(255, 255, 255, 0.18));
     border-radius: 14px;
@@ -1166,8 +1166,8 @@
   .lq-checkbox__box {
     appearance: none;
     align-items: center;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-control-fill);
     border: 1px solid var(--lq-control-line);
     border-radius: 7px;
@@ -1259,8 +1259,8 @@
   .lq-radio__control {
     appearance: none;
     align-items: center;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-control-fill);
     border: 1px solid var(--lq-control-line);
     border-radius: 50%;
@@ -1319,8 +1319,8 @@
   .lq-select__trigger {
     align-items: center;
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-field-fill);
     border: 1px solid var(--lq-field-line);
     border-radius: 12px;
@@ -1441,8 +1441,8 @@
   .lq-date-picker__trigger {
     align-items: center;
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-field-fill);
     border: 1px solid var(--lq-field-line);
     border-radius: 12px;
@@ -1669,8 +1669,8 @@
 
   /* ---------- Segmented ---------- */
   .lq-segmented {
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-control-fill);
     border: 1px solid var(--lq-control-line);
     border-radius: 13px;
@@ -1822,8 +1822,8 @@
   .lq-chip {
     align-items: center;
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-chip-tint, var(--lq-accent)) 1.4%, transparent);
     border: 1px solid color-mix(in srgb, var(--lq-chip-tint, var(--lq-accent)) 22%, rgba(255, 255, 255, 0.1));
     border-radius: 999px;
@@ -1979,8 +1979,8 @@
   }
 
   .lq-tooltip__bubble {
-    -webkit-backdrop-filter: blur(10px) saturate(1.4);
-    backdrop-filter: blur(10px) saturate(1.4);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4) var(--lq-lens, );
+    backdrop-filter: blur(10px) saturate(1.4) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-solid-fill) 62%, transparent);
     border: 1px solid var(--lq-regular-line);
     border-radius: 10px;
@@ -2254,8 +2254,8 @@
   }
 
   .lq-progress__track {
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-foreground) 7%, transparent);
     border: 1px solid var(--lq-control-line);
     border-radius: 999px;
@@ -2565,8 +2565,8 @@
   .lq-alert {
     --lq-alert-tint: #7fb2ff;
     align-items: flex-start;
-    -webkit-backdrop-filter: blur(6px) saturate(1.4);
-    backdrop-filter: blur(6px) saturate(1.4);
+    -webkit-backdrop-filter: blur(6px) saturate(1.4) var(--lq-lens, );
+    backdrop-filter: blur(6px) saturate(1.4) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-alert-tint) 6%, transparent);
     border: 1px solid color-mix(in srgb, var(--lq-alert-tint) 32%, rgba(255, 255, 255, 0.1));
     border-radius: 15px;
@@ -2681,8 +2681,8 @@
   .lq-toast {
     --lq-toast-tint: #7fb2ff;
     animation: lq-toast-in 560ms cubic-bezier(0.16, 1.35, 0.3, 1) both;
-    -webkit-backdrop-filter: blur(16px) saturate(1.5) brightness(1.04);
-    backdrop-filter: blur(16px) saturate(1.5) brightness(1.04);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5) brightness(1.04) var(--lq-lens, );
+    backdrop-filter: blur(16px) saturate(1.5) brightness(1.04) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-solid-fill) 52%, transparent);
     border: 1px solid color-mix(in srgb, var(--lq-toast-tint) 30%, rgba(255, 255, 255, 0.12));
     border-radius: 15px;
@@ -2972,8 +2972,8 @@
   .lq-pagination__item {
     align-items: center;
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-control-fill);
     border: 1px solid color-mix(in srgb, var(--lq-accent) 10%, var(--lq-control-line));
     border-radius: calc(10px + var(--lq-squish) * 4px);
@@ -3128,8 +3128,8 @@
   }
 
   .lq-drawer__backdrop {
-    -webkit-backdrop-filter: blur(6px) saturate(0.88);
-    backdrop-filter: blur(6px) saturate(0.88);
+    -webkit-backdrop-filter: blur(6px) saturate(0.88) var(--lq-lens, );
+    backdrop-filter: blur(6px) saturate(0.88) var(--lq-lens, );
     background: rgba(2, 5, 16, 0.4);
     inset: 0;
     position: fixed;
@@ -3523,8 +3523,8 @@
      same crisp cool hairline as the data surfaces. */
   .lq-provider[data-liquid-theme='light'] .lq-alert {
     --lq-glass-bright: rgba(255, 255, 255, 0.32);
-    -webkit-backdrop-filter: blur(9px) saturate(1.7);
-    backdrop-filter: blur(9px) saturate(1.7);
+    -webkit-backdrop-filter: blur(9px) saturate(1.7) var(--lq-lens, );
+    backdrop-filter: blur(9px) saturate(1.7) var(--lq-lens, );
   }
 
   .lq-provider[data-liquid-theme='light'] .lq-alert[data-severity='info'] {
@@ -3585,8 +3585,8 @@
 
     .lq-provider[data-liquid-theme='system'] .lq-alert {
       --lq-glass-bright: rgba(255, 255, 255, 0.32);
-      -webkit-backdrop-filter: blur(9px) saturate(1.7);
-      backdrop-filter: blur(9px) saturate(1.7);
+      -webkit-backdrop-filter: blur(9px) saturate(1.7) var(--lq-lens, );
+      backdrop-filter: blur(9px) saturate(1.7) var(--lq-lens, );
     }
 
     .lq-provider[data-liquid-theme='system'] .lq-alert[data-severity='info'] {

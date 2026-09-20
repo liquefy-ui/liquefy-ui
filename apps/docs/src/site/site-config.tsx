@@ -27,6 +27,7 @@ export type MaterialConfig = {
   glow: boolean
   intensity: number
   lens: boolean
+  refraction: number
   ripple: boolean
   shimmer: boolean
   sparkle: boolean
@@ -65,16 +66,19 @@ export const TINTS = [
   { label: 'Blush', value: '#ff93a6' },
 ] as const
 
+// Kept in step with the library's own defaults on purpose: the site is meant
+// to be what a consumer gets out of the box before they touch a single prop.
 const DEFAULT_MATERIAL: MaterialConfig = {
-  dispersion: 0.55,
-  elasticity: 0,
-  frost: 0,
+  dispersion: 0.1,
+  elasticity: 0.02,
+  frost: 6,
   glow: true,
   intensity: 1.2,
   lens: true,
-  ripple: true,
+  refraction: 0.7,
+  ripple: false,
   shimmer: true,
-  sparkle: true,
+  sparkle: false,
   tint: TINTS[0].value,
   transparency: true,
   webgl: true,
@@ -104,6 +108,7 @@ export const SubProvider = ({
       intensity={config.intensity}
       lens={config.lens}
       motion={config.motion}
+      refraction={config.refraction}
       ripple={config.ripple}
       shimmer={config.shimmer}
       sparkle={config.sparkle}
@@ -245,6 +250,7 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
         lens={material.lens}
         motion={motion}
         theme={theme}
+        refraction={material.refraction}
         ripple={material.ripple}
         shimmer={material.shimmer}
         sparkle={material.sparkle}

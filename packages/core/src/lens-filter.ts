@@ -180,8 +180,14 @@ export const attachLiquidLens = (
       displacement.setAttribute('scale', String(lensMap.scale * factor))
     })
 
-    element.style.setProperty('backdrop-filter', `url(#${id})`)
-    element.style.setProperty('-webkit-backdrop-filter', `url(#${id})`)
+    // Published as a custom property rather than written to `backdrop-filter`
+    // directly. The stylesheet ends every one of its own backdrop-filter
+    // declarations with `var(--lq-lens, )`, so the refraction joins the blur,
+    // the saturation and the brightness the material already asked for instead
+    // of replacing the lot — an inline `backdrop-filter` is one declaration,
+    // and setting it here used to throw the frost away the moment a lens
+    // attached.
+    element.style.setProperty('--lq-lens', `url(#${id})`)
     element.dataset.liquidLens = 'true'
   }
 
@@ -202,8 +208,7 @@ export const attachLiquidLens = (
       cancelAnimationFrame(refreshFrame)
       resizeObserver?.disconnect()
       filter.remove()
-      element.style.removeProperty('backdrop-filter')
-      element.style.removeProperty('-webkit-backdrop-filter')
+      element.style.removeProperty('--lq-lens')
       delete element.dataset.liquidLens
     },
     refresh: scheduleRefresh,

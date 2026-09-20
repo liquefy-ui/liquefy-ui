@@ -841,17 +841,29 @@ pre {
   position: relative;
 }
 
-/* The scenes scroll inside the stage while the lens sits above them, so the
-   stage itself must not scroll and must not swallow touch either: the handle
-   claims `touch-action` for the drag, and everything else here is free to be a
-   normal scrolling region. */
-/* Not user-scrollable. It is still a scroll container — `scrollTop` is how the
-   slideshow moves — but the wheel belongs to the page, which is exactly what an
-   inner scroller sitting mid-article would otherwise steal. */
+/* The scenes scroll inside the stage while the card sits above them, and the
+   scroller is the visitor's to drive: a wheel or a drag moves the scenes
+   directly and leaves them wherever it is let go, including halfway between two
+   of them. Nothing rounds the offset afterwards — a scene boundary is a place
+   the scroll may land, not one it is pulled to.
+
+   Scroll chaining is deliberately left at its default. Containing it would make
+   the stage hold the wheel until all six scenes had been wound past, which is
+   how an inner scroller mid-article turns into a trap; this way the page
+   carries on the moment the last scene is reached.
+
+   The scrollbar is hidden because the dots already say where in the set the
+   scroll is, and a classic bar would sit inside the stage's rounded corner. */
 .pg-stage__scroll {
   inset: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   position: absolute;
+  scrollbar-width: none;
+}
+
+.pg-stage__scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .pg-dots {

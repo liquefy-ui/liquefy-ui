@@ -51,6 +51,7 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(({
     glow: config.glow,
     intensity: config.intensity,
     lens: resolvedLens && config.transparency,
+    lensStrength: config.refraction,
     motion: config.motion,
     ripple: config.ripple,
     shimmer: config.shimmer,

@@ -44,6 +44,7 @@ export const LiquidCheckbox = forwardRef<HTMLButtonElement, LiquidCheckboxProps>
     glow: config.glow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,
+    lensStrength: config.refraction,
     motion: config.motion,
     ripple: config.ripple,
     shimmer: config.shimmer,

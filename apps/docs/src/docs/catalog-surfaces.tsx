@@ -103,14 +103,14 @@ export const surfaceDocs: ComponentDoc[] = [
         code: `<LiquidGlass elasticity={0.4} radius={999} style={{ padding: '12px 26px' }}>
   Move the pointer near me
 </LiquidGlass>
-<LiquidGlass glow ripple radius={999} style={{ padding: '12px 26px' }}>
-  Ornaments on
+<LiquidGlass glow={false} radius={999} shimmer={false} style={{ padding: '12px 26px' }}>
+  Ornaments off
 </LiquidGlass>`,
-        description: 'The lean starts before the pointer arrives and runs through the same springs as every other gesture, so it overshoots and settles rather than gliding. The four ornaments — glow, ripple, shimmer and sparkle — are off here and on for LiquidSurface; with all four off no WebGL context is created at all.',
+        description: 'The lean starts before the pointer arrives and runs through the same springs as every other gesture, so it overshoots and settles rather than gliding. The four ornaments — glow, ripple, shimmer and sparkle — come from the provider, so naming one here is how an instance opts out of the house material; with all four off no WebGL context is created at all.',
         render: () => (
           <>
             <LiquidGlass elasticity={0.4} radius={999} style={{ padding: '12px 26px' }}>Move the pointer near me</LiquidGlass>
-            <LiquidGlass glow radius={999} ripple style={{ padding: '12px 26px' }}>Ornaments on</LiquidGlass>
+            <LiquidGlass glow={false} radius={999} shimmer={false} style={{ padding: '12px 26px' }}>Ornaments off</LiquidGlass>
           </>
         ),
         title: 'Elasticity and ornaments',
@@ -120,14 +120,14 @@ export const surfaceDocs: ComponentDoc[] = [
     importLine: "import { LiquidGlass } from '@liquefy-ui/react'",
     name: 'Glass',
     props: [
-      { defaultValue: '1', description: 'How much of the bend the material can take without folding to spend, 0 to 1.', name: 'refraction', type: 'number' },
-      { description: 'Backdrop blur in pixels. Set outright here, rather than added to the provider\'s.', name: 'frost', type: 'number' },
+      { defaultValue: '0.7', description: 'How much of the bend the material can take without folding to spend, 0 to 1.', name: 'refraction', type: 'number' },
+      { defaultValue: '6', description: 'Backdrop blur in pixels. Set outright here, rather than added to the provider\'s.', name: 'frost', type: 'number' },
       { description: 'How far the lens softens what it refracts, in pixels. Not the backdrop blur.', name: 'softness', type: 'number' },
-      { defaultValue: '0.55', description: 'How far apart the red and blue channels are pulled at the rim, 0 to 1.', name: 'dispersion', type: 'number' },
+      { defaultValue: '0.1', description: 'How far apart the red and blue channels are pulled at the rim, 0 to 1.', name: 'dispersion', type: 'number' },
       { description: 'Width of the refracting band at the rim. Defaults to 22% of the short side.', name: 'bezel', type: 'number' },
       { defaultValue: '2', description: 'Exponent of the bezel cross-section: 1 is an even ramp, higher piles the bend against the rim.', name: 'curve', type: 'number' },
-      { defaultValue: '0', description: 'How far the surface leans toward a pointer that has not reached it yet.', name: 'elasticity', type: 'number' },
-      { defaultValue: 'false', description: 'Lit rim glow, click ripple, iridescent shimmer and drifting sparkle.', name: 'glow / ripple / shimmer / sparkle', type: 'boolean' },
+      { defaultValue: '0.02', description: 'How far the surface leans toward a pointer that has not reached it yet.', name: 'elasticity', type: 'number' },
+      { defaultValue: 'provider', description: 'Lit rim glow, click ripple, iridescent shimmer and drifting sparkle. Glow and shimmer are on by default, ripple and sparkle off.', name: 'glow / ripple / shimmer / sparkle', type: 'boolean' },
       { defaultValue: 'false', description: 'Dims the glass for a surface sitting on a bright backdrop.', name: 'overLight', type: 'boolean' },
       { description: 'Corner radius (px or CSS value).', name: 'radius', type: 'number | string' },
     ],
