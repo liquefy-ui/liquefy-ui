@@ -181,7 +181,7 @@ with the token system itself at `#/docs/theming`.
 
 ## Components
 
-35 components and 44 icons, each with live demos and a full prop table at
+35 components and 50 icons, each with live demos and a full prop table at
 [liquefy-ui.com/#/components](https://liquefy-ui.com/#/components).
 
 | Category | Components |
