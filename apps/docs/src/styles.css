@@ -913,18 +913,7 @@ pre {
   outline-offset: -1px;
 }
 
-/* The stage is a display case rather than part of the page. The card inside it
-   is white type over imagery whatever the site theme is, so the synthetic
-   scenes keep their own dark ground instead of following `--bg`: in light mode
-   they used to resolve to #ffffff, and white type on white is not a subtle
-   failure. The photographs were never affected — only the scenes drawn from
-   theme tokens. */
 .pg-scene {
-  --bg: #07070b;
-  --bg-soft: #12121a;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.2);
-  --grid-line: rgba(255, 255, 255, 0.045);
   background-position: center;
   background-size: cover;
   height: var(--pg-stage-h);
@@ -1026,18 +1015,12 @@ pre {
   margin: 0;
 }
 
-/* The one pale scene. The card answers it with `data-over-light`, which is the
-   arrangement a product actually ships: a light page, a panel over it, and the
-   panel taking care of its own contrast. */
-.pg-scene--mark {
-  --bg: #ffffff;
-  --bg-soft: #f4f5f8;
-  --line: rgba(11, 11, 20, 0.1);
-  /* Heavier than the page's own rule token: the wordmark is drawn in it and
-     then halved again by its own opacity, which on white left the scene named
-     after the mark with no mark visible in it. */
+/* The wordmark is drawn in `--line-strong` and then halved again by its own
+   opacity, which on a white ground left the scene named after the mark with no
+   mark visible in it. Only the light theme needs the extra ink; on black the
+   page token is already strong enough. */
+:root[data-theme='light'] .pg-scene--mark {
   --line-strong: rgba(11, 11, 20, 0.3);
-  --grid-line: rgba(11, 11, 20, 0.055);
 }
 
 .pg-scene--fjord { background-image: url('/scenes/fjord.jpg'); }
@@ -1107,7 +1090,6 @@ pre {
 
 /* The scenes that bring their own ground bring their own ink with it: the page
    foreground is right for exactly one of them at a time. */
-.pg-scene--mark .pg-scene__tag,
 .pg-scene--chroma .pg-scene__tag,
 .pg-scene--paper .pg-scene__tag {
   color: rgba(16, 21, 36, 0.66);

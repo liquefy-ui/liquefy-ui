@@ -24,9 +24,9 @@ import { DEFAULT_MATERIAL, THEME_LABELS, THEME_ORDER, useSiteConfig } from './si
  * a boundary that a neutral ground would have nothing to move.
  */
 const SCENES = [
-  { id: 'mark', label: 'The wordmark', light: true, note: 'soft ink, wide shapes' },
   { credit: 'Alexey Topolyanskiy', id: 'fjord', label: 'Fjord', note: 'deep water, hard rock' },
-  { id: 'rules', label: 'Fine rules', note: 'where displacement shows' },
+  { id: 'mark', label: 'The wordmark', light: true, note: 'soft ink, wide shapes' },
+  { id: 'rules', label: 'Fine rules', light: true, note: 'where displacement shows' },
   { credit: 'Wolfgang Lutz', id: 'summit', label: 'Summit', note: 'where a rim usually disappears' },
   { id: 'chroma', label: 'Saturated colour', note: 'where the rim bends a hard edge' },
   { credit: 'Stefan Kunze', id: 'coast', label: 'Coast at dusk', note: 'soft light, long gradients' },
@@ -43,12 +43,15 @@ const SCENES = [
  * scroll is allowed to rest on.
  */
 const LensStage = () => {
+  const config = useSiteConfig()
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
-  // The card carries white type wherever it is, so a scene with a pale ground
-  // has to put something back under it. Raising the veil is the dial the
-  // material already has for this, rather than a second colour pinned on top.
-  const overLight = SCENES[index] !== undefined && 'light' in SCENES[index]
+  // The two drawn scenes take their ground from the page theme, so they are pale
+  // only while the page is. The card carries white type, and on a pale ground it
+  // has to answer for that — but in the dark theme those scenes are black and
+  // there is nothing to answer, which is why the theme is half of this test.
+  const scene = SCENES[index]
+  const overLight = scene !== undefined && 'light' in scene && config.theme === 'light'
 
   const show = (next: number) => {
     const scroller = scrollerRef.current
