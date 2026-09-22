@@ -5,9 +5,8 @@
 
 Turn the optics up, and let every component take them from the provider
 
-The defaults move again: `intensity` `1.2`, `dispersion` `0.55`, and both `lens`
-and `webgl` on. The material arrives lit and refracting rather than waiting to
-be switched on.
+The defaults move to `intensity` `1.2`, with both `lens` and `webgl` on. The
+material arrives lit and refracting rather than waiting to be switched on.
 
 The larger change is that components stop overruling it. `GlassCard`,
 `LiquidAccordion`, `LiquidList`, `LiquidTable`, `LiquidButton`,
@@ -23,5 +22,5 @@ Two things worth knowing before upgrading. The lens is an SVG filter inside
 composites, so a page dense with lit controls now costs more than it did —
 `lens={false}` on the provider, or per component, takes it straight back.
 `LiquidChip` and `LiquidPagination` still render no shader canvas of their own,
-by design: they travel in groups, and a WebGL context each is not a trade worth
-making.
+by design: they travel in groups, and a presentation canvas each is not a trade
+worth making.

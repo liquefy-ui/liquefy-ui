@@ -848,7 +848,7 @@ pre {
    the scroll may land, not one it is pulled to.
 
    Scroll chaining is deliberately left at its default. Containing it would make
-   the stage hold the wheel until all six scenes had been wound past, which is
+   the stage hold the wheel until all five scenes had been wound past, which is
    how an inner scroller mid-article turns into a trap; this way the page
    carries on the moment the last scene is reached.
 

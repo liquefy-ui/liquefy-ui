@@ -3,19 +3,16 @@
 '@liquefy-ui/react': minor
 ---
 
-Quieten the default material
+Retune the default material
 
 The provider's defaults change, so every surface looks different without any
-code changing: `tint` `#8f8f8f`, `intensity` `0.42`, `wobbliness` `0.1`,
-`dispersion` `0.8`, `elasticity` `0`, and both `lens` and `webgl` off. The old
-look is one prop away — `<LiquefyProvider intensity={0.72} wobbliness={1} lens
-webgl>` — and the playground writes the snippet for whatever you pick.
+code changing: `tint` becomes `#8f8f8f`, `intensity` becomes `1.2`, and
+`wobbliness` becomes `0.1`. The playground writes a snippet for whatever values
+you pick.
 
-Two of those are worth reading twice. `webgl` off means no canvas is created at
-all, and since `glow`, `ripple`, `shimmer` and `sparkle` are drawn by that pass,
-all four are inert until it is switched back on. `lens` off drops the
-displacement at the bezel, which is the most expensive thing the material does;
-the frost, the rim and the springs are all still there.
+`lens` and `webgl` are on by default. Turning `webgl` off creates no presentation
+canvas, and since `glow`, `ripple`, `shimmer` and `sparkle` are drawn by that
+pass, all four are inert while it is off. Turning `lens` off drops the
+displacement at the bezel while the frost, lit rim and springs stay in place.
 
-The core fallbacks move with the provider, so `attachLiquidMotion` and
-`attachLiquidLens` called directly agree with what the React layer ships.
+The React material now arrives lit and refracting without any provider props.

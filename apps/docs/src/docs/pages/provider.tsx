@@ -49,8 +49,26 @@ const propRows: PropRow[] = [
   },
   {
     defaultValue: 'true',
-    description: 'The lit rim glow, the press ripple, the iridescent shimmer and the drifting sparkle. Each is drawn by the WebGL pass, so all four are inert while webgl is off.',
-    name: 'glow / ripple / shimmer / sparkle',
+    description: 'The lit patch that follows the pointer around the bezel. Drawn by the WebGL pass, so it is inert while webgl is off.',
+    name: 'glow',
+    type: 'boolean',
+  },
+  {
+    defaultValue: 'false',
+    description: 'A ring that travels out from a press. Drawn by the WebGL pass, so it is inert while webgl is off.',
+    name: 'ripple',
+    type: 'boolean',
+  },
+  {
+    defaultValue: 'true',
+    description: 'The iridescent colour shift across the rim while a surface is wobbling. Drawn by the WebGL pass, so it is inert while webgl is off.',
+    name: 'shimmer',
+    type: 'boolean',
+  },
+  {
+    defaultValue: 'false',
+    description: 'Slow specular glints drifting across the face. Drawn by the WebGL pass, so it is inert while webgl is off.',
+    name: 'sparkle',
     type: 'boolean',
   },
   {
@@ -73,7 +91,7 @@ const propRows: PropRow[] = [
   },
   {
     defaultValue: 'true',
-    description: 'The SVG displacement lens at the bezel. Off keeps the blur but drops the refraction. It is the most expensive thing the material can do, so it is opt-in.',
+    description: 'The SVG displacement lens at the bezel. It is on by default; turn it off to keep the blur and lit rim while dropping the refraction, especially across a dense screen of controls.',
     name: 'lens',
     type: 'boolean',
   },
@@ -147,10 +165,11 @@ export const App = () => (
           </div>
         </div>
         <p>
-          Every one of these is also available per component. <code>LiquidSurface</code> and the
-          components built on it accept <code>intensity</code>, <code>lens</code>, <code>tint</code> and{' '}
-          <code>webgl</code> directly, and a component-level value wins over the provider — which is how
-          you keep a heavy list cheap without changing the rest of the page.
+          <code>LiquidSurface</code> accepts <code>intensity</code>, <code>lens</code>, <code>tint</code>,{' '}
+          <code>veil</code> and <code>webgl</code> per instance, while <code>LiquidGlass</code> exposes its
+          lower-level optics too. Other components read the provider unless their own prop table names an
+          override; <code>LiquidButton</code>, for example, accepts <code>lens</code>, <code>tint</code> and{' '}
+          <code>webgl</code>.
         </p>
       </Section>
 
@@ -297,8 +316,10 @@ export const Chart = () => {
             [<code>data-liquid-motion</code>, <><code>on</code> / <code>off</code></>, 'Lets CSS opt out of transitions in the same breath as the springs.'],
             [<code>data-liquid-transparency</code>, <><code>on</code> / <code>off</code></>, 'Switches the fill set between translucent and opaque.'],
             [<code>--lq-accent</code>, 'the tint', 'Read by every surface, control and focus ring.'],
+            [<code>--lq-frost</code>, 'the provider frost in pixels', 'Added to the backdrop blur each surface asks for itself.'],
             [<code>--lq-intensity</code>, 'the intensity', 'Scales blur, saturation and bezel brightness.'],
             [<code>--lq-space</code>, 'the spacing unit', <>The unit behind <code>p</code>, <code>m</code>, <code>gap</code> and friends.</>],
+            [<code>--lq-veil</code>, 'the veil', 'Scales the material fill, inner sheen, cast shadow and colour lift.'],
             [<code>div.lq-portal</code>, 'an empty node', 'Where Select, Menu and Tooltip popovers mount, so they stay inside the provider and inherit the tokens.'],
           ]}
         />

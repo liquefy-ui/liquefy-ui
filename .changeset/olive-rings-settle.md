@@ -14,10 +14,8 @@ buttons disappeared under it. The light theme never showed it, because `screen`
 against white is a no-op. Prefixed declarations now come first and the standard
 ones last, the same ordering `backdrop-filter` already needed in this file.
 
-The defaults move to the material the playground has settled on: `dispersion`
-and `elasticity` to 0, `frost` to 0, `refraction` to 1, `veil` to 0. Both
-remain props; they are simply no longer something the material asks for by
-default.
+The defaults move to the material the playground has settled on: `frost` to 0,
+`refraction` to 1 and `veil` to 0.
 
 `veil` now reaches the things that were still fixed underneath it — the clear
 variant's fill, which was `transparent` and so had nothing for the dial to

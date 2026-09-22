@@ -13,10 +13,8 @@ now publishes `--lq-lens`, and every backdrop-filter in the stylesheet ends with
 `var(--lq-lens, )`, so the refraction joins the rest of the material instead of
 replacing it.
 
-`refraction` is now a provider prop, and the defaults have moved to the material
-the playground has been showing: `dispersion` 0.55 → 0.1, `elasticity` 0 → 0.02,
-`frost` 0 → 6, `refraction` 0.7, with `ripple` and `sparkle` off and `glow` and
-`shimmer` left on. Every component resolves refraction from the provider, so the
+`refraction` is now a provider prop. It defaults to `1`, while provider-level
+`frost` defaults to `0`; every component resolves both from the provider, so the
 optics reach cards, buttons, fields and the rest rather than only the surfaces
 that name them.
 

@@ -5,14 +5,14 @@
 
 A TypeScript UI library that delivers highly transparent Liquid Glass through WebGL optics, physical springs, and accessible React primitives.
 
-![A glass lens dragged across a wordmark, bending the letters and the grid behind it at its bezel, and swaying on its springs as it moves](brand/liquefy-lens.gif)
+![A glass card held still while the playground scrolls slowly from a fjord to the wordmark behind it](brand/liquefy-lens.gif)
 
 > This is an independent open-source project and is not affiliated with Apple Inc. It references public design principles while providing an original implementation for the web.
 
-Nothing above is a video effect: that is a WebGL displacement map applied to the
-live backdrop through `backdrop-filter`, and the way the shape stretches and
-overshoots is a spring reading pointer velocity. Both are on by default. Drag it
-yourself at **[liquefy-ui.com](https://liquefy-ui.com)**, which also hosts the
+The capture above comes from the live playground: that is a displacement map
+applied to the real backdrop through `backdrop-filter`, while the shape stretches
+and overshoots from springs reading pointer velocity. Both are on by default.
+Scroll it yourself at **[liquefy-ui.com](https://liquefy-ui.com)**, which also hosts the
 component reference and the shadcn registry.
 
 ## Packages
@@ -189,20 +189,23 @@ with the token system itself at `#/docs/theming`.
 | Inputs | `LiquidButton`, `LiquidIconButton`, `LiquidCheckbox`, `LiquidRadioGroup` / `LiquidRadio`, `LiquidSwitch`, `LiquidSlider`, `LiquidTextField`, `LiquidTextArea`, `LiquidSelect`, `LiquidDatePicker`, `LiquidSegmented`, `LiquidRating` |
 | Data display | `LiquidAvatar` / `LiquidAvatarGroup`, `LiquidBadge`, `LiquidChip`, `LiquidTooltip`, `LiquidTable` family, `LiquidList` family, `LiquidDivider` |
 | Feedback | `LiquidAlert`, `LiquidProgress`, `LiquidSpinner`, `LiquidSkeleton`, `LiquidToastProvider` / `useLiquidToast`, `LiquidDialog` |
-| Surfaces | `LiquidSurface`, `GlassCard`, `LiquidAccordion` / `LiquidAccordionItem` |
+| Surfaces | `LiquidSurface`, `LiquidGlass`, `GlassCard`, `LiquidAccordion` / `LiquidAccordionItem` |
 | Navigation | `LiquidTabs` family, `LiquidBreadcrumbs`, `LiquidPagination`, `LiquidMenu`, `LiquidDrawer`, `GlassDock` / `DockItem` |
 | Foundation | `LiquefyProvider`, `useLiquefyConfig`, `useLiquidGlass`, `useLiquidStyles`, `getLiquefyStyleSheet`, `defaultBreakpoints` |
 
-When WebGL is unavailable, components automatically fall back to the transparent CSS material. Effects default to on everywhere; use the `motion` and `transparency` provider props to tone them down.
+When WebGL is unavailable, components automatically fall back to the transparent
+CSS material. Lens, WebGL, motion, transparency, glow and shimmer are on by
+default; ripple and sparkle are off. Use the provider props to tune them across
+a subtree.
 
 Use `theme="dark"`, `theme="light"`, or `theme="system"` on `LiquefyProvider` to control appearance.
 
 ## Design notes
 
-- **Real edge refraction**: a WebGL shader bakes a rounded-rect lens displacement map, applied to the live backdrop through an SVG `feDisplacementMap` inside `backdrop-filter` (with per-channel chromatic dispersion). Chromium renders it fully; WebKit and Gecko gracefully fall back to the blurred CSS material.
+- **Real edge refraction**: a rounded-rect lens displacement map bends the live backdrop through an SVG `feDisplacementMap` inside `backdrop-filter`. Its fold-safe curve keeps the sampled backdrop one-to-one even at control sizes. Chromium renders it fully; WebKit and Gecko gracefully fall back to the blurred CSS material.
 - **One shared WebGL context**: browsers cap live WebGL contexts (~16 per page), so every component draws through a single hidden GL canvas and blits into its own 2D canvas. Any number of glass components can coexist.
 - **Jelly physics**: scale, skew, and tilt run on deliberately underdamped springs. Pointer velocity is injected into the springs, so fast sweeps make surfaces sway, and press/release produces several visible overshoots. The shader receives the same energy as `u_wobble` and wiggles the rim in sync.
-- The overlay shader renders SDF-shaped rim light with RGB dispersion, iridescence, pointer glow, press ripples, and a moving sheen — only during interaction and decay, never continuously.
+- The overlay shader renders RGB-edged rim light, iridescence, pointer glow, press ripples, and a moving sheen — only during interaction and decay, never continuously.
 - Glass is intended for interaction and navigation layers rather than primary content.
 - **Accessibility comes from Base UI**: Dialog, Drawer, Menu, Select, Tooltip, Tabs and Accordion are built on `@base-ui/react`, which supplies focus trapping and restoration, scroll locking, Escape handling, roving tabindex, typeahead, and collision-aware positioning. liquefy-ui keeps the optics and the springs and stops re-implementing the parts that are easy to get subtly wrong. The keyboard behaviour is asserted in `packages/react/test/keyboard.test.tsx` rather than assumed.
 - React and React DOM are peer dependencies, preventing duplicate React bundles.

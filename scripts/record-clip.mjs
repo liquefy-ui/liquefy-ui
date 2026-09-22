@@ -6,9 +6,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 /**
- * Records a short silent clip for social posts: the landing lens dragged across
- * the wordmark, the showcase buttons pressed until the springs overshoot, a slow
- * scroll down the grid, and the tab indicator measuring the tab it lands on.
+ * Records a short silent clip for social posts: the playground scenes scrolling
+ * behind the glass, the showcase buttons pressed until the springs overshoot, a
+ * slow scroll down the grid, and the tab indicator measuring the tab it lands on.
  *
  *   pnpm build && pnpm preview          # in one terminal
  *   node scripts/record-clip.mjs        # in another
@@ -26,10 +26,8 @@ import { join } from 'node:path'
  * which is ignored — footage is regenerated, not reviewed, and a megabyte of it
  * per attempt has no business in the history.
  *
- * Two deliberate choices, both shared with `record-lens.mjs`. Dark theme, because
- * the displacement and the dispersion at the rim are low-contrast effects that a
- * light backdrop swallows. And one unbroken drag, because the handle stops
- * tracking after a single step if the button is released and pressed again.
+ * The clip uses the dark theme because the displacement at the rim is a
+ * low-contrast effect that a light backdrop swallows at social-video scale.
  *
  * Two more that belong to this file. The output is H.264 in yuv420p, because
  * anything else is re-encoded on upload and re-encoding a dark gradient is what

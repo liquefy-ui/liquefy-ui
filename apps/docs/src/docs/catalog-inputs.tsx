@@ -157,7 +157,7 @@ export const inputDocs: ComponentDoc[] = [
       { description: 'Icon rendered before the label.', name: 'iconBefore', type: 'ReactNode' },
       { description: 'Icon rendered after the label.', name: 'iconAfter', type: 'ReactNode' },
       { description: 'Overrides the provider WebGL setting for this button.', name: 'webgl', type: 'boolean' },
-      { defaultValue: 'false', description: 'Opts this button into edge refraction. Off by default — on control-sized elements the lens reads as a mirrored fill.', name: 'lens', type: 'boolean' },
+      { defaultValue: 'provider (true)', description: 'Overrides the provider edge-refraction setting. The fold-safe lens works at control sizes and is on by default.', name: 'lens', type: 'boolean' },
       { description: 'Disables interaction and dims the surface.', name: 'disabled', type: 'boolean' },
     ],
     propsTitle: 'LiquidButton',
