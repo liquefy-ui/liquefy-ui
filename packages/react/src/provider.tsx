@@ -38,6 +38,11 @@ export type LiquefyConfig = {
    * inner sheen, cast shadow and the lift it gives the backdrop's colour —
    * from 1 for the full material down to 0, which leaves nothing on it but
    * the lit rim and the refraction behind it.
+   *
+   * A theme that needs more than that to stay legible raises it from
+   * underneath: `--lq-veil-floor` is the least material a theme will let a
+   * surface show, and the dark one asks for some because a hairline on black
+   * is not a panel. Set that property to 0 to opt a subtree out.
    */
   veil: number
   webgl: boolean
@@ -65,14 +70,14 @@ export const defaultBreakpoints: LiquefyBreakpoints = {
 
 const defaultConfig: LiquefyConfig = {
   breakpoints: defaultBreakpoints,
-  dispersion: 0.1,
-  elasticity: 0.02,
-  frost: 6,
+  dispersion: 0,
+  elasticity: 0,
+  frost: 0,
   glow: true,
   intensity: 1.2,
   lens: true,
   motion: true,
-  refraction: 0.7,
+  refraction: 1,
   ripple: false,
   shimmer: true,
   sparkle: false,
@@ -80,7 +85,7 @@ const defaultConfig: LiquefyConfig = {
   theme: 'system',
   tint: '#8f8f8f',
   transparency: true,
-  veil: 1,
+  veil: 0,
   webgl: true,
   wobbliness: 0.1,
 }

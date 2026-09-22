@@ -34,14 +34,14 @@ describe('provider defaults', () => {
     render(<LiquefyProvider><Probe /></LiquefyProvider>)
     expect(readConfig()).toEqual({
       breakpoints: defaultBreakpoints,
-      dispersion: 0.1,
-      elasticity: 0.02,
-      frost: 6,
+      dispersion: 0,
+      elasticity: 0,
+      frost: 0,
       glow: true,
       intensity: 1.2,
       lens: true,
       motion: true,
-      refraction: 0.7,
+      refraction: 1,
       ripple: false,
       shimmer: true,
       sparkle: false,
@@ -49,7 +49,7 @@ describe('provider defaults', () => {
       theme: 'system',
       tint: '#8f8f8f',
       transparency: true,
-      veil: 1,
+      veil: 0,
       webgl: true,
       wobbliness: 0.1,
     })

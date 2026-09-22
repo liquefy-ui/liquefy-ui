@@ -10,7 +10,12 @@
   }
 
   .lq-provider {
-    --lq-clear-fill: transparent;
+    /* The least material a surface may show, whatever `veil` is set to. A
+       clear panel on a dark page is a 15%-white hairline and nothing else,
+       which is not enough to read as a surface — so the dark theme asks for
+       a floor and the light one, sitting on white, does not need one. */
+    --lq-veil-floor: 0.34;
+    --lq-clear-fill: rgba(255, 255, 255, 0.12);
     --lq-clear-line: rgba(255, 255, 255, 0.15);
     --lq-control-fill: transparent;
     --lq-control-line: rgba(255, 255, 255, 0.16);
@@ -50,7 +55,8 @@
   }
 
   .lq-provider[data-liquid-theme='light'] {
-    --lq-clear-fill: transparent;
+    --lq-veil-floor: 0;
+    --lq-clear-fill: rgba(255, 255, 255, 0.55);
     --lq-clear-line: rgba(66, 85, 128, 0.22);
     --lq-control-fill: transparent;
     --lq-control-line: rgba(66, 85, 128, 0.24);
@@ -182,7 +188,7 @@
      and a surface further down could no longer set a veil of its own — which is
      the whole point of having the dial on the component as well. */
   .lq-surface {
-    --lq-veil-amount: clamp(0, var(--lq-veil, 1), 1);
+    --lq-veil-amount: clamp(var(--lq-veil-floor, 0), var(--lq-veil, 1), 1);
     --lq-cast: color-mix(in srgb, var(--lq-shadow-color) calc(var(--lq-veil-amount) * 100%), transparent);
     --lq-sheen: color-mix(in srgb, var(--lq-glass-bright) calc(var(--lq-veil-amount) * 100%), transparent);
     --lq-sheen-shade: color-mix(in srgb, var(--lq-glass-shade) calc(var(--lq-veil-amount) * 100%), transparent);
@@ -190,7 +196,8 @@
     --lq-saturate: calc(1 + 0.4 * var(--lq-veil-amount));
     --lq-brighten: calc(1 + 0.05 * var(--lq-veil-amount));
     --lq-glow: calc(0.4 * var(--lq-veil-amount));
-    --lq-fill: var(--lq-clear-fill);
+    --lq-fill-base: var(--lq-clear-fill);
+    --lq-fill: color-mix(in srgb, var(--lq-fill-base) calc(var(--lq-veil-amount) * 100%), transparent);
     --lq-line: var(--lq-clear-line);
     --lq-shadow: 0 16px 40px var(--lq-cast), 0 2px 8px color-mix(in srgb, var(--lq-cast) 52%, transparent);
     -webkit-backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten)) var(--lq-lens, );
@@ -219,7 +226,7 @@
 
   .lq-surface[data-liquid-variant='tinted'] {
     --lq-blur: calc(2px + var(--lq-frost, 0px));
-    --lq-fill: color-mix(in srgb, var(--lq-tint) calc(var(--lq-veil-amount) * 14%), transparent);
+    --lq-fill-base: color-mix(in srgb, var(--lq-tint) 14%, transparent);
     --lq-line: color-mix(in srgb, var(--lq-tint) 48%, rgba(255, 255, 255, 0.12));
   }
 
@@ -244,13 +251,21 @@
     border-radius: inherit;
     content: '';
     inset: 0;
-    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    mask-composite: exclude;
     padding: var(--lq-rim-width);
     pointer-events: none;
     position: absolute;
+    /* Prefixed first, standard last — the same ordering `backdrop-filter` needs
+       further up, and for a sharper reason. The `-webkit-mask` shorthand resets
+       the compositing operator, and `-webkit-mask-composite: xor` does not put
+       the standard one back, so with the prefixed pair written last the ring
+       composited as source-over: the gradient filled the whole face instead of
+       the 1.6px band. Screen-blended white over a dark page, that turned every
+       surface into a bright diagonal wash and buried the labels under it —
+       invisible in the light theme, because screen against white is a no-op. */
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
   }
 
   .lq-surface__edge {
@@ -308,11 +323,16 @@
     z-index: 2;
   }
 
+  /* Scaled by the veil like every other piece of dressing. `screen` against a
+     dark page turns this canvas into the brightest thing on it, so a surface
+     asking to be barely there cannot leave its glow at full strength — that is
+     what washed the dark theme out and buried the labels underneath it. */
   .lq-surface__shader {
     border-radius: inherit;
     height: 100%;
     inset: 0;
     mix-blend-mode: screen;
+    opacity: var(--lq-veil-amount, 1);
     pointer-events: none;
     position: absolute;
     width: 100%;
@@ -341,7 +361,7 @@
   }
 
   .lq-glass[data-liquid-over-light='true'] {
-    --lq-fill: rgba(0, 0, 0, 0.16);
+    --lq-fill-base: rgba(0, 0, 0, 0.16);
     --lq-glow: 0.04;
     box-shadow:
       0 18px 60px color-mix(in srgb, var(--lq-shadow-color) 92%, transparent),
@@ -1015,7 +1035,8 @@
 
   @media (prefers-color-scheme: light) {
     .lq-provider[data-liquid-theme='system'] {
-      --lq-clear-fill: transparent;
+      --lq-veil-floor: 0;
+      --lq-clear-fill: rgba(255, 255, 255, 0.55);
       --lq-clear-line: rgba(66, 85, 128, 0.22);
       --lq-control-fill: transparent;
       --lq-control-line: rgba(66, 85, 128, 0.24);

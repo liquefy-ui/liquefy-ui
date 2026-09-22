@@ -21,8 +21,6 @@ import {
  * which is the whole point of showing the controls first.
  */
 export type MaterialConfig = {
-  dispersion: number
-  elasticity: number
   frost: number
   glow: boolean
   intensity: number
@@ -70,19 +68,17 @@ export const TINTS = [
 // Kept in step with the library's own defaults on purpose: the site is meant
 // to be what a consumer gets out of the box before they touch a single prop.
 const DEFAULT_MATERIAL: MaterialConfig = {
-  dispersion: 0.1,
-  elasticity: 0.02,
-  frost: 6,
+  frost: 0,
   glow: true,
   intensity: 1.2,
   lens: true,
-  refraction: 0.7,
+  refraction: 1,
   ripple: false,
   shimmer: true,
   sparkle: false,
   tint: TINTS[0].value,
   transparency: true,
-  veil: 1,
+  veil: 0,
   webgl: true,
   wobbliness: 0.1,
 }
@@ -103,8 +99,6 @@ export const SubProvider = ({
   return (
     <LiquefyProvider
       breakpoints={config.breakpoints}
-      dispersion={config.dispersion}
-      elasticity={config.elasticity}
       frost={config.frost}
       glow={config.glow}
       intensity={config.intensity}
@@ -245,8 +239,6 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
   return (
     <SiteConfigContext.Provider value={value}>
       <LiquefyProvider
-        dispersion={material.dispersion}
-        elasticity={material.elasticity}
         frost={material.frost}
         glow={material.glow}
         intensity={material.intensity}

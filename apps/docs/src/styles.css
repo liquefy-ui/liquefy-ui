@@ -913,7 +913,18 @@ pre {
   outline-offset: -1px;
 }
 
+/* The stage is a display case rather than part of the page. The card inside it
+   is white type over imagery whatever the site theme is, so the synthetic
+   scenes keep their own dark ground instead of following `--bg`: in light mode
+   they used to resolve to #ffffff, and white type on white is not a subtle
+   failure. The photographs were never affected — only the scenes drawn from
+   theme tokens. */
 .pg-scene {
+  --bg: #07070b;
+  --bg-soft: #12121a;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --grid-line: rgba(255, 255, 255, 0.045);
   background-position: center;
   background-size: cover;
   height: var(--pg-stage-h);
@@ -959,7 +970,11 @@ pre {
   gap: 10px;
   padding: 26px 28px;
   pointer-events: auto;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.42);
+  /* What actually holds the type up once the veil is down. The panel's fill
+     is the visitor's to remove, so legibility cannot be parked in it: this
+     is a tight shadow for the letterforms and a wide one for the patch of
+     photograph behind them. */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 2px 18px rgba(0, 0, 0, 0.5);
   width: min(420px, 78%);
 }
 

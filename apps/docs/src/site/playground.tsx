@@ -20,15 +20,15 @@ import { THEME_LABELS, THEME_ORDER, TINTS, useSiteConfig } from './site-config'
  * What the glass is held over. Photographs first, because that is what a real
  * product puts behind a panel, and synthetic scenes between them because a
  * photograph is bad at proving one specific thing: a 9px grid shows a bend a
- * soft gradient would hide, and hard-edged colour shows a dispersion that a
- * neutral ground has nothing to separate.
+ * soft gradient would hide, and hard-edged colour shows where the bend moves
+ * a boundary that a neutral ground would have nothing to move.
  */
 const SCENES = [
   { id: 'mark', label: 'The wordmark', note: 'soft ink, wide shapes' },
   { credit: 'Alexey Topolyanskiy', id: 'fjord', label: 'Fjord', note: 'deep water, hard rock' },
   { id: 'rules', label: 'Fine rules', note: 'where displacement shows' },
   { credit: 'Wolfgang Lutz', id: 'summit', label: 'Summit', note: 'where a rim usually disappears' },
-  { id: 'chroma', label: 'Saturated colour', note: 'where dispersion shows' },
+  { id: 'chroma', label: 'Saturated colour', note: 'where the rim bends a hard edge' },
   { credit: 'Stefan Kunze', id: 'coast', label: 'Coast at dusk', note: 'soft light, long gradients' },
 ] as const
 
@@ -270,18 +270,6 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
       </div>
 
       <div className="pg-rail__row pg-rail__row--stacked">
-        <span className="pg-rail__label">Elasticity<em>{config.elasticity.toFixed(2)}</em></span>
-        <LiquidSlider
-          aria-label="Elasticity"
-          max={0.6}
-          min={0}
-          onValueChange={(value) => config.setMaterial('elasticity', value)}
-          step={0.01}
-          value={config.elasticity}
-        />
-      </div>
-
-      <div className="pg-rail__row pg-rail__row--stacked">
         <span className="pg-rail__label">Frost<em>{config.frost}px</em></span>
         <LiquidSlider
           aria-label="Frost"
@@ -290,18 +278,6 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
           onValueChange={(value) => config.setMaterial('frost', value)}
           step={1}
           value={config.frost}
-        />
-      </div>
-
-      <div className="pg-rail__row pg-rail__row--stacked">
-        <span className="pg-rail__label">Dispersion<em>{config.dispersion.toFixed(2)}</em></span>
-        <LiquidSlider
-          aria-label="Dispersion"
-          max={1}
-          min={0}
-          onValueChange={(value) => config.setMaterial('dispersion', value)}
-          step={0.05}
-          value={config.dispersion}
         />
       </div>
 
@@ -391,9 +367,7 @@ const providerSnippet = (config: ReturnType<typeof useSiteConfig>) => {
     `  tint="${config.tint}"`,
     `  intensity={${config.intensity.toFixed(2)}}`,
     `  wobbliness={${config.wobbliness.toFixed(1)}}`,
-    `  elasticity={${config.elasticity.toFixed(2)}}`,
     `  frost={${config.frost}}`,
-    `  dispersion={${config.dispersion.toFixed(2)}}`,
     `  refraction={${config.refraction.toFixed(2)}}`,
     `  veil={${config.veil.toFixed(2)}}`,
     flag('lens', config.lens),

@@ -79,7 +79,7 @@ export const surfaceDocs: ComponentDoc[] = [
       { description: 'WebGL shader override.', name: 'webgl', type: 'boolean' },
       { description: 'Edge refraction override.', name: 'lens', type: 'boolean' },
       { description: 'How far the lens softens what it refracts, in pixels.', name: 'lensBlur', type: 'number' },
-      { defaultValue: '1', description: "How much of the material's own dressing sits over the backdrop — fill, inner sheen, cast shadow and colour lift. 0 leaves only the lit rim and the refraction.", name: 'veil', type: 'number' },
+      { defaultValue: '0', description: "How much of the material's own dressing sits over the backdrop — fill, inner sheen, cast shadow and colour lift. 0 leaves only the lit rim and the refraction.", name: 'veil', type: 'number' },
     ],
     propsTitle: 'LiquidSurface',
     slug: 'surface',
@@ -104,7 +104,7 @@ export const surfaceDocs: ComponentDoc[] = [
         code: `<LiquidGlass radius={22} style={{ padding: 24 }} veil={1}>Full material</LiquidGlass>
 <LiquidGlass radius={22} style={{ padding: 24 }} veil={0.4}>Thinner</LiquidGlass>
 <LiquidGlass frost={0} radius={22} style={{ padding: 24 }} veil={0}>Nothing but an edge</LiquidGlass>`,
-        description: 'veil takes away what the material puts between you and the backdrop — the fill, the inner sheen, the cast shadow and the lift it gives the colour behind it. It leaves the rim and the refraction alone on purpose, so veil={0} with frost={0} is a pane with nothing in it but a lit edge and the bend behind it, rather than a rectangle that has stopped being there.',
+        description: 'veil takes away what the material puts between you and the backdrop — the fill, the inner sheen, the cast shadow and the lift it gives the colour behind it. It leaves the rim and the refraction alone on purpose, so veil={0} with frost={0} is a pane with nothing in it but a lit edge and the bend behind it, rather than a rectangle that has stopped being there. The dark theme raises it from underneath — a hairline on black is not a panel — so 0 there still leaves a little material; set --lq-veil-floor: 0 on a subtree to take that away too.',
         render: () => (
           <>
             <LiquidGlass radius={22} style={{ padding: 24 }} veil={1}>Full material</LiquidGlass>
@@ -135,17 +135,17 @@ export const surfaceDocs: ComponentDoc[] = [
     importLine: "import { LiquidGlass } from '@liquefy-ui/react'",
     name: 'Glass',
     props: [
-      { defaultValue: '0.7', description: 'How much of the bend the material can take without folding to spend, 0 to 1.', name: 'refraction', type: 'number' },
-      { defaultValue: '6', description: 'Backdrop blur in pixels. Set outright here, rather than added to the provider\'s.', name: 'frost', type: 'number' },
+      { defaultValue: '1', description: 'How much of the bend the material can take without folding to spend, 0 to 1.', name: 'refraction', type: 'number' },
+      { defaultValue: '0', description: 'Backdrop blur in pixels. Set outright here, rather than added to the provider\'s.', name: 'frost', type: 'number' },
       { description: 'How far the lens softens what it refracts, in pixels. Not the backdrop blur.', name: 'softness', type: 'number' },
-      { defaultValue: '0.1', description: 'How far apart the red and blue channels are pulled at the rim, 0 to 1.', name: 'dispersion', type: 'number' },
+      { defaultValue: '0', description: 'How far apart the red and blue channels are pulled at the rim, 0 to 1.', name: 'dispersion', type: 'number' },
       { description: 'Width of the refracting band at the rim. Defaults to 22% of the short side.', name: 'bezel', type: 'number' },
       { defaultValue: '2', description: 'Exponent of the bezel cross-section: 1 is an even ramp, higher piles the bend against the rim.', name: 'curve', type: 'number' },
-      { defaultValue: '0.02', description: 'How far the surface leans toward a pointer that has not reached it yet.', name: 'elasticity', type: 'number' },
+      { defaultValue: '0', description: 'How far the surface leans toward a pointer that has not reached it yet.', name: 'elasticity', type: 'number' },
       { defaultValue: 'provider', description: 'Lit rim glow, click ripple, iridescent shimmer and drifting sparkle. Glow and shimmer are on by default, ripple and sparkle off.', name: 'glow / ripple / shimmer / sparkle', type: 'boolean' },
       { defaultValue: 'false', description: 'Dims the glass for a surface sitting on a bright backdrop.', name: 'overLight', type: 'boolean' },
       { description: 'Corner radius (px or CSS value).', name: 'radius', type: 'number | string' },
-      { defaultValue: '1', description: "How much of the material's own dressing sits over the backdrop. Pair veil={0} with frost={0} for a sheet with nothing in it but an edge.", name: 'veil', type: 'number' },
+      { defaultValue: '0', description: "How much of the material's own dressing sits over the backdrop. Pair veil={0} with frost={0} for a sheet with nothing in it but an edge.", name: 'veil', type: 'number' },
     ],
     propsTitle: 'LiquidGlass',
     slug: 'glass',
