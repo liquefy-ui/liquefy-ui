@@ -12,19 +12,19 @@ const propRows: PropRow[] = [
     type: "'dark' | 'light' | 'system'",
   },
   {
-    defaultValue: "'#8eb9ff'",
+    defaultValue: "'#8f8f8f'",
     description: 'The accent every surface tints against. Written out as --lq-accent, so a change costs no re-render of the components below.',
     name: 'tint',
     type: 'string',
   },
   {
-    defaultValue: '0.72',
+    defaultValue: '1.2',
     description: 'Optical strength of the material: blur, saturation, and the brightness of the bezel. Useful range is roughly 0.2 to 1.2.',
     name: 'intensity',
     type: 'number',
   },
   {
-    defaultValue: '1',
+    defaultValue: '0.1',
     description: 'How loose the springs feel. 0 keeps the transitions but removes the overshoot; values above 1 exaggerate it. Clamped to 1.5.',
     name: 'wobbliness',
     type: 'number',
@@ -43,13 +43,55 @@ const propRows: PropRow[] = [
   },
   {
     defaultValue: 'true',
-    description: 'The WebGL shine pass. Off falls back to CSS-only glass with no canvas element created at all.',
+    description: 'The WebGL shine pass, and with it the four ornaments below. Off falls back to CSS-only glass with no canvas element created at all.',
     name: 'webgl',
     type: 'boolean',
   },
   {
     defaultValue: 'true',
-    description: 'The SVG displacement lens at the bezel. Off keeps the blur but drops the refraction.',
+    description: 'The lit patch that follows the pointer around the bezel. Drawn by the WebGL pass, so it is inert while webgl is off.',
+    name: 'glow',
+    type: 'boolean',
+  },
+  {
+    defaultValue: 'false',
+    description: 'A ring that travels out from a press. Drawn by the WebGL pass, so it is inert while webgl is off.',
+    name: 'ripple',
+    type: 'boolean',
+  },
+  {
+    defaultValue: 'true',
+    description: 'The iridescent colour shift across the rim while a surface is wobbling. Drawn by the WebGL pass, so it is inert while webgl is off.',
+    name: 'shimmer',
+    type: 'boolean',
+  },
+  {
+    defaultValue: 'false',
+    description: 'Slow specular glints drifting across the face. Drawn by the WebGL pass, so it is inert while webgl is off.',
+    name: 'sparkle',
+    type: 'boolean',
+  },
+  {
+    defaultValue: '0',
+    description: "How much of the material's own dressing sits over the backdrop — fill, inner sheen, cast shadow and the lift it gives the colour behind it. 0 leaves the lit rim and the refraction and nothing else. The dark theme puts a floor under it, which --lq-veil-floor overrides.",
+    name: 'veil',
+    type: 'number',
+  },
+  {
+    defaultValue: '1',
+    description: 'How much of the bend the material can take before the backdrop would fold back on itself to actually spend. The top of the range is the strongest the glass goes, not the point it breaks.',
+    name: 'refraction',
+    type: 'number',
+  },
+  {
+    defaultValue: '0',
+    description: 'Backdrop blur added to every glass, in pixels. It adds to whatever each surface asks for, so a dialog stays thicker than a card however far this is turned up.',
+    name: 'frost',
+    type: 'number',
+  },
+  {
+    defaultValue: 'true',
+    description: 'The SVG displacement lens at the bezel. It is on by default; turn it off to keep the blur and lit rim while dropping the refraction, especially across a dense screen of controls.',
     name: 'lens',
     type: 'boolean',
   },
@@ -90,7 +132,7 @@ export const providerDoc: DocEntry = {
 import '@liquefy-ui/react/styles.css'
 
 export const App = () => (
-  <LiquefyProvider theme="system" tint="#8b8f98">
+  <LiquefyProvider>
     <YourApp />
   </LiquefyProvider>
 )`}
@@ -123,10 +165,11 @@ export const App = () => (
           </div>
         </div>
         <p>
-          Every one of these is also available per component. <code>LiquidSurface</code> and the
-          components built on it accept <code>intensity</code>, <code>lens</code>, <code>tint</code> and{' '}
-          <code>webgl</code> directly, and a component-level value wins over the provider — which is how
-          you keep a heavy list cheap without changing the rest of the page.
+          <code>LiquidSurface</code> accepts <code>intensity</code>, <code>lens</code>, <code>tint</code>,{' '}
+          <code>veil</code> and <code>webgl</code> per instance, while <code>LiquidGlass</code> exposes its
+          lower-level optics too. Other components read the provider unless their own prop table names an
+          override; <code>LiquidButton</code>, for example, accepts <code>lens</code>, <code>tint</code> and{' '}
+          <code>webgl</code>.
         </p>
       </Section>
 
@@ -273,8 +316,10 @@ export const Chart = () => {
             [<code>data-liquid-motion</code>, <><code>on</code> / <code>off</code></>, 'Lets CSS opt out of transitions in the same breath as the springs.'],
             [<code>data-liquid-transparency</code>, <><code>on</code> / <code>off</code></>, 'Switches the fill set between translucent and opaque.'],
             [<code>--lq-accent</code>, 'the tint', 'Read by every surface, control and focus ring.'],
+            [<code>--lq-frost</code>, 'the provider frost in pixels', 'Added to the backdrop blur each surface asks for itself.'],
             [<code>--lq-intensity</code>, 'the intensity', 'Scales blur, saturation and bezel brightness.'],
             [<code>--lq-space</code>, 'the spacing unit', <>The unit behind <code>p</code>, <code>m</code>, <code>gap</code> and friends.</>],
+            [<code>--lq-veil</code>, 'the veil', 'Scales the material fill, inner sheen, cast shadow and colour lift.'],
             [<code>div.lq-portal</code>, 'an empty node', 'Where Select, Menu and Tooltip popovers mount, so they stay inside the provider and inherit the tokens.'],
           ]}
         />

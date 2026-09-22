@@ -1,0 +1,14 @@
+The photographs the playground scrolls behind its glass.
+
+All three are from Unsplash, under the Unsplash License, which allows
+commercial and non-commercial use without permission. Attribution is not
+required by that licence; it is here, and on the scenes themselves, because
+somebody took these.
+
+  fjord.jpg    Alexey Topolyanskiy   https://unsplash.com/photos/-oWyJoSqBRM
+  summit.jpg   Wolfgang Lutz         https://unsplash.com/photos/yOujaSETXlo
+  coast.jpg    Stefan Kunze          https://unsplash.com/photos/_SmZSuZwkHg
+
+Each was downscaled to 1600x900 and saved as a progressive JPEG at quality 70.
+They sit behind frosted glass and are never the subject, so anything sharper is
+weight the visitor pays for and cannot see.

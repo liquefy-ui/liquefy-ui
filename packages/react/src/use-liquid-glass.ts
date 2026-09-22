@@ -7,10 +7,15 @@ import {
 import { useCallback, useEffect, useRef, type Ref, type RefCallback } from 'react'
 
 export type LiquidGlassOptions = LiquidMotionOptions & {
+  /** Width of the refracting band at the rim, in pixels. Defaults to 22% of the short side. */
+  bezel?: number
+  /** Exponent of the bezel cross-section: 1 is an even ramp, higher piles the bend against the rim. */
+  curve?: number
   lens?: boolean
   lensBlur?: number
   lensStrength?: number
   motion?: boolean
+  saturation?: number
 }
 
 export type LiquidPulse = (strength?: number) => void
@@ -56,7 +61,13 @@ export const useLiquidGlass = <Element extends HTMLElement>(
       : attachLiquidMotion(element, canvasRef.current, options)
     const lensController = options.lens === false
       ? null
-      : attachLiquidLens(element, { blur: options.lensBlur, strength: options.lensStrength })
+      : attachLiquidLens(element, {
+        bezel: options.bezel,
+        blur: options.lensBlur,
+        curve: options.curve,
+        saturation: options.saturation,
+        strength: options.lensStrength,
+      })
     controllerRef.current = motionController
 
     return () => {
@@ -64,15 +75,27 @@ export const useLiquidGlass = <Element extends HTMLElement>(
       motionController?.destroy()
       lensController?.destroy()
     }
+    // Every option is listed individually rather than depending on the object,
+    // which a caller rebuilds on each render. The cost is that this list is the
+    // real contract: an option missing from it is read once on mount and then
+    // silently ignored for the rest of the component's life.
   }, [
+    options.bezel,
     options.bounce,
+    options.curve,
     options.disabled,
+    options.glow,
     options.intensity,
     options.lens,
     options.lensBlur,
     options.lensStrength,
     options.motion,
+    options.reach,
     options.respectReducedMotion,
+    options.ripple,
+    options.saturation,
+    options.shimmer,
+    options.sparkle,
     options.tilt,
     options.tint,
     options.webgl,

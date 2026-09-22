@@ -34,15 +34,22 @@ describe('provider defaults', () => {
     render(<LiquefyProvider><Probe /></LiquefyProvider>)
     expect(readConfig()).toEqual({
       breakpoints: defaultBreakpoints,
-      intensity: 0.72,
+      frost: 0,
+      glow: true,
+      intensity: 1.2,
       lens: true,
       motion: true,
+      refraction: 1,
+      ripple: false,
+      shimmer: true,
+      sparkle: false,
       spacing: 4,
       theme: 'system',
-      tint: '#8eb9ff',
+      tint: '#8f8f8f',
       transparency: true,
+      veil: 0,
       webgl: true,
-      wobbliness: 1,
+      wobbliness: 0.1,
     })
   })
 
@@ -113,10 +120,10 @@ describe('nested providers', () => {
     )
     const config = readConfig()
     expect(config.webgl).toBe(false)
-    expect(config.tint).toBe('#8eb9ff')
-    expect(config.intensity).toBe(0.72)
+    expect(config.tint).toBe('#8f8f8f')
+    expect(config.intensity).toBe(1.2)
     expect(config.theme).toBe('system')
-    expect(config.wobbliness).toBe(1)
+    expect(config.wobbliness).toBe(0.1)
   })
 
   it('keeps everything a spread hands it', () => {

@@ -19,7 +19,7 @@ export const performanceDoc: DocEntry = {
             ],
             [
               'The WebGL shine',
-              'One canvas and one context per interactive surface. Idle surfaces do not draw, but each context is real GPU memory.',
+              'One cheap 2D presentation canvas per rendered surface, backed by one shared WebGL 2 context for the page. Idle surfaces do not draw.',
               <code>webgl={'{false}'}</code>,
             ],
             [
