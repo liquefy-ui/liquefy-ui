@@ -79,6 +79,7 @@ export const surfaceDocs: ComponentDoc[] = [
       { description: 'WebGL shader override.', name: 'webgl', type: 'boolean' },
       { description: 'Edge refraction override.', name: 'lens', type: 'boolean' },
       { description: 'How far the lens softens what it refracts, in pixels.', name: 'lensBlur', type: 'number' },
+      { defaultValue: '1', description: "How much of the material's own dressing sits over the backdrop — fill, inner sheen, cast shadow and colour lift. 0 leaves only the lit rim and the refraction.", name: 'veil', type: 'number' },
     ],
     propsTitle: 'LiquidSurface',
     slug: 'surface',
@@ -98,6 +99,20 @@ export const surfaceDocs: ComponentDoc[] = [
           </>
         ),
         title: 'Refraction and bezel shape',
+      },
+      {
+        code: `<LiquidGlass radius={22} style={{ padding: 24 }} veil={1}>Full material</LiquidGlass>
+<LiquidGlass radius={22} style={{ padding: 24 }} veil={0.4}>Thinner</LiquidGlass>
+<LiquidGlass frost={0} radius={22} style={{ padding: 24 }} veil={0}>Nothing but an edge</LiquidGlass>`,
+        description: 'veil takes away what the material puts between you and the backdrop — the fill, the inner sheen, the cast shadow and the lift it gives the colour behind it. It leaves the rim and the refraction alone on purpose, so veil={0} with frost={0} is a pane with nothing in it but a lit edge and the bend behind it, rather than a rectangle that has stopped being there.',
+        render: () => (
+          <>
+            <LiquidGlass radius={22} style={{ padding: 24 }} veil={1}>Full material</LiquidGlass>
+            <LiquidGlass radius={22} style={{ padding: 24 }} veil={0.4}>Thinner</LiquidGlass>
+            <LiquidGlass frost={0} radius={22} style={{ padding: 24 }} veil={0}>Nothing but an edge</LiquidGlass>
+          </>
+        ),
+        title: 'Veil',
       },
       {
         code: `<LiquidGlass elasticity={0.4} radius={999} style={{ padding: '12px 26px' }}>
@@ -130,6 +145,7 @@ export const surfaceDocs: ComponentDoc[] = [
       { defaultValue: 'provider', description: 'Lit rim glow, click ripple, iridescent shimmer and drifting sparkle. Glow and shimmer are on by default, ripple and sparkle off.', name: 'glow / ripple / shimmer / sparkle', type: 'boolean' },
       { defaultValue: 'false', description: 'Dims the glass for a surface sitting on a bright backdrop.', name: 'overLight', type: 'boolean' },
       { description: 'Corner radius (px or CSS value).', name: 'radius', type: 'number | string' },
+      { defaultValue: '1', description: "How much of the material's own dressing sits over the backdrop. Pair veil={0} with frost={0} for a sheet with nothing in it but an edge.", name: 'veil', type: 'number' },
     ],
     propsTitle: 'LiquidGlass',
     slug: 'glass',

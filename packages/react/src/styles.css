@@ -169,14 +169,30 @@
      nothing but the prefixed form in it, which Chrome has dropped. This way the
      standard property survives the pass, and Safari versions old enough to want
      the prefix still find it. */
+  /* `veil` is how much of the material's own dressing sits between the eye and
+     what is behind it: the fill, the inner sheen, the cast shadow and the lift
+     it gives the backdrop's colour. It deliberately leaves the rim and the
+     refraction alone, because those are what make a panel read as glass rather
+     than as a hole cut in the page — a sheet with nothing in it but a lit edge
+     is exactly the look this dial exists to reach, and at 0 those two are all
+     that is left on the backdrop.
+
+     The scaling is done on aliases derived here rather than on the theme tokens
+     themselves. A token redefined at provider scope would resolve there once,
+     and a surface further down could no longer set a veil of its own — which is
+     the whole point of having the dial on the component as well. */
   .lq-surface {
+    --lq-veil-amount: clamp(0, var(--lq-veil, 1), 1);
+    --lq-cast: color-mix(in srgb, var(--lq-shadow-color) calc(var(--lq-veil-amount) * 100%), transparent);
+    --lq-sheen: color-mix(in srgb, var(--lq-glass-bright) calc(var(--lq-veil-amount) * 100%), transparent);
+    --lq-sheen-shade: color-mix(in srgb, var(--lq-glass-shade) calc(var(--lq-veil-amount) * 100%), transparent);
     --lq-blur: calc(1.5px + var(--lq-frost, 0px));
-    --lq-saturate: 1.4;
-    --lq-brighten: 1.05;
-    --lq-glow: 0.4;
+    --lq-saturate: calc(1 + 0.4 * var(--lq-veil-amount));
+    --lq-brighten: calc(1 + 0.05 * var(--lq-veil-amount));
+    --lq-glow: calc(0.4 * var(--lq-veil-amount));
     --lq-fill: var(--lq-clear-fill);
     --lq-line: var(--lq-clear-line);
-    --lq-shadow: 0 16px 40px var(--lq-shadow-color), 0 2px 8px color-mix(in srgb, var(--lq-shadow-color) 52%, transparent);
+    --lq-shadow: 0 16px 40px var(--lq-cast), 0 2px 8px color-mix(in srgb, var(--lq-cast) 52%, transparent);
     -webkit-backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten)) var(--lq-lens, );
     backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten)) var(--lq-lens, );
     background: var(--lq-fill);
@@ -184,17 +200,17 @@
     border-radius: calc(var(--lq-radius) + var(--lq-squish) * 6px);
     box-shadow:
       var(--lq-shadow),
-      inset 0 1px 0 var(--lq-glass-bright),
-      inset 0 -1.25px 0 var(--lq-glass-shade),
+      inset 0 1px 0 var(--lq-sheen),
+      inset 0 -1.25px 0 var(--lq-sheen-shade),
       inset 0 0 22px -14px rgba(255, 255, 255, var(--lq-glow));
     overflow: hidden;
   }
 
   .lq-surface[data-liquid-variant='clear'] {
     --lq-blur: var(--lq-frost, 0px);
-    --lq-saturate: 1.08;
+    --lq-saturate: calc(1 + 0.08 * var(--lq-veil-amount));
     --lq-brighten: 1;
-    --lq-glow: 0.1;
+    --lq-glow: calc(0.1 * var(--lq-veil-amount));
   }
 
   .lq-surface[data-liquid-variant='clear'] > .lq-surface__edge {
@@ -203,7 +219,7 @@
 
   .lq-surface[data-liquid-variant='tinted'] {
     --lq-blur: calc(2px + var(--lq-frost, 0px));
-    --lq-fill: color-mix(in srgb, var(--lq-tint) 14%, transparent);
+    --lq-fill: color-mix(in srgb, var(--lq-tint) calc(var(--lq-veil-amount) * 14%), transparent);
     --lq-line: color-mix(in srgb, var(--lq-tint) 48%, rgba(255, 255, 255, 0.12));
   }
 

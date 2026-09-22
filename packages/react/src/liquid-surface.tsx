@@ -14,6 +14,8 @@ export type LiquidSurfaceProps = HTMLAttributes<HTMLDivElement> & LiquidStylePro
   radius?: number | string
   tint?: string
   variant?: LiquidVariant
+  /** How much of the material's own dressing sits over the backdrop, 1 to 0. */
+  veil?: number
   webgl?: boolean
 }
 
@@ -29,6 +31,7 @@ export const LiquidSurface = forwardRef<HTMLDivElement, LiquidSurfaceProps>(({
   styles,
   tint,
   variant = 'clear',
+  veil,
   webgl,
   ...props
 }, forwardedRef) => {
@@ -64,6 +67,7 @@ export const LiquidSurface = forwardRef<HTMLDivElement, LiquidSurfaceProps>(({
     '--lq-radius': typeof radius === 'number' ? `${radius}px` : radius ?? 'var(--lq-radius-default)',
     '--lq-tint': resolvedTint,
   }
+  if (veil !== undefined) vars['--lq-veil'] = veil
   const root = useLiquidStyles('lq-surface', { className, style, styles, vars })
 
   return (

@@ -317,6 +317,18 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
         />
       </div>
 
+      <div className="pg-rail__row pg-rail__row--stacked">
+        <span className="pg-rail__label">Veil<em>{config.veil.toFixed(2)}</em></span>
+        <LiquidSlider
+          aria-label="Veil"
+          max={1}
+          min={0}
+          onValueChange={(value) => config.setMaterial('veil', value)}
+          step={0.05}
+          value={config.veil}
+        />
+      </div>
+
       <div className="pg-rail__switches">
         {ORNAMENTS.map((ornament) => (
           <div className="pg-rail__row" key={ornament.key}>
@@ -383,6 +395,7 @@ const providerSnippet = (config: ReturnType<typeof useSiteConfig>) => {
     `  frost={${config.frost}}`,
     `  dispersion={${config.dispersion.toFixed(2)}}`,
     `  refraction={${config.refraction.toFixed(2)}}`,
+    `  veil={${config.veil.toFixed(2)}}`,
     flag('lens', config.lens),
     flag('motion', config.motionOn),
     flag('transparency', config.transparency),

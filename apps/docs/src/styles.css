@@ -939,15 +939,20 @@ pre {
    no blur on purpose — clarity over blur is the whole pitch — and a photograph
    will cheerfully put a white cloud behind white type. So this panel sets a
    legibility floor the way a product would: real frost, a dark fill, and light
-   ink whatever the page theme is, because it is always over imagery. Every
-   other control still reaches it; only the floor is fixed. */
+   ink whatever the page theme is, because it is always over imagery.
+
+   The floor is scaled by the veil rather than fixed, so the one control whose
+   entire job is "show me less material" is not the one control this panel
+   ignores. Dragging it to 0 does cost legibility here — that is the honest
+   consequence of asking for a sheet with nothing in it, and the text shadow
+   below is what is left holding the type up. */
 .pg-card {
   /* A floor, not a fixed value: the frost control still raises it, it just
-     cannot take the panel below what its own text needs. */
-  --lq-blur: max(16px, var(--lq-frost, 0px));
-  --lq-saturate: 1.5;
-  --lq-fill: rgba(9, 11, 18, 0.3);
-  --lq-line: rgba(255, 255, 255, 0.24);
+     cannot take the panel below what its own text needs at full veil. */
+  --lq-blur: max(calc(16px * var(--lq-veil-amount, 1)), var(--lq-frost, 0px));
+  --lq-saturate: calc(1 + 0.5 * var(--lq-veil-amount, 1));
+  --lq-fill: rgba(9, 11, 18, calc(0.3 * var(--lq-veil-amount, 1)));
+  --lq-line: rgba(255, 255, 255, calc(0.24 * var(--lq-veil-amount, 1)));
   color: #fff;
   display: flex;
   flex-direction: column;

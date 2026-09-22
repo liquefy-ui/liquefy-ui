@@ -33,6 +33,13 @@ export type LiquefyConfig = {
   theme: LiquefyTheme
   tint: string
   transparency: boolean
+  /**
+   * How much of the material's own dressing sits over the backdrop — fill,
+   * inner sheen, cast shadow and the lift it gives the backdrop's colour —
+   * from 1 for the full material down to 0, which leaves nothing on it but
+   * the lit rim and the refraction behind it.
+   */
+  veil: number
   webgl: boolean
   wobbliness: number
 }
@@ -73,6 +80,7 @@ const defaultConfig: LiquefyConfig = {
   theme: 'system',
   tint: '#8f8f8f',
   transparency: true,
+  veil: 1,
   webgl: true,
   wobbliness: 0.1,
 }
@@ -105,6 +113,7 @@ export const LiquefyProvider = ({
   theme = defaultConfig.theme,
   tint = defaultConfig.tint,
   transparency = defaultConfig.transparency,
+  veil = defaultConfig.veil,
   webgl = defaultConfig.webgl,
   wobbliness = defaultConfig.wobbliness,
 }: LiquefyProviderProps) => {
@@ -135,12 +144,13 @@ export const LiquefyProvider = ({
       theme,
       tint,
       transparency,
+      veil,
       webgl,
       wobbliness,
     }),
     [
       resolvedBreakpoints, dispersion, elasticity, frost, glow, intensity, lens, motion, refraction, ripple,
-      shimmer, sparkle, spacing, theme, tint, transparency, webgl, wobbliness,
+      shimmer, sparkle, spacing, theme, tint, transparency, veil, webgl, wobbliness,
     ],
   )
   const style: CustomProperties = {
@@ -148,6 +158,7 @@ export const LiquefyProvider = ({
     '--lq-frost': `${frost}px`,
     '--lq-intensity': intensity,
     '--lq-space': typeof spacing === 'number' ? `${spacing}px` : spacing,
+    '--lq-veil': veil,
   }
 
   return (

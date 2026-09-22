@@ -49,6 +49,7 @@ describe('provider defaults', () => {
       theme: 'system',
       tint: '#8f8f8f',
       transparency: true,
+      veil: 1,
       webgl: true,
       wobbliness: 0.1,
     })

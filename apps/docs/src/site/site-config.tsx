@@ -33,6 +33,7 @@ export type MaterialConfig = {
   sparkle: boolean
   tint: string
   transparency: boolean
+  veil: number
   webgl: boolean
   wobbliness: number
 }
@@ -81,6 +82,7 @@ const DEFAULT_MATERIAL: MaterialConfig = {
   sparkle: false,
   tint: TINTS[0].value,
   transparency: true,
+  veil: 1,
   webgl: true,
   wobbliness: 0.1,
 }
@@ -116,6 +118,7 @@ export const SubProvider = ({
       theme={config.theme}
       tint={config.tint}
       transparency={config.transparency}
+      veil={config.veil}
       webgl={config.webgl}
       wobbliness={config.wobbliness}
       {...overrides}
@@ -256,6 +259,7 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
         sparkle={material.sparkle}
         tint={material.tint}
         transparency={material.transparency}
+        veil={material.veil}
         webgl={material.webgl}
         wobbliness={material.wobbliness}
       >

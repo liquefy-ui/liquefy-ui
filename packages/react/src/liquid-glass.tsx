@@ -35,6 +35,8 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps
   /** Drifting specular glints across the face. Falls back to the provider. */
   sparkle?: boolean
   tint?: string
+  /** How much of the material's own dressing sits over the backdrop, 1 to 0. */
+  veil?: number
   wobbliness?: number
 }
 
@@ -72,6 +74,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
   style,
   styles,
   tint,
+  veil,
   wobbliness,
   ...props
 }, forwardedRef) => {
@@ -119,6 +122,7 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
   // names its own frost is saying what it wants to be, not how much more than
   // everything else.
   if (frost !== undefined) vars['--lq-blur'] = `${frost}px`
+  if (veil !== undefined) vars['--lq-veil'] = veil
   const root = useLiquidStyles(['lq-surface', 'lq-glass'], { className, style, styles, vars })
 
   return (
