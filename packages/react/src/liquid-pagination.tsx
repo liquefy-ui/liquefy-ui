@@ -30,8 +30,6 @@ const PaginationButton = ({ children, className, onClick, ...props }: Pagination
   const [glassRef, , pulse] = useLiquidGlass<HTMLButtonElement>(undefined, {
     bounce: 0.08,
     disabled: props.disabled,
-    dispersion: config.dispersion,
-    elasticity: config.elasticity,
     glow: config.glow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,

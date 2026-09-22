@@ -3,10 +3,6 @@ import { createContext, useContext, useMemo, useState, type CSSProperties, type 
 export type LiquefyConfig = {
   /** Minimum widths behind the responsive form of the `styles` prop. */
   breakpoints: LiquefyBreakpoints
-  /** How far apart the red and blue channels are pulled at the rim, 0 to 1. */
-  dispersion: number
-  /** How far a surface leans toward a pointer that has not reached it yet. */
-  elasticity: number
   /** Backdrop blur added to every glass, in pixels. Each surface keeps the blur its own job needs on top. */
   frost: number
   /**
@@ -70,8 +66,6 @@ export const defaultBreakpoints: LiquefyBreakpoints = {
 
 const defaultConfig: LiquefyConfig = {
   breakpoints: defaultBreakpoints,
-  dispersion: 0,
-  elasticity: 0,
   frost: 0,
   glow: true,
   intensity: 1.2,
@@ -103,8 +97,6 @@ export const LiquefyProvider = ({
   breakpoints,
   children,
   className,
-  dispersion = defaultConfig.dispersion,
-  elasticity = defaultConfig.elasticity,
   frost = defaultConfig.frost,
   glow = defaultConfig.glow,
   intensity = defaultConfig.intensity,
@@ -134,8 +126,6 @@ export const LiquefyProvider = ({
   const value = useMemo(
     () => ({
       breakpoints: resolvedBreakpoints,
-      dispersion,
-      elasticity,
       frost,
       glow,
       intensity,
@@ -154,7 +144,7 @@ export const LiquefyProvider = ({
       wobbliness,
     }),
     [
-      resolvedBreakpoints, dispersion, elasticity, frost, glow, intensity, lens, motion, refraction, ripple,
+      resolvedBreakpoints, frost, glow, intensity, lens, motion, refraction, ripple,
       shimmer, sparkle, spacing, theme, tint, transparency, veil, webgl, wobbliness,
     ],
   )

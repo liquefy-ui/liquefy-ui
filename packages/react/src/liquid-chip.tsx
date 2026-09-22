@@ -46,8 +46,6 @@ export const LiquidChip = forwardRef<HTMLSpanElement, LiquidChipProps>(({
   const Tag = selected === undefined ? (interactive ? 'button' : 'span') : Toggle
   const [elementRef, , pulse] = useLiquidGlass<HTMLElement>(forwardedRef as Ref<HTMLElement>, {
     bounce: 0.09,
-    dispersion: config.dispersion,
-    elasticity: config.elasticity,
     glow: config.glow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,

@@ -29,7 +29,6 @@ export type MaterialConfig = {
   ripple: boolean
   shimmer: boolean
   sparkle: boolean
-  tint: string
   transparency: boolean
   veil: number
   webgl: boolean
@@ -57,17 +56,9 @@ export type SiteConfig = MaterialConfig & {
   themeChoice: LiquefyTheme
 }
 
-export const TINTS = [
-  { label: 'Graphite', value: '#8f8f8f' },
-  { label: 'Azure', value: '#6f9dff' },
-  { label: 'Violet', value: '#a98cff' },
-  { label: 'Mint', value: '#5ccfae' },
-  { label: 'Blush', value: '#ff93a6' },
-] as const
-
 // Kept in step with the library's own defaults on purpose: the site is meant
 // to be what a consumer gets out of the box before they touch a single prop.
-const DEFAULT_MATERIAL: MaterialConfig = {
+export const DEFAULT_MATERIAL: MaterialConfig = {
   frost: 0,
   glow: true,
   intensity: 1.2,
@@ -76,7 +67,6 @@ const DEFAULT_MATERIAL: MaterialConfig = {
   ripple: false,
   shimmer: true,
   sparkle: false,
-  tint: TINTS[0].value,
   transparency: true,
   veil: 0,
   webgl: true,
@@ -110,7 +100,6 @@ export const SubProvider = ({
       sparkle={config.sparkle}
       spacing={config.spacing}
       theme={config.theme}
-      tint={config.tint}
       transparency={config.transparency}
       veil={config.veil}
       webgl={config.webgl}
@@ -249,7 +238,6 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
         ripple={material.ripple}
         shimmer={material.shimmer}
         sparkle={material.sparkle}
-        tint={material.tint}
         transparency={material.transparency}
         veil={material.veil}
         webgl={material.webgl}

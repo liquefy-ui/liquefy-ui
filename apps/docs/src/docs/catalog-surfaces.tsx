@@ -115,20 +115,20 @@ export const surfaceDocs: ComponentDoc[] = [
         title: 'Veil',
       },
       {
-        code: `<LiquidGlass elasticity={0.4} radius={999} style={{ padding: '12px 26px' }}>
+        code: `<LiquidGlass radius={999} style={{ padding: '12px 26px' }}>
   Move the pointer near me
 </LiquidGlass>
 <LiquidGlass glow={false} radius={999} shimmer={false} style={{ padding: '12px 26px' }}>
   Ornaments off
 </LiquidGlass>`,
-        description: 'The lean starts before the pointer arrives and runs through the same springs as every other gesture, so it overshoots and settles rather than gliding. The four ornaments — glow, ripple, shimmer and sparkle — come from the provider, so naming one here is how an instance opts out of the house material; with all four off no WebGL context is created at all.',
+        description: 'The four ornaments — glow, ripple, shimmer and sparkle — come from the provider, so naming one here is how an instance opts out of the house material; with all four off no WebGL context is created at all.',
         render: () => (
           <>
-            <LiquidGlass elasticity={0.4} radius={999} style={{ padding: '12px 26px' }}>Move the pointer near me</LiquidGlass>
+            <LiquidGlass radius={999} style={{ padding: '12px 26px' }}>Move the pointer near me</LiquidGlass>
             <LiquidGlass glow={false} radius={999} shimmer={false} style={{ padding: '12px 26px' }}>Ornaments off</LiquidGlass>
           </>
         ),
-        title: 'Elasticity and ornaments',
+        title: 'Ornaments',
       },
     ],
     description: 'The bare material with its optics as props. LiquidSurface is the one to reach for in a product; this is the one for when the glass is the design.',
@@ -138,10 +138,8 @@ export const surfaceDocs: ComponentDoc[] = [
       { defaultValue: '1', description: 'How much of the bend the material can take without folding to spend, 0 to 1.', name: 'refraction', type: 'number' },
       { defaultValue: '0', description: 'Backdrop blur in pixels. Set outright here, rather than added to the provider\'s.', name: 'frost', type: 'number' },
       { description: 'How far the lens softens what it refracts, in pixels. Not the backdrop blur.', name: 'softness', type: 'number' },
-      { defaultValue: '0', description: 'How far apart the red and blue channels are pulled at the rim, 0 to 1.', name: 'dispersion', type: 'number' },
       { description: 'Width of the refracting band at the rim. Defaults to 22% of the short side.', name: 'bezel', type: 'number' },
       { defaultValue: '2', description: 'Exponent of the bezel cross-section: 1 is an even ramp, higher piles the bend against the rim.', name: 'curve', type: 'number' },
-      { defaultValue: '0', description: 'How far the surface leans toward a pointer that has not reached it yet.', name: 'elasticity', type: 'number' },
       { defaultValue: 'provider', description: 'Lit rim glow, click ripple, iridescent shimmer and drifting sparkle. Glow and shimmer are on by default, ripple and sparkle off.', name: 'glow / ripple / shimmer / sparkle', type: 'boolean' },
       { defaultValue: 'false', description: 'Dims the glass for a surface sitting on a bright backdrop.', name: 'overLight', type: 'boolean' },
       { description: 'Corner radius (px or CSS value).', name: 'radius', type: 'number | string' },

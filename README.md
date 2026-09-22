@@ -37,7 +37,7 @@ import '@liquefy-ui/react/styles.css'
 
 export function App() {
   return (
-    <LiquefyProvider theme="system" tint="#8f8f8f">
+    <LiquefyProvider>
       <LiquidButton iconBefore={<SparklesIcon />}>
         Create magic
       </LiquidButton>

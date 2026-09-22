@@ -78,8 +78,6 @@ export const LiquidRadio = forwardRef<HTMLButtonElement, LiquidRadioProps>(({
   const [elementRef, canvasRef] = useLiquidGlass<HTMLButtonElement>(forwardedRef, {
     bounce: 0.08,
     disabled,
-    dispersion: config.dispersion,
-    elasticity: config.elasticity,
     glow: config.glow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,

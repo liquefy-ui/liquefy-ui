@@ -46,8 +46,6 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(({
   const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
     bounce: 0.075,
     disabled: isDisabled,
-    dispersion: config.dispersion,
-    elasticity: config.elasticity,
     glow: config.glow,
     intensity: config.intensity,
     lens: resolvedLens && config.transparency,

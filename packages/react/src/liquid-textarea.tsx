@@ -22,8 +22,6 @@ export const LiquidTextArea = forwardRef<HTMLTextAreaElement, LiquidTextAreaProp
   const config = useLiquefyConfig()
   const [controlRef, canvasRef, pulse] = useLiquidGlass<HTMLSpanElement>(undefined, {
     bounce: 0.02,
-    dispersion: config.dispersion,
-    elasticity: config.elasticity,
     glow: config.glow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,

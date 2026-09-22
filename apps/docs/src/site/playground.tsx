@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from 'react'
+import { useRef, useState } from 'react'
 import {
   GlassCard,
   LiquidBadge,
@@ -14,7 +14,7 @@ import {
 import { HeartIcon, SearchIcon, SparklesIcon } from '@liquefy-ui/icons'
 import { CopyButton } from './chrome'
 import { LiquefyLockup } from './lockup'
-import { THEME_LABELS, THEME_ORDER, TINTS, useSiteConfig } from './site-config'
+import { DEFAULT_MATERIAL, THEME_LABELS, THEME_ORDER, useSiteConfig } from './site-config'
 
 /**
  * What the glass is held over. Photographs first, because that is what a real
@@ -24,7 +24,7 @@ import { THEME_LABELS, THEME_ORDER, TINTS, useSiteConfig } from './site-config'
  * a boundary that a neutral ground would have nothing to move.
  */
 const SCENES = [
-  { id: 'mark', label: 'The wordmark', note: 'soft ink, wide shapes' },
+  { id: 'mark', label: 'The wordmark', light: true, note: 'soft ink, wide shapes' },
   { credit: 'Alexey Topolyanskiy', id: 'fjord', label: 'Fjord', note: 'deep water, hard rock' },
   { id: 'rules', label: 'Fine rules', note: 'where displacement shows' },
   { credit: 'Wolfgang Lutz', id: 'summit', label: 'Summit', note: 'where a rim usually disappears' },
@@ -45,6 +45,10 @@ const SCENES = [
 const LensStage = () => {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
+  // The card carries white type wherever it is, so a scene with a pale ground
+  // has to put something back under it. Raising the veil is the dial the
+  // material already has for this, rather than a second colour pinned on top.
+  const overLight = SCENES[index] !== undefined && 'light' in SCENES[index]
 
   const show = (next: number) => {
     const scroller = scrollerRef.current
@@ -69,7 +73,7 @@ const LensStage = () => {
     <div className="pg-stage">
       <div className="pg-stage__scroll" onScroll={handleScroll} ref={scrollerRef}>
         <div className="pg-stage__sticky">
-          <LiquidSurface className="pg-card" radius={28}>
+          <LiquidSurface className="pg-card" data-over-light={overLight || undefined} radius={28}>
             <p className="pg-card__eyebrow">Live material</p>
             <h3 className="pg-card__title">Nothing behind it is hidden.</h3>
             <p className="pg-card__body">
@@ -227,22 +231,15 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
       </div>
 
       <div className="pg-rail__row pg-rail__row--stacked">
-        <span className="pg-rail__label">
-          Tint
-          <em>{TINTS.find((entry) => entry.value === config.tint)?.label ?? config.tint}</em>
-        </span>
-        <div className="pg-tints">
-          {TINTS.map((tint) => (
-            <button
-              aria-label={`Set tint to ${tint.label}`}
-              aria-pressed={config.tint === tint.value}
-              key={tint.value}
-              onClick={() => config.setMaterial('tint', tint.value)}
-              style={{ '--swatch': tint.value } as CSSProperties}
-              type="button"
-            />
-          ))}
-        </div>
+        <span className="pg-rail__label">Veil<em>{config.veil.toFixed(2)}</em></span>
+        <LiquidSlider
+          aria-label="Veil"
+          max={1}
+          min={0}
+          onValueChange={(value) => config.setMaterial('veil', value)}
+          step={0.05}
+          value={config.veil}
+        />
       </div>
 
       <div className="pg-rail__row pg-rail__row--stacked">
@@ -254,30 +251,6 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
           onValueChange={(value) => config.setMaterial('intensity', value)}
           step={0.01}
           value={config.intensity}
-        />
-      </div>
-
-      <div className="pg-rail__row pg-rail__row--stacked">
-        <span className="pg-rail__label">Wobbliness<em>{config.wobbliness.toFixed(1)}</em></span>
-        <LiquidSlider
-          aria-label="Wobbliness"
-          max={2}
-          min={0}
-          onValueChange={(value) => config.setMaterial('wobbliness', value)}
-          step={0.1}
-          value={config.wobbliness}
-        />
-      </div>
-
-      <div className="pg-rail__row pg-rail__row--stacked">
-        <span className="pg-rail__label">Frost<em>{config.frost}px</em></span>
-        <LiquidSlider
-          aria-label="Frost"
-          max={24}
-          min={0}
-          onValueChange={(value) => config.setMaterial('frost', value)}
-          step={1}
-          value={config.frost}
         />
       </div>
 
@@ -294,14 +267,26 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
       </div>
 
       <div className="pg-rail__row pg-rail__row--stacked">
-        <span className="pg-rail__label">Veil<em>{config.veil.toFixed(2)}</em></span>
+        <span className="pg-rail__label">Frost<em>{config.frost}px</em></span>
         <LiquidSlider
-          aria-label="Veil"
-          max={1}
+          aria-label="Frost"
+          max={24}
           min={0}
-          onValueChange={(value) => config.setMaterial('veil', value)}
-          step={0.05}
-          value={config.veil}
+          onValueChange={(value) => config.setMaterial('frost', value)}
+          step={1}
+          value={config.frost}
+        />
+      </div>
+
+      <div className="pg-rail__row pg-rail__row--stacked">
+        <span className="pg-rail__label">Wobbliness<em>{config.wobbliness.toFixed(1)}</em></span>
+        <LiquidSlider
+          aria-label="Wobbliness"
+          max={2}
+          min={0}
+          onValueChange={(value) => config.setMaterial('wobbliness', value)}
+          step={0.1}
+          value={config.wobbliness}
         />
       </div>
 
@@ -359,23 +344,35 @@ const ControlRail = ({ onToggleCode, showCode }: ControlRailProps) => {
   )
 }
 
+/**
+ * The settings you picked, as the code that reproduces them — and only the ones
+ * that differ from the library's own. At rest that leaves `<LiquefyProvider>`
+ * with nothing on it, which is the honest answer to "what do I have to pass to
+ * get this?": nothing.
+ */
 const providerSnippet = (config: ReturnType<typeof useSiteConfig>) => {
-  const flag = (name: string, value: boolean) => (value ? `  ${name}` : `  ${name}={false}`)
+  const lines: string[] = []
+  const flag = (name: string, value: boolean, fallback: boolean) => {
+    if (value !== fallback) lines.push(value ? `  ${name}` : `  ${name}={false}`)
+  }
+  const dial = (name: string, value: number, fallback: number, digits: number) => {
+    if (value !== fallback) lines.push(`  ${name}={${value.toFixed(digits)}}`)
+  }
+
+  if (config.themeChoice !== 'system') lines.push(`  theme="${config.themeChoice}"`)
+  dial('veil', config.veil, DEFAULT_MATERIAL.veil, 2)
+  dial('intensity', config.intensity, DEFAULT_MATERIAL.intensity, 2)
+  dial('refraction', config.refraction, DEFAULT_MATERIAL.refraction, 2)
+  dial('frost', config.frost, DEFAULT_MATERIAL.frost, 0)
+  dial('wobbliness', config.wobbliness, DEFAULT_MATERIAL.wobbliness, 1)
+  flag('lens', config.lens, DEFAULT_MATERIAL.lens)
+  flag('motion', config.motionOn, true)
+  flag('transparency', config.transparency, DEFAULT_MATERIAL.transparency)
+  flag('webgl', config.webgl, DEFAULT_MATERIAL.webgl)
+  for (const ornament of ORNAMENTS) flag(ornament.key, config[ornament.key], DEFAULT_MATERIAL[ornament.key])
+
   return [
-    '<LiquefyProvider',
-    `  theme="${config.themeChoice}"`,
-    `  tint="${config.tint}"`,
-    `  intensity={${config.intensity.toFixed(2)}}`,
-    `  wobbliness={${config.wobbliness.toFixed(1)}}`,
-    `  frost={${config.frost}}`,
-    `  refraction={${config.refraction.toFixed(2)}}`,
-    `  veil={${config.veil.toFixed(2)}}`,
-    flag('lens', config.lens),
-    flag('motion', config.motionOn),
-    flag('transparency', config.transparency),
-    flag('webgl', config.webgl),
-    ...ORNAMENTS.map((ornament) => flag(ornament.key, config[ornament.key])),
-    '>',
+    lines.length > 0 ? `<LiquefyProvider\n${lines.join('\n')}\n>` : '<LiquefyProvider>',
     '  <App />',
     '</LiquefyProvider>',
   ].join('\n')

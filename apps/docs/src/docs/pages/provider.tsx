@@ -55,14 +55,14 @@ const propRows: PropRow[] = [
   },
   {
     defaultValue: '0',
-    description: 'How far a surface leans toward a pointer that has not reached it yet, measured from its edge. 0 is rigid.',
-    name: 'elasticity',
+    description: "How much of the material's own dressing sits over the backdrop — fill, inner sheen, cast shadow and the lift it gives the colour behind it. 0 leaves the lit rim and the refraction and nothing else. The dark theme puts a floor under it, which --lq-veil-floor overrides.",
+    name: 'veil',
     type: 'number',
   },
   {
-    defaultValue: '0.55',
-    description: 'How far apart the red and blue channels are pulled at the rim. Only visible while lens is on.',
-    name: 'dispersion',
+    defaultValue: '1',
+    description: 'How much of the bend the material can take before the backdrop would fold back on itself to actually spend. The top of the range is the strongest the glass goes, not the point it breaks.',
+    name: 'refraction',
     type: 'number',
   },
   {
@@ -114,7 +114,7 @@ export const providerDoc: DocEntry = {
 import '@liquefy-ui/react/styles.css'
 
 export const App = () => (
-  <LiquefyProvider theme="system" tint="#8b8f98">
+  <LiquefyProvider>
     <YourApp />
   </LiquefyProvider>
 )`}

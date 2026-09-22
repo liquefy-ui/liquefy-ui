@@ -962,7 +962,8 @@ pre {
      cannot take the panel below what its own text needs at full veil. */
   --lq-blur: max(calc(16px * var(--lq-veil-amount, 1)), var(--lq-frost, 0px));
   --lq-saturate: calc(1 + 0.5 * var(--lq-veil-amount, 1));
-  --lq-fill: rgba(9, 11, 18, calc(0.3 * var(--lq-veil-amount, 1)));
+  --pg-scrim: calc(0.3 * var(--lq-veil-amount, 1));
+  --lq-fill: rgba(9, 11, 18, var(--pg-scrim));
   --lq-line: rgba(255, 255, 255, calc(0.24 * var(--lq-veil-amount, 1)));
   color: #fff;
   display: flex;
@@ -976,6 +977,30 @@ pre {
      photograph behind them. */
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 2px 18px rgba(0, 0, 0, 0.5);
   width: min(420px, 78%);
+}
+
+/* Over a pale scene the panel flips its ink rather than dropping a dark scrim
+   over the scene. A scrim would read the wrong way round here — the thing you
+   are meant to be looking through would become the most opaque object on the
+   stage, and the wordmark it is held over would disappear behind it. So the
+   type goes dark, its shadow goes light, and the veil comes up just far enough
+   to lift the letters off the grid behind them. The control on the right still
+   works above that floor. */
+.pg-card[data-over-light='true'] {
+  --lq-veil-floor: 0.62;
+  --lq-fill: rgba(255, 255, 255, calc(0.78 * var(--lq-veil-amount, 1)));
+  color: #10131c;
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.85);
+}
+
+.pg-card[data-over-light='true'] .pg-card__eyebrow {
+  color: rgba(16, 19, 28, 0.66);
+}
+
+/* The body sets its own white rather than inheriting, so flipping the panel's
+   colour alone left the paragraph invisible on the pale scene. */
+.pg-card[data-over-light='true'] .pg-card__body {
+  color: rgba(16, 19, 28, 0.82);
 }
 
 .pg-card__eyebrow {
@@ -999,6 +1024,20 @@ pre {
   font-size: 0.86rem;
   line-height: 1.55;
   margin: 0;
+}
+
+/* The one pale scene. The card answers it with `data-over-light`, which is the
+   arrangement a product actually ships: a light page, a panel over it, and the
+   panel taking care of its own contrast. */
+.pg-scene--mark {
+  --bg: #ffffff;
+  --bg-soft: #f4f5f8;
+  --line: rgba(11, 11, 20, 0.1);
+  /* Heavier than the page's own rule token: the wordmark is drawn in it and
+     then halved again by its own opacity, which on white left the scene named
+     after the mark with no mark visible in it. */
+  --line-strong: rgba(11, 11, 20, 0.3);
+  --grid-line: rgba(11, 11, 20, 0.055);
 }
 
 .pg-scene--fjord { background-image: url('/scenes/fjord.jpg'); }
@@ -1068,6 +1107,7 @@ pre {
 
 /* The scenes that bring their own ground bring their own ink with it: the page
    foreground is right for exactly one of them at a time. */
+.pg-scene--mark .pg-scene__tag,
 .pg-scene--chroma .pg-scene__tag,
 .pg-scene--paper .pg-scene__tag {
   color: rgba(16, 21, 36, 0.66);

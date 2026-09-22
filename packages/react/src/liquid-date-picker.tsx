@@ -131,8 +131,6 @@ export const LiquidDatePicker = forwardRef<HTMLButtonElement, LiquidDatePickerPr
   const [glassRef, canvasRef, pulse] = useLiquidGlass<HTMLButtonElement>(forwardedRef, {
     bounce: 0.05,
     disabled,
-    dispersion: config.dispersion,
-    elasticity: config.elasticity,
     glow: config.glow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,

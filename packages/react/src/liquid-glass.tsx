@@ -9,10 +9,6 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps
   children?: ReactNode
   /** Exponent of the bezel cross-section: 1 is an even ramp, higher piles the bend against the rim. */
   curve?: number
-  /** How far apart the red and blue channels are pulled at the rim, 0 to 1. */
-  dispersion?: number
-  /** How far the surface leans toward a pointer that has not reached it yet. */
-  elasticity?: number
   /** Backdrop blur, in pixels. What frosted glass actually is. */
   frost?: number
   /** Lit rim glow that follows the pointer. Falls back to the provider. */
@@ -45,7 +41,7 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps
  *
  * `LiquidSurface` is the one to reach for in a product: it takes its whole
  * configuration from the provider. This one is for when the glass *is* the
- * design — refraction, frost, dispersion and the bezel are set per instance.
+ * design — refraction, frost and the bezel are set per instance.
  *
  * Every one of those props is optional and falls back to the provider, so a
  * bare `<LiquidGlass>` is the house material rather than a stripped-down
@@ -57,8 +53,6 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
   children,
   className,
   curve,
-  dispersion,
-  elasticity,
   frost,
   glow,
   interactive = true,
@@ -93,8 +87,6 @@ export const LiquidGlass = forwardRef<HTMLDivElement, LiquidGlassProps>(({
     bezel,
     curve,
     disabled: !interactive,
-    dispersion: dispersion ?? config.dispersion,
-    elasticity: elasticity ?? config.elasticity,
     glow: resolvedGlow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,

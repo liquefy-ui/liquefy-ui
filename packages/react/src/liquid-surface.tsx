@@ -42,8 +42,6 @@ export const LiquidSurface = forwardRef<HTMLDivElement, LiquidSurfaceProps>(({
   const resolvedLens = lens ?? config.lens
   const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
     disabled: !interactive,
-    dispersion: config.dispersion,
-    elasticity: config.elasticity,
     glow: config.glow,
     intensity: resolvedIntensity,
     lens: resolvedLens && config.transparency,

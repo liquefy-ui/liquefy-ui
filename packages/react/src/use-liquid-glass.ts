@@ -11,8 +11,6 @@ export type LiquidGlassOptions = LiquidMotionOptions & {
   bezel?: number
   /** Exponent of the bezel cross-section: 1 is an even ramp, higher piles the bend against the rim. */
   curve?: number
-  /** How far apart the red and blue channels are pulled at the rim, 0 to 1. */
-  dispersion?: number
   lens?: boolean
   lensBlur?: number
   lensStrength?: number
@@ -67,7 +65,6 @@ export const useLiquidGlass = <Element extends HTMLElement>(
         bezel: options.bezel,
         blur: options.lensBlur,
         curve: options.curve,
-        dispersion: options.dispersion,
         saturation: options.saturation,
         strength: options.lensStrength,
       })
@@ -87,8 +84,6 @@ export const useLiquidGlass = <Element extends HTMLElement>(
     options.bounce,
     options.curve,
     options.disabled,
-    options.dispersion,
-    options.elasticity,
     options.glow,
     options.intensity,
     options.lens,

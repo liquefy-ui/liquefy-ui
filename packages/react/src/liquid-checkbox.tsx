@@ -39,8 +39,6 @@ export const LiquidCheckbox = forwardRef<HTMLButtonElement, LiquidCheckboxProps>
   const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
     bounce: 0.08,
     disabled,
-    dispersion: config.dispersion,
-    elasticity: config.elasticity,
     glow: config.glow,
     intensity: config.intensity,
     lens: config.lens && config.transparency,
