@@ -1,5 +1,15 @@
 # @liquefy-ui/icons
 
+## 0.2.0
+
+### Minor Changes
+
+- bd54ccf: Add ArchiveIcon, BriefcaseIcon, ColumnsIcon, InboxIcon, ListIcon and PinIcon.
+  
+  These cover task-board vocabulary that had no icon yet: archiving a record,
+  a work/personal split, a column layout, an unsorted inbox, a plain list and
+  pinning an item. All follow the existing 24×24 / stroke-only shape rules.
+
 ## 0.1.3
 
 ### Patch Changes
