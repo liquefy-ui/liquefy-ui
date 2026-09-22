@@ -1053,17 +1053,9 @@ pre {
   text-transform: none;
 }
 
-/* Fine rules in both axes. A gradient can hide a bend of several pixels; a 9px
-   grid cannot, which is why this is the scene to judge refraction on. */
-.pg-scene--rules {
-  background:
-    repeating-linear-gradient(0deg, transparent 0 8px, var(--line-strong) 8px 9px),
-    repeating-linear-gradient(90deg, transparent 0 8px, var(--line) 8px 9px),
-    linear-gradient(160deg, var(--bg-soft), var(--bg));
-}
-
-/* Saturated, hard-edged bands: dispersion is a colour effect, and it has
-   nothing to separate on a neutral ground. */
+/* Saturated, hard-edged bands. Every other scene gives the rim a soft gradient
+   to bend, which hides how far it actually moves one; a boundary this abrupt
+   does not. */
 .pg-scene--chroma {
   background: linear-gradient(
     118deg,

@@ -18,15 +18,14 @@ import { DEFAULT_MATERIAL, THEME_LABELS, THEME_ORDER, useSiteConfig } from './si
 
 /**
  * What the glass is held over. Photographs first, because that is what a real
- * product puts behind a panel, and synthetic scenes between them because a
- * photograph is bad at proving one specific thing: a 9px grid shows a bend a
- * soft gradient would hide, and hard-edged colour shows where the bend moves
- * a boundary that a neutral ground would have nothing to move.
+ * product puts behind a panel, and drawn scenes between them for the two things
+ * a photograph is bad at proving: the wordmark is the one pale ground here, and
+ * hard-edged colour shows where the bend moves a boundary that soft light would
+ * have nothing to move.
  */
 const SCENES = [
   { credit: 'Alexey Topolyanskiy', id: 'fjord', label: 'Fjord', note: 'deep water, hard rock' },
   { id: 'mark', label: 'The wordmark', light: true, note: 'soft ink, wide shapes' },
-  { id: 'rules', label: 'Fine rules', light: true, note: 'where displacement shows' },
   { credit: 'Wolfgang Lutz', id: 'summit', label: 'Summit', note: 'where a rim usually disappears' },
   { id: 'chroma', label: 'Saturated colour', note: 'where the rim bends a hard edge' },
   { credit: 'Stefan Kunze', id: 'coast', label: 'Coast at dusk', note: 'soft light, long gradients' },
@@ -46,10 +45,10 @@ const LensStage = () => {
   const config = useSiteConfig()
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
-  // The two drawn scenes take their ground from the page theme, so they are pale
-  // only while the page is. The card carries white type, and on a pale ground it
-  // has to answer for that — but in the dark theme those scenes are black and
-  // there is nothing to answer, which is why the theme is half of this test.
+  // The wordmark scene takes its ground from the page theme, so it is pale only
+  // while the page is. The card carries white type, and on a pale ground it has
+  // to answer for that — but in the dark theme that scene is black and there is
+  // nothing to answer, which is why the theme is half of this test.
   const scene = SCENES[index]
   const overLight = scene !== undefined && 'light' in scene && config.theme === 'light'
 
@@ -81,9 +80,9 @@ const LensStage = () => {
             <h3 className="pg-card__title">Nothing behind it is hidden.</h3>
             <p className="pg-card__body">
               This panel is the same LiquidSurface every component is built on, held
-              over whatever happens to be passing. A photograph, a grid and a wall of
-              colour — the material has to survive all three, and the controls on the
-              right change it everywhere at once.
+              over whatever happens to be passing. Deep water, a pale page and a wall
+              of colour — the material has to survive all three, and the controls on
+              the right change it everywhere at once.
             </p>
           </LiquidSurface>
         </div>
