@@ -36,16 +36,24 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(({
   const config = useLiquefyConfig()
   const resolvedTint = tint ?? config.tint
   const resolvedWebgl = webgl ?? config.webgl
-  // Edge refraction folds the backdrop around the bezel; on control-sized
-  // elements that reads as a mirrored fill, so buttons keep it opt-in.
-  const resolvedLens = lens ?? false
+  // Follows the provider now. It used to be forced off because the bezel folded
+  // the backdrop back on itself at this size and read as a mirrored fill, which
+  // the lens cannot do any more. It is still the most expensive thing the
+  // material does — an SVG filter inside backdrop-filter, per button — so a page
+  // dense with buttons is the one to set `lens={false}` on the provider for.
+  const resolvedLens = lens ?? config.lens
   const isDisabled = disabled || isLoading
   const [elementRef, canvasRef] = useLiquidGlass(forwardedRef, {
     bounce: 0.075,
     disabled: isDisabled,
+    glow: config.glow,
     intensity: config.intensity,
     lens: resolvedLens && config.transparency,
+    lensStrength: config.refraction,
     motion: config.motion,
+    ripple: config.ripple,
+    shimmer: config.shimmer,
+    sparkle: config.sparkle,
     tilt: 2.4,
     tint: resolvedTint,
     webgl: resolvedWebgl,

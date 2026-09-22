@@ -1,6 +1,6 @@
 @layer liquefy-ui {
   :root {
-    --lq-accent: #8eb9ff;
+    --lq-accent: #8f8f8f;
     --lq-space: 4px;
     --lq-radius-default: 18px;
     --lq-duration: 420ms;
@@ -10,7 +10,12 @@
   }
 
   .lq-provider {
-    --lq-clear-fill: transparent;
+    /* The least material a surface may show, whatever `veil` is set to. A
+       clear panel on a dark page is a 15%-white hairline and nothing else,
+       which is not enough to read as a surface — so the dark theme asks for
+       a floor and the light one, sitting on white, does not need one. */
+    --lq-veil-floor: 0.34;
+    --lq-clear-fill: rgba(255, 255, 255, 0.12);
     --lq-clear-line: rgba(255, 255, 255, 0.15);
     --lq-control-fill: transparent;
     --lq-control-line: rgba(255, 255, 255, 0.16);
@@ -31,6 +36,10 @@
     --lq-quiet-line: rgba(255, 255, 255, 0.13);
     --lq-regular-fill: rgba(255, 255, 255, 0.012);
     --lq-regular-line: rgba(255, 255, 255, 0.18);
+    --lq-rim-bright: rgba(255, 255, 255, 1);
+    --lq-rim-dim: rgba(255, 255, 255, 0.7);
+    --lq-rim-mid: rgba(255, 255, 255, 0.55);
+    --lq-rim-width: 1.6px;
     --lq-shadow-color: rgba(4, 9, 24, 0.14);
     --lq-solid-fill: rgb(30, 38, 60);
     --lq-switch-fill: transparent;
@@ -46,7 +55,8 @@
   }
 
   .lq-provider[data-liquid-theme='light'] {
-    --lq-clear-fill: transparent;
+    --lq-veil-floor: 0;
+    --lq-clear-fill: rgba(255, 255, 255, 0.55);
     --lq-clear-line: rgba(66, 85, 128, 0.22);
     --lq-control-fill: transparent;
     --lq-control-line: rgba(66, 85, 128, 0.24);
@@ -67,6 +77,10 @@
     --lq-quiet-line: rgba(66, 85, 128, 0.16);
     --lq-regular-fill: rgba(255, 255, 255, 0.015);
     --lq-regular-line: rgba(66, 85, 128, 0.26);
+    --lq-rim-bright: rgba(255, 255, 255, 0.94);
+    --lq-rim-dim: rgba(255, 255, 255, 0.62);
+    --lq-rim-mid: rgba(255, 255, 255, 0.4);
+    --lq-rim-width: 1.6px;
     --lq-shadow-color: rgba(42, 55, 91, 0.1);
     --lq-solid-fill: rgb(239, 244, 255);
     --lq-switch-fill: transparent;
@@ -84,6 +98,9 @@
   .lq-chip,
   .lq-pagination__item,
   .lq-text-field__control {
+    --lq-edge-angle: 145deg;
+    --lq-elastic-x: 0px;
+    --lq-elastic-y: 0px;
     --lq-pointer-x: 50%;
     --lq-pointer-y: 50%;
     --lq-rotate-x: 0deg;
@@ -100,7 +117,10 @@
     isolation: isolate;
     position: relative;
     transform: perspective(900px)
-      translate3d(var(--lq-magnet-x), calc(var(--lq-lift) + var(--lq-magnet-y)), 0)
+      translate3d(
+        calc(var(--lq-magnet-x) + var(--lq-elastic-x)),
+        calc(var(--lq-lift) + var(--lq-magnet-y) + var(--lq-elastic-y)),
+        0)
       rotateX(var(--lq-rotate-x))
       rotateY(var(--lq-rotate-y))
       skewX(var(--lq-skew-x))
@@ -155,41 +175,58 @@
      nothing but the prefixed form in it, which Chrome has dropped. This way the
      standard property survives the pass, and Safari versions old enough to want
      the prefix still find it. */
+  /* `veil` is how much of the material's own dressing sits between the eye and
+     what is behind it: the fill, the inner sheen, the cast shadow and the lift
+     it gives the backdrop's colour. It deliberately leaves the rim and the
+     refraction alone, because those are what make a panel read as glass rather
+     than as a hole cut in the page — a sheet with nothing in it but a lit edge
+     is exactly the look this dial exists to reach, and at 0 those two are all
+     that is left on the backdrop.
+
+     The scaling is done on aliases derived here rather than on the theme tokens
+     themselves. A token redefined at provider scope would resolve there once,
+     and a surface further down could no longer set a veil of its own — which is
+     the whole point of having the dial on the component as well. */
   .lq-surface {
-    --lq-blur: 1.5px;
-    --lq-saturate: 1.4;
-    --lq-brighten: 1.05;
-    --lq-glow: 0.4;
-    --lq-fill: var(--lq-clear-fill);
+    --lq-veil-amount: clamp(var(--lq-veil-floor, 0), var(--lq-veil, 1), 1);
+    --lq-cast: color-mix(in srgb, var(--lq-shadow-color) calc(var(--lq-veil-amount) * 100%), transparent);
+    --lq-sheen: color-mix(in srgb, var(--lq-glass-bright) calc(var(--lq-veil-amount) * 100%), transparent);
+    --lq-sheen-shade: color-mix(in srgb, var(--lq-glass-shade) calc(var(--lq-veil-amount) * 100%), transparent);
+    --lq-blur: calc(1.5px + var(--lq-frost, 0px));
+    --lq-saturate: calc(1 + 0.4 * var(--lq-veil-amount));
+    --lq-brighten: calc(1 + 0.05 * var(--lq-veil-amount));
+    --lq-glow: calc(0.4 * var(--lq-veil-amount));
+    --lq-fill-base: var(--lq-clear-fill);
+    --lq-fill: color-mix(in srgb, var(--lq-fill-base) calc(var(--lq-veil-amount) * 100%), transparent);
     --lq-line: var(--lq-clear-line);
-    --lq-shadow: 0 16px 40px var(--lq-shadow-color), 0 2px 8px color-mix(in srgb, var(--lq-shadow-color) 52%, transparent);
-    -webkit-backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten));
-    backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten));
+    --lq-shadow: 0 16px 40px var(--lq-cast), 0 2px 8px color-mix(in srgb, var(--lq-cast) 52%, transparent);
+    -webkit-backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten)) var(--lq-lens, );
+    backdrop-filter: blur(var(--lq-blur)) saturate(var(--lq-saturate)) brightness(var(--lq-brighten)) var(--lq-lens, );
     background: var(--lq-fill);
     border: 1px solid var(--lq-line);
     border-radius: calc(var(--lq-radius) + var(--lq-squish) * 6px);
     box-shadow:
       var(--lq-shadow),
-      inset 0 1px 0 var(--lq-glass-bright),
-      inset 0 -1.25px 0 var(--lq-glass-shade),
+      inset 0 1px 0 var(--lq-sheen),
+      inset 0 -1.25px 0 var(--lq-sheen-shade),
       inset 0 0 22px -14px rgba(255, 255, 255, var(--lq-glow));
     overflow: hidden;
   }
 
   .lq-surface[data-liquid-variant='clear'] {
-    --lq-blur: 0px;
-    --lq-saturate: 1.08;
+    --lq-blur: var(--lq-frost, 0px);
+    --lq-saturate: calc(1 + 0.08 * var(--lq-veil-amount));
     --lq-brighten: 1;
-    --lq-glow: 0.1;
+    --lq-glow: calc(0.1 * var(--lq-veil-amount));
   }
 
   .lq-surface[data-liquid-variant='clear'] > .lq-surface__edge {
-    opacity: 0.42;
+    opacity: 0.88;
   }
 
   .lq-surface[data-liquid-variant='tinted'] {
-    --lq-blur: 2px;
-    --lq-fill: color-mix(in srgb, var(--lq-tint) 14%, transparent);
+    --lq-blur: calc(2px + var(--lq-frost, 0px));
+    --lq-fill-base: color-mix(in srgb, var(--lq-tint) 14%, transparent);
     --lq-line: color-mix(in srgb, var(--lq-tint) 48%, rgba(255, 255, 255, 0.12));
   }
 
@@ -202,6 +239,35 @@
       inset 0 -1px 0 var(--lq-glass-shade);
   }
 
+  /* The lit rim. Two stacked rings rather than one: `screen` lifts the line off
+     a dark backdrop, `overlay` keeps it alive on a bright one, and a single
+     blend mode can only do one of those. Both are drawn with padding plus
+     mask-exclude so the line follows the corner radius exactly — a box-shadow
+     rounds on its own terms and drifts away from the silhouette at the ends.
+     `--lq-edge-angle` is written by the motion controller, so the bright
+     quarter of the ring swings toward the pointer. */
+  .lq-surface__edge,
+  .lq-surface__edge::after {
+    border-radius: inherit;
+    content: '';
+    inset: 0;
+    padding: var(--lq-rim-width);
+    pointer-events: none;
+    position: absolute;
+    /* Prefixed first, standard last — the same ordering `backdrop-filter` needs
+       further up, and for a sharper reason. The `-webkit-mask` shorthand resets
+       the compositing operator, and `-webkit-mask-composite: xor` does not put
+       the standard one back, so with the prefixed pair written last the ring
+       composited as source-over: the gradient filled the whole face instead of
+       the 1.6px band. Screen-blended white over a dark page, that turned every
+       surface into a bright diagonal wash and buried the labels under it —
+       invisible in the light theme, because screen against white is a no-op. */
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
+
   .lq-surface__edge {
     background:
       radial-gradient(
@@ -211,36 +277,36 @@
         transparent 72%
       ),
       linear-gradient(
-        135deg,
-        var(--lq-glass-bright) 0%,
-        var(--lq-glass-soft) 25%,
-        transparent 47%,
-        var(--lq-glass-shade) 74%,
-        rgba(255, 255, 255, 0.18) 100%
+        var(--lq-edge-angle),
+        var(--lq-rim-bright) 0%,
+        var(--lq-rim-mid) 34%,
+        var(--lq-glass-shade) 62%,
+        var(--lq-rim-dim) 100%
       );
-    border-radius: inherit;
-    inset: 0;
-    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    mask-composite: exclude;
     filter: drop-shadow(0 0 2px color-mix(in srgb, var(--lq-tint, var(--lq-button-tint)) 8%, transparent));
-    opacity: 0.72;
-    padding: 0.9px;
-    pointer-events: none;
-    position: absolute;
+    mix-blend-mode: screen;
     transition: opacity 260ms ease;
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
     z-index: 2;
+  }
+
+  .lq-surface__edge::after {
+    background: linear-gradient(
+      var(--lq-edge-angle),
+      color-mix(in srgb, var(--lq-rim-bright) 80%, transparent) 0%,
+      color-mix(in srgb, var(--lq-rim-mid) 80%, transparent) 34%,
+      transparent 62%,
+      color-mix(in srgb, var(--lq-rim-dim) 80%, transparent) 100%
+    );
+    mix-blend-mode: overlay;
   }
 
   .lq-surface[data-liquid-interactive='false'] > .lq-surface__edge {
     background: linear-gradient(
-      135deg,
-      var(--lq-glass-bright) 0%,
-      var(--lq-glass-soft) 25%,
-      transparent 47%,
-      var(--lq-glass-shade) 74%,
-      rgba(255, 255, 255, 0.18) 100%
+      145deg,
+      var(--lq-rim-bright) 0%,
+      var(--lq-rim-mid) 34%,
+      var(--lq-glass-shade) 62%,
+      var(--lq-rim-dim) 100%
     );
   }
 
@@ -257,11 +323,16 @@
     z-index: 2;
   }
 
+  /* Scaled by the veil like every other piece of dressing. `screen` against a
+     dark page turns this canvas into the brightest thing on it, so a surface
+     asking to be barely there cannot leave its glow at full strength — that is
+     what washed the dark theme out and buried the labels underneath it. */
   .lq-surface__shader {
     border-radius: inherit;
     height: 100%;
     inset: 0;
     mix-blend-mode: screen;
+    opacity: var(--lq-veil-amount, 1);
     pointer-events: none;
     position: absolute;
     width: 100%;
@@ -281,13 +352,30 @@
     z-index: 3;
   }
 
+  /* LiquidGlass: a surface whose optics are set per instance. It reuses the
+     surface's structure wholesale and only adds what it owns — its own padding,
+     and the darkening that keeps glass legible on a bright backdrop. */
+  .lq-glass {
+    --lq-glass-padding: 0;
+    padding: var(--lq-glass-padding);
+  }
+
+  .lq-glass[data-liquid-over-light='true'] {
+    --lq-fill-base: rgba(0, 0, 0, 0.16);
+    --lq-glow: 0.04;
+    box-shadow:
+      0 18px 60px color-mix(in srgb, var(--lq-shadow-color) 92%, transparent),
+      inset 0 1px 0 var(--lq-glass-bright),
+      inset 0 -1.25px 0 var(--lq-glass-shade);
+  }
+
   .lq-button {
     --lq-button-tint: var(--lq-accent);
     --lq-button-radius: 14px;
     align-items: center;
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: transparent;
     border: 1px solid color-mix(in srgb, var(--lq-button-tint) 16%, rgba(255, 255, 255, 0.08));
     border-radius: calc(var(--lq-button-radius) + var(--lq-squish) * 5px);
@@ -442,8 +530,8 @@
 
   .lq-switch {
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-switch-fill);
     border: 1px solid var(--lq-switch-line);
     border-radius: 10px;
@@ -548,6 +636,11 @@
     flex: 0 0 auto;
   }
 
+  /* Inset by half a thumb. Base UI centres the thumb on its value, so at either
+     end half of it hangs outside the track — which is fine until the slider sits
+     in anything that clips, and then the handle is sliced down the middle at the
+     one value where it matters most. Padding the control shortens the track by
+     exactly that much, so the thumb's outer edge lands on the control's own. */
   .lq-slider__control {
     align-items: center;
     cursor: pointer;
@@ -555,6 +648,7 @@
     flex: 1;
     height: 28px;
     min-width: 80px;
+    padding-inline: 11px;
     /* The drag reads the pointer directly, so the browser must not claim the
        gesture for a scroll first. */
     touch-action: none;
@@ -605,8 +699,8 @@
 
   .lq-text-field__control {
     align-items: center;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-field-fill);
     border: 1px solid var(--lq-field-line);
     border-radius: 12px;
@@ -732,8 +826,8 @@
   }
 
   .lq-dialog__backdrop {
-    -webkit-backdrop-filter: blur(7px) saturate(0.86);
-    backdrop-filter: blur(7px) saturate(0.86);
+    -webkit-backdrop-filter: blur(7px) saturate(0.86) var(--lq-lens, );
+    backdrop-filter: blur(7px) saturate(0.86) var(--lq-lens, );
     background: rgba(2, 5, 16, 0.42);
     inset: 0;
     position: fixed;
@@ -941,7 +1035,8 @@
 
   @media (prefers-color-scheme: light) {
     .lq-provider[data-liquid-theme='system'] {
-      --lq-clear-fill: transparent;
+      --lq-veil-floor: 0;
+      --lq-clear-fill: rgba(255, 255, 255, 0.55);
       --lq-clear-line: rgba(66, 85, 128, 0.22);
       --lq-control-fill: transparent;
       --lq-control-line: rgba(66, 85, 128, 0.24);
@@ -962,6 +1057,10 @@
       --lq-quiet-line: rgba(66, 85, 128, 0.16);
       --lq-regular-fill: rgba(255, 255, 255, 0.015);
       --lq-regular-line: rgba(66, 85, 128, 0.26);
+      --lq-rim-bright: rgba(255, 255, 255, 0.94);
+      --lq-rim-dim: rgba(255, 255, 255, 0.62);
+      --lq-rim-mid: rgba(255, 255, 255, 0.4);
+      --lq-rim-width: 1.6px;
       --lq-shadow-color: rgba(42, 55, 91, 0.1);
       --lq-solid-fill: rgb(239, 244, 255);
       --lq-switch-fill: transparent;
@@ -1019,8 +1118,8 @@
        88  tooltip
        90  toast viewport                                                    */
   .lq-popover {
-    -webkit-backdrop-filter: blur(14px) saturate(1.5) brightness(1.04);
-    backdrop-filter: blur(14px) saturate(1.5) brightness(1.04);
+    -webkit-backdrop-filter: blur(14px) saturate(1.5) brightness(1.04) var(--lq-lens, );
+    backdrop-filter: blur(14px) saturate(1.5) brightness(1.04) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-solid-fill, rgb(30, 38, 60)) 72%, transparent);
     border: 1px solid var(--lq-regular-line, rgba(255, 255, 255, 0.18));
     border-radius: 14px;
@@ -1081,7 +1180,7 @@
      provider for a panel with no glass at all. */
   .lq-surface.lq-dialog__surface,
   .lq-surface.lq-drawer__surface {
-    --lq-blur: 20px;
+    --lq-blur: calc(20px + var(--lq-frost, 0px));
     --lq-saturate: 1.7;
     --lq-brighten: 1.06;
     --lq-glow: 0.5;
@@ -1104,8 +1203,8 @@
   .lq-checkbox__box {
     appearance: none;
     align-items: center;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-control-fill);
     border: 1px solid var(--lq-control-line);
     border-radius: 7px;
@@ -1197,8 +1296,8 @@
   .lq-radio__control {
     appearance: none;
     align-items: center;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-control-fill);
     border: 1px solid var(--lq-control-line);
     border-radius: 50%;
@@ -1257,8 +1356,8 @@
   .lq-select__trigger {
     align-items: center;
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-field-fill);
     border: 1px solid var(--lq-field-line);
     border-radius: 12px;
@@ -1379,8 +1478,8 @@
   .lq-date-picker__trigger {
     align-items: center;
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-field-fill);
     border: 1px solid var(--lq-field-line);
     border-radius: 12px;
@@ -1607,8 +1706,8 @@
 
   /* ---------- Segmented ---------- */
   .lq-segmented {
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-control-fill);
     border: 1px solid var(--lq-control-line);
     border-radius: 13px;
@@ -1760,8 +1859,8 @@
   .lq-chip {
     align-items: center;
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-chip-tint, var(--lq-accent)) 1.4%, transparent);
     border: 1px solid color-mix(in srgb, var(--lq-chip-tint, var(--lq-accent)) 22%, rgba(255, 255, 255, 0.1));
     border-radius: 999px;
@@ -1917,8 +2016,8 @@
   }
 
   .lq-tooltip__bubble {
-    -webkit-backdrop-filter: blur(10px) saturate(1.4);
-    backdrop-filter: blur(10px) saturate(1.4);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4) var(--lq-lens, );
+    backdrop-filter: blur(10px) saturate(1.4) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-solid-fill) 62%, transparent);
     border: 1px solid var(--lq-regular-line);
     border-radius: 10px;
@@ -2192,8 +2291,8 @@
   }
 
   .lq-progress__track {
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-foreground) 7%, transparent);
     border: 1px solid var(--lq-control-line);
     border-radius: 999px;
@@ -2503,8 +2602,8 @@
   .lq-alert {
     --lq-alert-tint: #7fb2ff;
     align-items: flex-start;
-    -webkit-backdrop-filter: blur(6px) saturate(1.4);
-    backdrop-filter: blur(6px) saturate(1.4);
+    -webkit-backdrop-filter: blur(6px) saturate(1.4) var(--lq-lens, );
+    backdrop-filter: blur(6px) saturate(1.4) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-alert-tint) 6%, transparent);
     border: 1px solid color-mix(in srgb, var(--lq-alert-tint) 32%, rgba(255, 255, 255, 0.1));
     border-radius: 15px;
@@ -2619,8 +2718,8 @@
   .lq-toast {
     --lq-toast-tint: #7fb2ff;
     animation: lq-toast-in 560ms cubic-bezier(0.16, 1.35, 0.3, 1) both;
-    -webkit-backdrop-filter: blur(16px) saturate(1.5) brightness(1.04);
-    backdrop-filter: blur(16px) saturate(1.5) brightness(1.04);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5) brightness(1.04) var(--lq-lens, );
+    backdrop-filter: blur(16px) saturate(1.5) brightness(1.04) var(--lq-lens, );
     background: color-mix(in srgb, var(--lq-solid-fill) 52%, transparent);
     border: 1px solid color-mix(in srgb, var(--lq-toast-tint) 30%, rgba(255, 255, 255, 0.12));
     border-radius: 15px;
@@ -2910,8 +3009,8 @@
   .lq-pagination__item {
     align-items: center;
     appearance: none;
-    -webkit-backdrop-filter: saturate(1.08);
-    backdrop-filter: saturate(1.08);
+    -webkit-backdrop-filter: saturate(1.08) var(--lq-lens, );
+    backdrop-filter: saturate(1.08) var(--lq-lens, );
     background: var(--lq-control-fill);
     border: 1px solid color-mix(in srgb, var(--lq-accent) 10%, var(--lq-control-line));
     border-radius: calc(10px + var(--lq-squish) * 4px);
@@ -3066,8 +3165,8 @@
   }
 
   .lq-drawer__backdrop {
-    -webkit-backdrop-filter: blur(6px) saturate(0.88);
-    backdrop-filter: blur(6px) saturate(0.88);
+    -webkit-backdrop-filter: blur(6px) saturate(0.88) var(--lq-lens, );
+    backdrop-filter: blur(6px) saturate(0.88) var(--lq-lens, );
     background: rgba(2, 5, 16, 0.4);
     inset: 0;
     position: fixed;
@@ -3437,7 +3536,7 @@
   .lq-provider[data-liquid-theme='light'] .lq-accordion,
   .lq-provider[data-liquid-theme='light'] .lq-table-container,
   .lq-provider[data-liquid-theme='light'] .lq-list {
-    --lq-blur: 7px;
+    --lq-blur: calc(7px + var(--lq-frost, 0px));
     --lq-saturate: 1.7;
     --lq-brighten: 1;
     --lq-glow: 0.1;
@@ -3461,8 +3560,8 @@
      same crisp cool hairline as the data surfaces. */
   .lq-provider[data-liquid-theme='light'] .lq-alert {
     --lq-glass-bright: rgba(255, 255, 255, 0.32);
-    -webkit-backdrop-filter: blur(9px) saturate(1.7);
-    backdrop-filter: blur(9px) saturate(1.7);
+    -webkit-backdrop-filter: blur(9px) saturate(1.7) var(--lq-lens, );
+    backdrop-filter: blur(9px) saturate(1.7) var(--lq-lens, );
   }
 
   .lq-provider[data-liquid-theme='light'] .lq-alert[data-severity='info'] {
@@ -3504,7 +3603,7 @@
     .lq-provider[data-liquid-theme='system'] .lq-accordion,
     .lq-provider[data-liquid-theme='system'] .lq-table-container,
     .lq-provider[data-liquid-theme='system'] .lq-list {
-      --lq-blur: 7px;
+      --lq-blur: calc(7px + var(--lq-frost, 0px));
       --lq-saturate: 1.7;
       --lq-brighten: 1;
       --lq-glow: 0.1;
@@ -3523,8 +3622,8 @@
 
     .lq-provider[data-liquid-theme='system'] .lq-alert {
       --lq-glass-bright: rgba(255, 255, 255, 0.32);
-      -webkit-backdrop-filter: blur(9px) saturate(1.7);
-      backdrop-filter: blur(9px) saturate(1.7);
+      -webkit-backdrop-filter: blur(9px) saturate(1.7) var(--lq-lens, );
+      backdrop-filter: blur(9px) saturate(1.7) var(--lq-lens, );
     }
 
     .lq-provider[data-liquid-theme='system'] .lq-alert[data-severity='info'] {

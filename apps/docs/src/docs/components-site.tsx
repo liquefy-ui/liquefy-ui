@@ -97,9 +97,8 @@ const IndexPage = ({ catalog: entries, query }: { catalog: CatalogCategory[]; qu
         <p className="docs-index-empty">Nothing matches “{query}”. Try a shorter word.</p>
       )}
 
-      {/* A gallery of this size would otherwise open one WebGL context per
-          surface, and browsers cap those at around sixteen per page. The shader
-          is off here; every component page has it on. */}
+      {/* A gallery of this size would otherwise mount one presentation canvas per
+          surface. The shader is off here; every component page has it on. */}
       <SubProvider webgl={false}>
         {entries.map((category) => (
           <section className="docs-index-section" key={category.title}>

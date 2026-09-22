@@ -21,10 +21,16 @@ import {
  * which is the whole point of showing the controls first.
  */
 export type MaterialConfig = {
+  frost: number
+  glow: boolean
   intensity: number
   lens: boolean
-  tint: string
+  refraction: number
+  ripple: boolean
+  shimmer: boolean
+  sparkle: boolean
   transparency: boolean
+  veil: number
   webgl: boolean
   wobbliness: number
 }
@@ -50,21 +56,21 @@ export type SiteConfig = MaterialConfig & {
   themeChoice: LiquefyTheme
 }
 
-export const TINTS = [
-  { label: 'Graphite', value: '#8f8f8f' },
-  { label: 'Azure', value: '#6f9dff' },
-  { label: 'Violet', value: '#a98cff' },
-  { label: 'Mint', value: '#5ccfae' },
-  { label: 'Blush', value: '#ff93a6' },
-] as const
-
-const DEFAULT_MATERIAL: MaterialConfig = {
-  intensity: 0.72,
+// Kept in step with the library's own defaults on purpose: the site is meant
+// to be what a consumer gets out of the box before they touch a single prop.
+export const DEFAULT_MATERIAL: MaterialConfig = {
+  frost: 0,
+  glow: true,
+  intensity: 1.2,
   lens: true,
-  tint: TINTS[0].value,
+  refraction: 1,
+  ripple: false,
+  shimmer: true,
+  sparkle: false,
   transparency: true,
+  veil: 0,
   webgl: true,
-  wobbliness: 1,
+  wobbliness: 0.1,
 }
 
 /**
@@ -83,13 +89,19 @@ export const SubProvider = ({
   return (
     <LiquefyProvider
       breakpoints={config.breakpoints}
+      frost={config.frost}
+      glow={config.glow}
       intensity={config.intensity}
       lens={config.lens}
       motion={config.motion}
+      refraction={config.refraction}
+      ripple={config.ripple}
+      shimmer={config.shimmer}
+      sparkle={config.sparkle}
       spacing={config.spacing}
       theme={config.theme}
-      tint={config.tint}
       transparency={config.transparency}
+      veil={config.veil}
       webgl={config.webgl}
       wobbliness={config.wobbliness}
       {...overrides}
@@ -216,12 +228,18 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
   return (
     <SiteConfigContext.Provider value={value}>
       <LiquefyProvider
+        frost={material.frost}
+        glow={material.glow}
         intensity={material.intensity}
         lens={material.lens}
         motion={motion}
         theme={theme}
-        tint={material.tint}
+        refraction={material.refraction}
+        ripple={material.ripple}
+        shimmer={material.shimmer}
+        sparkle={material.sparkle}
         transparency={material.transparency}
+        veil={material.veil}
         webgl={material.webgl}
         wobbliness={material.wobbliness}
       >

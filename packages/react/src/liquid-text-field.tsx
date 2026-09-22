@@ -30,9 +30,14 @@ export const LiquidTextField = forwardRef<HTMLInputElement, LiquidTextFieldProps
   const config = useLiquefyConfig()
   const [controlRef, canvasRef, pulse] = useLiquidGlass<HTMLSpanElement>(undefined, {
     bounce: 0.02,
+    glow: config.glow,
     intensity: config.intensity,
-    lens: false,
+    lens: config.lens && config.transparency,
+    lensStrength: config.refraction,
     motion: config.motion,
+    ripple: config.ripple,
+    shimmer: config.shimmer,
+    sparkle: config.sparkle,
     tilt: 0,
     tint: config.tint,
     webgl: config.webgl,
