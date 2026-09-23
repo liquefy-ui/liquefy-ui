@@ -54,6 +54,14 @@ describe('rejects', () => {
     rejects(`fix(core): ${'x'.repeat(MAX_HEADER_LENGTH)}`, `the limit is ${MAX_HEADER_LENGTH}`)
   })
 
+  it('does not count the pull request number GitHub adds to a squash commit', () => {
+    const prefix = 'fix(core): '
+    const atLimit = `${prefix}${'x'.repeat(MAX_HEADER_LENGTH - prefix.length)}`
+    expect(checkCommitMessage(`${atLimit} (#86)`)).toEqual([])
+    rejects(`${atLimit}x (#86)`, `the limit is ${MAX_HEADER_LENGTH}`)
+    rejects(`${atLimit} (#release)`, `the limit is ${MAX_HEADER_LENGTH}`)
+  })
+
   it('a body that is not a trailer', () => {
     rejects('fix(core): clamp the blur radius\n\nThe radius could exceed the surface.', 'must be one line')
   })

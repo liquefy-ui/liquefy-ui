@@ -30,6 +30,9 @@ export const MAX_HEADER_LENGTH = 72
 const HEADER = /^(?<type>[a-z]+)(?:\((?<scope>[^()]*)\))?(?<breaking>!)?: (?<subject>.*)$/
 const SCOPE = /^[a-z0-9][a-z0-9-]*(?:[/,][a-z0-9][a-z0-9-]*)*$/
 const TRAILER = /^[A-Za-z][A-Za-z0-9-]*: .+$/
+// GitHub appends this to the squash subject after CI has checked the pull request
+// title. It is transport metadata, not part of the summary the author controls.
+const PULL_REQUEST_SUFFIX = / \(#\d+\)$/
 
 // Messages git writes for you. Rejecting these would mean rewording the output
 // of `git merge` and `git revert` by hand, which buys a tidy log at the price of
@@ -95,8 +98,9 @@ export function checkCommitMessage(message) {
     if (subject.endsWith('.')) {
       problems.push('the summary must not end with a full stop')
     }
-    if (header.length > MAX_HEADER_LENGTH) {
-      problems.push(`the subject is ${header.length} characters; the limit is ${MAX_HEADER_LENGTH}`)
+    const measuredHeader = header.replace(PULL_REQUEST_SUFFIX, '')
+    if (measuredHeader.length > MAX_HEADER_LENGTH) {
+      problems.push(`the subject is ${measuredHeader.length} characters; the limit is ${MAX_HEADER_LENGTH}`)
     }
   }
 
