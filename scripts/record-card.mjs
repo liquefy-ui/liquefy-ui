@@ -19,20 +19,13 @@ import { join } from 'node:path'
  *   LENS_MODULES=/tmp/lens-tools node scripts/record-card.mjs
  *
  * The picture in the card is not a mock-up: it is a clipped screenshot of the
- * landing page's own lens stage, taken after a drag, so the refraction and the rim
- * dispersion in it are the ones a visitor gets. Dark theme, for the same reason
- * the GIF is — both effects vanish into a light backdrop.
- *
- * The lens is dragged rather than left at rest for two reasons: it lands
- * right-of-centre where the card wants it, and dragging retires the "drag me"
- * hint, which the card replaces with its own words.
+ * landing page's own glass stage on its first scene, so the refraction and the
+ * lit rim are the ones a visitor gets. This card stays dark so those low-contrast
+ * effects remain legible in a small still image.
  */
 
 const URL_ = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const VIEWPORT = { height: 1000, width: 1600 }
-
-/** Where the lens is dropped, as a fraction of the stage. */
-const LENS = { x: 0.74, y: 0.46 }
 
 /** The stage's own caption sits at its foot, and the card supplies its own. */
 const CAPTION_H = 42
@@ -77,18 +70,8 @@ await stage.scrollIntoViewIfNeeded()
 await page.waitForTimeout(2500)
 
 const box = await stage.boundingBox()
-const from = { x: box.x + box.width * 0.62, y: box.y + box.height * LENS.y }
-const to = { x: box.x + box.width * LENS.x, y: box.y + box.height * LENS.y }
-
-await page.mouse.move(from.x, from.y)
-await page.mouse.down()
-for (let step = 1; step <= 12; step += 1) {
-  await page.mouse.move(from.x + ((to.x - from.x) * step) / 12, to.y)
-  await page.waitForTimeout(30)
-}
-await page.mouse.up()
-// Let the springs settle: a still frame taken mid-overshoot just looks skewed.
-await page.waitForTimeout(1400)
+await page.locator('.pg-stage__scroll').evaluate((element) => { element.scrollTop = 0 })
+await page.waitForTimeout(500)
 
 const strip = await capture(page, {
   height: box.height - CAPTION_H,

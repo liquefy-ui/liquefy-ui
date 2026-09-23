@@ -145,7 +145,7 @@ const cases: Array<[string, ReactElement]> = [
 const covered = new Set([
   'DockItem', 'GlassCard', 'GlassDock', 'LiquidAccordion', 'LiquidAccordionItem',
   'LiquidAlert', 'LiquidAvatar', 'LiquidAvatarGroup', 'LiquidBadge', 'LiquidBreadcrumbs',
-  'LiquidButton', 'LiquidCheckbox', 'LiquidChip', 'LiquidDatePicker', 'LiquidDialog', 'LiquidDivider', 'LiquidDrawer',
+  'LiquidButton', 'LiquidCheckbox', 'LiquidChip', 'LiquidDatePicker', 'LiquidDialog', 'LiquidDivider', 'LiquidDrawer', 'LiquidGlass',
   'LiquidIconButton', 'LiquidList', 'LiquidListItem', 'LiquidListSubheader', 'LiquidMenu',
   'LiquidPagination', 'LiquidProgress', 'LiquidRadio', 'LiquidRadioGroup', 'LiquidRating',
   'LiquidSegmented', 'LiquidSelect', 'LiquidSkeleton', 'LiquidSlider', 'LiquidSpinner',

@@ -79,8 +79,8 @@ A few of them are worth knowing about before making changes:
 
 Twelve doc pages live in `apps/docs/src/docs/pages/*.tsx`, registered in
 `apps/docs/src/docs/docs-nav.tsx` — one `DocEntry` per page, grouped into sidebar
-categories. The 34 component pages come from `apps/docs/src/docs/catalog-*.tsx`,
-and the shadcn registry publishes 38 items built from the same source. Old
+categories. The 35 component pages come from `apps/docs/src/docs/catalog-*.tsx`,
+and the shadcn registry publishes 39 items built from the same source. Old
 `#/guides/*` links redirect to their `#/docs/*` equivalents.
 
 The site routes on the hash while the analytics script reads `location.pathname` —
@@ -133,7 +133,7 @@ where it stays readable and can be answered.
 | Scope | Optional, lowercase, in parentheses. In use: `core` `icons` `react` `mcp` `docs` `registry` `deps` `release`. Several: `fix(core,react): …` |
 | Breaking | A `!` before the colon: `feat(react)!: rename LiquidGlass to LiquidSurface` |
 | Summary | Imperative, no full stop at the end |
-| Length | The whole subject line, 72 characters or fewer |
+| Length | The authored subject line, 72 characters or fewer. GitHub's generated trailing ` (#123)` on a squash commit does not count. |
 | Body | None. Only trailers may follow a blank line — `Refs: #12`, a human `Co-authored-by:` |
 
 `feat` and `fix` are the two types that change a published package, so they are
@@ -165,7 +165,8 @@ A commit names the people accountable for it, so:
   `core.hooksPath` at that directory, so it is live after your first install.
 - **In CI**, by the `commit-lint` job, over every commit a pull request adds and
   over the pull request title — a squash merge turns that title into the
-  subject, so it follows the same rule.
+  subject, followed by a pull request number GitHub adds, so the authored title
+  follows the same rule.
 - The logic lives once, in `scripts/check-commit-msg.mjs`, and is tested by
   `test/commit-message.test.mjs`.
 

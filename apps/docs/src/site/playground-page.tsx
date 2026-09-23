@@ -4,9 +4,15 @@ import { Playground } from './playground'
 
 const MAPPING: [string, string, string][] = [
   ['Appearance', 'theme', 'Explicit light or dark. In an app, theme="system" follows the OS instead.'],
-  ['Tint', 'tint', 'The accent every surface tints against, written out as --lq-accent.'],
+  ['Veil', 'veil', "How much of the material's own dressing sits over the backdrop. 0 leaves the rim and the refraction."],
   ['Optical intensity', 'intensity', 'Strength of the glass: blur, saturation, and the brightness of the bezel.'],
+  ['Refraction', 'refraction', 'How much of the bend the material can take without folding to actually spend.'],
+  ['Frost', 'frost', 'Backdrop blur added to every glass. Each surface keeps the blur its own job needs on top.'],
   ['Wobbliness', 'wobbliness', 'Spring looseness. 0 keeps transitions but stops the jelly overshoot.'],
+  ['Rim glow', 'glow', 'The lit patch that follows the pointer around the bezel.'],
+  ['Press ripple', 'ripple', 'The ring that travels out from a press.'],
+  ['Iridescence', 'shimmer', 'The colour shift across the rim while a surface is still wobbling.'],
+  ['Sparkle', 'sparkle', 'Slow specular glints drifting across the face.'],
   ['Jelly motion', 'motion', 'Master switch for the spring physics.'],
   ['Transparency', 'transparency', 'Off swaps the translucent fills for opaque ones, for contrast or performance.'],
   ['GPU shader', 'webgl', 'Off falls back to CSS-only glass — same tokens, same layout, no canvas.'],

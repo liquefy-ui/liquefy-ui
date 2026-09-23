@@ -6,9 +6,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 /**
- * Records a short silent clip for social posts: the landing lens dragged across
- * the wordmark, the showcase buttons pressed until the springs overshoot, a slow
- * scroll down the grid, and the tab indicator measuring the tab it lands on.
+ * Records a short silent clip for social posts: the playground scenes scrolling
+ * behind the glass, the showcase buttons pressed until the springs overshoot, a
+ * slow scroll down the grid, and the tab indicator measuring the tab it lands on.
  *
  *   pnpm build && pnpm preview          # in one terminal
  *   node scripts/record-clip.mjs        # in another
@@ -26,10 +26,8 @@ import { join } from 'node:path'
  * which is ignored — footage is regenerated, not reviewed, and a megabyte of it
  * per attempt has no business in the history.
  *
- * Two deliberate choices, both shared with `record-lens.mjs`. Dark theme, because
- * the displacement and the dispersion at the rim are low-contrast effects that a
- * light backdrop swallows. And one unbroken drag, because the handle stops
- * tracking after a single step if the button is released and pressed again.
+ * The clip uses the dark theme because the displacement at the rim is a
+ * low-contrast effect that a light backdrop swallows at social-video scale.
  *
  * Two more that belong to this file. The output is H.264 in yuv420p, because
  * anything else is re-encoded on upload and re-encoding a dark gradient is what
@@ -127,31 +125,41 @@ const glideToTile = async (locator, gap, duration) => {
   }, [node, gap, duration])
 }
 
-// ── The lens ────────────────────────────────────────────────────────────────────
+// ── The glass, with the world moving behind it ──────────────────────────────────
 const stage = page.locator('.pg-stage')
-const handle = page.locator('.pg-lens-handle')
+const scroller = '.pg-stage__scroll'
 await stage.scrollIntoViewIfNeeded()
 await page.waitForTimeout(900)
 
 const stageBox = await stage.boundingBox()
-const home = await centre(handle)
+const sceneHeight = await page.evaluate(
+  (selector) => document.querySelector(selector).clientHeight,
+  scroller,
+)
 
 const lead = LEAD_MS - (Date.now() - started)
 if (lead > 0) await page.waitForTimeout(lead)
 
-await page.mouse.move(home.x, home.y)
-await page.mouse.down()
-let at = home
+const glide = async (from, to, steps, frameMs) => {
+  for (let index = 1; index <= steps; index++) {
+    const t = easeInOut(index / steps)
+    await page.evaluate(
+      ([selector, y]) => { document.querySelector(selector).scrollTop = y },
+      [scroller, from + (to - from) * t],
+    )
+    if (frameMs > 0) await page.waitForTimeout(frameMs)
+  }
+}
+
+let at = 0
 for (const [to, steps, frameMs] of [
-  [{ x: home.x - 300, y: home.y + 18 }, 20, 10], // slow pass: letters bend under the bezel
-  [{ x: home.x + 230, y: home.y - 28 }, 12, 0], // fast sweep back: the one that wobbles
-  [{ x: home.x + 30, y: home.y + 36 }, 7, 0], // flick down
-  [home, 11, 6],
+  [sceneHeight * 1, 20, 8], // out to the photograph
+  [sceneHeight * 2, 14, 4], // past the grid, where the bend reads
+  [0, 22, 0], // home, so the clip can loop
 ]) {
-  await sweep(at, to, steps, frameMs)
+  await glide(at, to, steps, frameMs)
   at = to
 }
-await page.mouse.up()
 await page.mouse.move(stageBox.x + 40, stageBox.y + stageBox.height - 24)
 await page.waitForTimeout(900)
 

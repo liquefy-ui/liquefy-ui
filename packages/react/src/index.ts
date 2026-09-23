@@ -26,6 +26,7 @@ export { LiquidDatePicker, type LiquidDatePickerProps } from './liquid-date-pick
 export { LiquidDialog, type LiquidDialogProps } from './liquid-dialog'
 export { LiquidDivider, type LiquidDividerProps } from './liquid-divider'
 export { LiquidDrawer, type LiquidDrawerProps } from './liquid-drawer'
+export { LiquidGlass, type LiquidGlassProps } from './liquid-glass'
 export { LiquidIconButton, type LiquidIconButtonProps } from './liquid-icon-button'
 export {
   LiquidList,

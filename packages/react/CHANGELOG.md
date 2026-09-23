@@ -1,5 +1,160 @@
 # @liquefy-ui/react
 
+## 1.0.0
+
+### Minor Changes
+
+- b798158: Add `veil`, a dial that takes the material down to nothing but an edge
+  
+  `veil` is how much of the material's own dressing sits between the eye and what
+  is behind it: the fill, the inner sheen, the cast shadow and the lift it gives
+  the backdrop's colour. It runs from 1, which is the material exactly as it was,
+  down to 0. It is a provider prop and a prop on `LiquidSurface` and
+  `LiquidGlass`, so a single panel can be thinner than everything around it.
+  
+  It deliberately leaves the rim and the refraction alone. Those are what make a
+  panel read as glass rather than as a hole cut in the page, so `veil={0}` with
+  `frost={0}` is a pane with nothing in it but a lit edge and the bend behind it
+  — which was not reachable before, because the cast shadow and the inner sheen
+  had no dial of their own and sat over the backdrop whatever else was turned
+  down.
+  
+  The scaling is derived per surface rather than on the theme tokens, so a veil
+  set on one component still resolves there instead of being fixed at provider
+  scope. It covers the surface material — `LiquidSurface`, `LiquidGlass` and
+  `GlassCard`; the smaller controls keep the dressing their own shapes need.
+- b798158: Compose the lens with the frost, and make the refracting material the default
+  
+  Fixed: attaching an edge lens wrote `backdrop-filter` straight onto the element,
+  which is one declaration — so the blur, the saturation and the brightness the
+  material had already asked for were thrown away the moment the lens arrived.
+  Turning the frost up did nothing to any surface with refraction on it. The lens
+  now publishes `--lq-lens`, and every backdrop-filter in the stylesheet ends with
+  `var(--lq-lens, )`, so the refraction joins the rest of the material instead of
+  replacing it.
+  
+  `refraction` is now a provider prop. It defaults to `1`, while provider-level
+  `frost` defaults to `0`; every component resolves both from the provider, so the
+  optics reach cards, buttons, fields and the rest rather than only the surfaces
+  that name them.
+  
+  `LiquidGlass` ornaments now fall back to the provider instead of starting out
+  switched off, which makes a bare `<LiquidGlass>` the house material rather than
+  a stripped-down variant of it. Naming `glow`, `ripple`, `shimmer` or `sparkle`
+  is how an instance departs from that — including `glow={false}` to opt out.
+- b798158: Add `frost`, and stop the slider thumb hanging out of its own control
+  
+  `frost` is a provider prop: backdrop blur in pixels, added to whatever each
+  surface already asks for. A dialog stays thicker than a card however far the
+  dial is turned, and the default of `0` leaves every surface exactly where it
+  was. `LiquidGlass` takes `frost` too, set outright rather than added, because a
+  component naming its own frost is saying what it wants to be rather than how
+  much more than everything else.
+  
+  That rename frees `frost` from the meaning it briefly had on `LiquidGlass` —
+  the blur applied to the refracted image, which is now `softness`. Frosted glass
+  is a backdrop blur; it was the wrong word for the other thing.
+  
+  Fixed: `LiquidSlider` centres its thumb on the value, so at either end half the
+  handle hung outside the track. Anywhere the slider sat in a container that
+  clips, the handle was sliced down the middle at exactly the value where someone
+  is most likely to be looking at it. The control is now inset by half a thumb,
+  so the handle's outer edge lands on the control's own.
+- b798158: Retune the default material
+  
+  The provider's defaults change, so every surface looks different without any
+  code changing: `tint` becomes `#8f8f8f`, `intensity` becomes `1.2`, and
+  `wobbliness` becomes `0.1`. The playground writes a snippet for whatever values
+  you pick.
+  
+  `lens` and `webgl` are on by default. Turning `webgl` off creates no presentation
+  canvas, and since `glow`, `ripple`, `shimmer` and `sparkle` are drawn by that
+  pass, all four are inert while it is off. Turning `lens` off drops the
+  displacement at the bezel while the frost, lit rim and springs stay in place.
+  
+  The React material now arrives lit and refracting without any provider props.
+- b798158: Composite the rim as a ring, and retune the default material
+  
+  Fixed: the rim overlay was filling the whole face instead of the 1.6px band it
+  is masked to. `-webkit-mask` was declared after `mask-composite: exclude`, and
+  the shorthand resets the compositing operator — `-webkit-mask-composite: xor`
+  does not put the standard one back, so the ring composited as source-over. The
+  gradient it paints is white and blends with `screen`, which made every surface
+  a bright diagonal wash on a dark page: labels inside segmented controls and
+  buttons disappeared under it. The light theme never showed it, because `screen`
+  against white is a no-op. Prefixed declarations now come first and the standard
+  ones last, the same ordering `backdrop-filter` already needed in this file.
+  
+  The defaults move to the material the playground has settled on: `frost` to 0,
+  `refraction` to 1 and `veil` to 0.
+  
+  `veil` now reaches the things that were still fixed underneath it — the clear
+  variant's fill, which was `transparent` and so had nothing for the dial to
+  scale, and the shader canvas, whose `screen` blend is brightest exactly where
+  a surface asking to be barely there can least afford it. A theme can set a
+  floor under the dial with `--lq-veil-floor`, and the dark one does: a hairline
+  on black is not a panel, so `veil={0}` there still leaves a little material.
+  Set `--lq-veil-floor: 0` on a subtree to take that away too.
+- b798158: Turn the optics up, and let every component take them from the provider
+  
+  The defaults move to `intensity` `1.2`, with both `lens` and `webgl` on. The
+  material arrives lit and refracting rather than waiting to be switched on.
+  
+  The larger change is that components stop overruling it. `GlassCard`,
+  `LiquidAccordion`, `LiquidList`, `LiquidTable`, `LiquidButton`,
+  `LiquidIconButton`, `LiquidChip`, `LiquidPagination`, and every control from
+  `LiquidCheckbox` to `LiquidTextarea` used to pin `lens` — and some of them
+  `webgl` — to `false` regardless of what the provider said. Several of those
+  pins date from when the bezel could fold the backdrop back on itself at small
+  sizes, which it no longer can. They now read the provider like everything else,
+  so `<LiquefyProvider lens={false}>` means what it says and so does the default.
+  
+  Two things worth knowing before upgrading. The lens is an SVG filter inside
+  `backdrop-filter`, which is among the most expensive things a browser
+  composites, so a page dense with lit controls now costs more than it did —
+  `lens={false}` on the provider, or per component, takes it straight back.
+  `LiquidChip` and `LiquidPagination` still render no shader canvas of their own,
+  by design: they travel in groups, and a presentation canvas each is not a trade
+  worth making.
+- b798158: Drop `dispersion` and `elasticity`, and make the provider need nothing
+  
+  Removed: `dispersion` and `elasticity` are gone from `LiquefyProvider` and from
+  `LiquidGlass`. Neither earned its place in the material — the channel split was
+  a rim effect nobody was turning up, and the lean toward an approaching pointer
+  read as drift rather than as life. `@liquefy-ui/core` keeps both as low-level
+  options; `attachLiquidLens` simply no longer splits the channels unless asked.
+  
+  `<LiquefyProvider>` now needs nothing but `children`. Its defaults are the
+  material the library ships with — `veil` 0, `intensity` 1.2, `refraction` 1,
+  `frost` 0, `wobbliness` 0.1, glow and shimmer on, ripple and sparkle off — so
+  every prop on it is a departure from that rather than something you have to
+  supply to get the look. The READMEs and the provider page show it bare.
+- b798158: Rebuild the lens optics so the rim can no longer fold
+  
+  The bezel cross-section is now a power curve instead of a spherical cap. A cap
+  is the honest shape of a lens but its slope goes vertical where it meets the
+  rim, so displacement jumped from nothing to its maximum within a pixel and the
+  backdrop folded back on itself at rounded ends — the mirrored sliver that made
+  edge refraction unusable on control-sized elements. Displacement is now solved
+  from the slope of that curve for a chosen compression, which makes folding
+  structurally impossible rather than something each new value had to be checked
+  against. `strength` reads 0 to 1 as a result: the fraction of the bend the
+  material can take, not a multiplier that could exceed it.
+  
+  New: `LiquidGlass`, the material with its optics as props, and `glow`, `ripple`,
+  `shimmer` and `sparkle` as separate switches, so the optics can be had without
+  the ornaments. The lit rim is now two blended rings whose bright quarter follows
+  the pointer.
+
+### Patch Changes
+
+- Updated dependencies [b798158]
+- Updated dependencies [b798158]
+- Updated dependencies [b798158]
+- Updated dependencies [b798158]
+- Updated dependencies [b798158]
+  - @liquefy-ui/core@0.2.0
+
 ## 0.4.0
 
 ### Minor Changes
