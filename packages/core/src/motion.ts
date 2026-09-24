@@ -31,6 +31,41 @@ export const attachLiquidMotion = (
   const bounce = clamp(options.bounce ?? 0.05, 0, 0.16)
   const tilt = clamp(options.tilt ?? 3.5, 0, 12)
 
+  // The squish is a ratio, which is the right unit for a 36px button and the
+  // wrong one for a 900px panel: the same 9% takes an edge 1.6px on the button
+  // and 40px on the panel. An edge that travels that far while a press is held
+  // slides out from under the pointer, and the browser then dispatches the
+  // click on whatever the pointerup landed on instead. The scale is capped so
+  // no edge moves further than this, whatever the element's size.
+  const maxEdgeShift = 6
+  let boxWidth = 0
+  let boxHeight = 0
+  let pressed = false
+
+  const measure = (): void => {
+    // offset* rather than getBoundingClientRect: the rect is the transformed
+    // box, so capping against it would feed the cap back into itself.
+    boxWidth = element.offsetWidth
+    boxHeight = element.offsetHeight
+  }
+
+  const capScale = (value: number, extent: number): number => {
+    if (!(extent > 0)) return value
+    const limit = (maxEdgeShift * 2) / extent
+    return clamp(value, 1 - limit, 1 + limit)
+  }
+
+  // A press belongs to the innermost liquid element under the pointer. Pressing
+  // a dialog's close button used to squash the dialog's own surface as well,
+  // because the event bubbles — and the surface is tall enough that its squish
+  // carried the button out from under the finger holding it.
+  const ownsPress = (event: PointerEvent): boolean => {
+    const target = event.target
+    if (!(target instanceof Element)) return true
+    const owner = target.closest('[data-liquid-motion]')
+    return owner === null || owner === element
+  }
+
   // Deliberately underdamped: the visible jiggle after presses and fast
   // pointer sweeps is the point. Damping rises as wobbliness drops.
   const jellyDamping = 26 - wobbliness * 16.5
@@ -98,8 +133,10 @@ export const attachLiquidMotion = (
     element.style.setProperty('--lq-rotate-y', `${tiltY.current.toFixed(3)}deg`)
     // The lean multiplies the gesture scales rather than replacing them, so a
     // press still squashes while the surface is leaning.
-    element.style.setProperty('--lq-scale-x', (scaleX.current * (1 + elasticStretchX.current)).toFixed(4))
-    element.style.setProperty('--lq-scale-y', (scaleY.current * (1 + elasticStretchY.current)).toFixed(4))
+    const appliedScaleX = capScale(scaleX.current * (1 + elasticStretchX.current), boxWidth)
+    const appliedScaleY = capScale(scaleY.current * (1 + elasticStretchY.current), boxHeight)
+    element.style.setProperty('--lq-scale-x', appliedScaleX.toFixed(4))
+    element.style.setProperty('--lq-scale-y', appliedScaleY.toFixed(4))
     element.style.setProperty('--lq-elastic-x', `${elasticX.current.toFixed(3)}px`)
     element.style.setProperty('--lq-elastic-y', `${elasticY.current.toFixed(3)}px`)
     // Swing the lit quarter of the rim toward the pointer, so the highlight
@@ -117,7 +154,7 @@ export const attachLiquidMotion = (
 
     if (renderer) {
       renderer.setPointer(pointerX.current, pointerY.current)
-      renderer.setStretch(scaleX.current - 1, scaleY.current - 1)
+      renderer.setStretch(appliedScaleX - 1, appliedScaleY - 1)
       renderer.setWobble(wobbleEnergy)
     }
 
@@ -174,6 +211,7 @@ export const attachLiquidMotion = (
 
   const enter = (event: PointerEvent): void => {
     if (disabled) return
+    measure()
     element.dataset.liquidActive = 'true'
     presence.setTarget(1)
     scaleX.setTarget(1.01)
@@ -186,6 +224,7 @@ export const attachLiquidMotion = (
   }
 
   const leave = (): void => {
+    pressed = false
     element.dataset.liquidActive = 'false'
     pointerX.setTarget(0.5)
     pointerY.setTarget(0.5)
@@ -203,7 +242,9 @@ export const attachLiquidMotion = (
   }
 
   const down = (event: PointerEvent): void => {
-    if (disabled) return
+    if (disabled || !ownsPress(event)) return
+    measure()
+    pressed = true
     window.clearTimeout(releaseTimeout)
     scaleX.setTarget(1 + bounce * 0.55)
     scaleY.setTarget(1 - bounce * 1.15)
@@ -215,6 +256,10 @@ export const attachLiquidMotion = (
   }
 
   const up = (): void => {
+    // Paired with `down`: a surface that let the press through to a control
+    // inside it has nothing to release, and must not kick on the way back up.
+    if (!pressed) return
+    pressed = false
     // Release: spring targets return to rest while a velocity kick sends the
     // shape through several visible overshoots — the pull-back "purun".
     scaleX.setTarget(1.01)
@@ -246,6 +291,8 @@ export const attachLiquidMotion = (
     })
     : null
 
+  measure()
+  element.dataset.liquidMotion = ''
   element.addEventListener('pointerenter', enter)
   element.addEventListener('pointermove', updatePointer)
   element.addEventListener('pointerleave', leave)
@@ -259,6 +306,7 @@ export const attachLiquidMotion = (
       window.clearTimeout(releaseTimeout)
       releaseElastic?.()
       renderer?.destroy()
+      delete element.dataset.liquidMotion
       element.removeEventListener('pointerenter', enter)
       element.removeEventListener('pointermove', updatePointer)
       element.removeEventListener('pointerleave', leave)
