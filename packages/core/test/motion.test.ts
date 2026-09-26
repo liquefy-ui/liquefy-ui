@@ -188,6 +188,47 @@ describe('attachLiquidMotion', () => {
     // A nonsense value must not turn into a nonsense transform.
     expect(Number(element.style.getPropertyValue('--lq-scale-x'))).toBeLessThan(2)
   })
+
+  // Both of these are the same bug seen from two sides: a dialog's close button
+  // walked away from a held pointer, so the pointerup landed on the panel and
+  // the browser dispatched the click there instead of on the button.
+  it('leaves a panel still when the press belongs to a control inside it', async () => {
+    const panel = mount()
+    const button = document.createElement('button')
+    button.getBoundingClientRect = () => ({
+      bottom: 38, height: 36, left: 70, right: 112, toJSON: () => ({}), top: 2, width: 42, x: 70, y: 2,
+    })
+    panel.append(button)
+    attach(panel)
+    attach(button)
+
+    button.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 90, clientY: 20 }))
+    await settle(10)
+
+    expect(Number(button.style.getPropertyValue('--lq-scale-y'))).toBeLessThan(1)
+    expect(Number(panel.style.getPropertyValue('--lq-scale-y') || '1')).toBeCloseTo(1, 2)
+  })
+
+  it('caps the squish in pixels, so a tall panel keeps its edges where they were', async () => {
+    const sized = (height: number, width: number) => {
+      const element = mount()
+      Object.defineProperty(element, 'offsetHeight', { configurable: true, value: height })
+      Object.defineProperty(element, 'offsetWidth', { configurable: true, value: width })
+      attach(element)
+      pointer(element, 'pointerenter')
+      pointer(element, 'pointerdown')
+      return element
+    }
+
+    const panel = sized(800, 560)
+    const control = sized(36, 42)
+    await settle(20)
+
+    // 6px per edge is the budget, so 800px of panel may not scale past 12/800.
+    expect(Number(panel.style.getPropertyValue('--lq-scale-y'))).toBeGreaterThan(1 - 12 / 800 - 0.001)
+    // The control is small enough that the cap never binds: it squashes as before.
+    expect(Number(control.style.getPropertyValue('--lq-scale-y'))).toBeLessThan(0.99)
+  })
 })
 
 describe('SpringValue', () => {
