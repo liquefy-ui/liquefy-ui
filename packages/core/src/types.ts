@@ -29,7 +29,7 @@ export type LiquidMotionOptions = {
   respectReducedMotion?: boolean
   /** Ring that travels out from a press. */
   ripple?: boolean
-  /** Iridescent colour shift across the rim while the surface is wobbling. */
+  /** Colour in the rim: an iridescent shift while wobbling, and a red/green/blue split at rest. Off by default. */
   shimmer?: boolean
   /** Drifting specular glints across the face. */
   sparkle?: boolean
@@ -52,7 +52,7 @@ export type LiquidRendererOptions = {
   radius?: number
   /** Ring that travels out from a press. */
   ripple?: boolean
-  /** Iridescent colour shift across the rim while the surface is wobbling. */
+  /** Colour in the rim: an iridescent shift while wobbling, and a red/green/blue split at rest. Off by default. */
   shimmer?: boolean
   /** Drifting specular glints across the face. */
   sparkle?: boolean

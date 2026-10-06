@@ -11,7 +11,7 @@ const MAPPING: [string, string, string][] = [
   ['Wobbliness', 'wobbliness', 'Spring looseness. 0 keeps transitions but stops the jelly overshoot.'],
   ['Rim glow', 'glow', 'The lit patch that follows the pointer around the bezel.'],
   ['Press ripple', 'ripple', 'The ring that travels out from a press.'],
-  ['Iridescence', 'shimmer', 'The colour shift across the rim while a surface is still wobbling.'],
+  ['Iridescence', 'shimmer', 'Colour in the rim: a shift while a surface is still wobbling, a faint split at rest.'],
   ['Sparkle', 'sparkle', 'Slow specular glints drifting across the face.'],
   ['Jelly motion', 'motion', 'Master switch for the spring physics.'],
   ['Transparency', 'transparency', 'Off swaps the translucent fills for opaque ones, for contrast or performance.'],
