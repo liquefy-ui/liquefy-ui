@@ -194,8 +194,9 @@ with the token system itself at `#/docs/theming`.
 | Foundation | `LiquefyProvider`, `useLiquefyConfig`, `useLiquidGlass`, `useLiquidStyles`, `getLiquefyStyleSheet`, `defaultBreakpoints` |
 
 When WebGL is unavailable, components automatically fall back to the transparent
-CSS material. Lens, WebGL, motion, transparency, glow and shimmer are on by
-default; ripple and sparkle are off. Use the provider props to tune them across
+CSS material. Lens, WebGL, motion, transparency and glow are on by default;
+ripple, shimmer and sparkle are off, so the rim stays a neutral line unless you
+turn `shimmer` on for colour. Use the provider props to tune them across
 a subtree.
 
 Use `theme="dark"`, `theme="light"`, or `theme="system"` on `LiquefyProvider` to control appearance.

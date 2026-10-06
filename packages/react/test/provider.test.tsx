@@ -41,7 +41,7 @@ describe('provider defaults', () => {
       motion: true,
       refraction: 1,
       ripple: false,
-      shimmer: true,
+      shimmer: false,
       sparkle: false,
       spacing: 4,
       theme: 'system',

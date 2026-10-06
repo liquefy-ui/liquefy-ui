@@ -97,9 +97,13 @@ void main() {
   float sparklePhase = sin((p.x + p.y * 1.3) * 0.11 + u_time * 1.1) * sin(p.x * 0.07 - u_time * 0.8);
   float sparkle = max(0.0, sparklePhase) * 0.05 * u_active;
 
-  vec3 white = vec3(0.97, 0.985, 1.0);
+  // Shimmer owns every bit of colour the material adds on its own: the cool
+  // cast on the highlight and the red/green/blue split across the rim, as well
+  // as the iridescent band. With it off the rim is one neutral line, so the
+  // only hue on a surface is the tint it was given.
+  vec3 white = mix(vec3(0.985), vec3(0.97, 0.985, 1.0), u_ornaments.w);
   vec3 rimTint = mix(u_tint * 0.8 + vec3(0.2), white, topBias);
-  vec3 rim = vec3(rimR, rimG, rimB) * rimTint;
+  vec3 rim = mix(vec3(rimG), vec3(rimR, rimG, rimB), u_ornaments.w) * rimTint;
   vec3 shimmer = iridescence(angle / TAU + u_time * 0.04 + u_wobble * 0.3) * rimG * (0.08 + u_wobble * 0.16);
 
   float rimStrength = (0.38 + 0.62 * u_active + 0.45 * u_wobble) * u_intensity;
@@ -250,7 +254,7 @@ export class LiquidRenderer {
       options.glow === false ? 0 : 1,
       options.ripple === false ? 0 : 1,
       options.sparkle === false ? 0 : 1,
-      options.shimmer === false ? 0 : 1,
+      options.shimmer === true ? 1 : 0,
     ]
     this.radius = options.radius ?? 16
     this.tint = hexToRgb(options.tint ?? '#8f8f8f')

@@ -65,7 +65,7 @@ export const DEFAULT_MATERIAL: MaterialConfig = {
   lens: true,
   refraction: 1,
   ripple: false,
-  shimmer: true,
+  shimmer: false,
   sparkle: false,
   transparency: true,
   veil: 0,

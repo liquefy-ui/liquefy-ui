@@ -24,7 +24,7 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & LiquidStyleProps
   ripple?: boolean
   /** How much the glass lifts the colour of what it refracts. */
   saturation?: number
-  /** Iridescent colour shift across the rim while wobbling. Falls back to the provider. */
+  /** Colour in the rim — iridescence while wobbling, a red/green/blue split at rest. Falls back to the provider. */
   shimmer?: boolean
   /** How far the lens softens what it refracts, in pixels. Not the backdrop blur — that is `frost`. */
   softness?: number
