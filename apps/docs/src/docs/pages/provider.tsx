@@ -60,8 +60,8 @@ const propRows: PropRow[] = [
     type: 'boolean',
   },
   {
-    defaultValue: 'true',
-    description: 'The iridescent colour shift across the rim while a surface is wobbling. Drawn by the WebGL pass, so it is inert while webgl is off.',
+    defaultValue: 'false',
+    description: 'Colour in the rim: an iridescent shift while a surface is wobbling and a faint red/green/blue split at rest. Off, the rim is one neutral line. Drawn by the WebGL pass, so it is inert while webgl is off.',
     name: 'shimmer',
     type: 'boolean',
   },

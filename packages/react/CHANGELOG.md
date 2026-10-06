@@ -1,5 +1,17 @@
 # @liquefy-ui/react
 
+## 1.1.0
+
+### Minor Changes
+
+- 1f4411c: The rim is now a neutral line by default. `shimmer` defaults to `false` and owns all of the colour the material adds on its own — the iridescent band, the red/green/blue split across the rim and the cool cast on the highlight — so buttons and fields no longer pick up a blue or purple edge on plain pages. Pass `shimmer` to `LiquefyProvider` (or to a single `LiquidGlass`) to bring the coloured rim back.
+
+### Patch Changes
+
+- Updated dependencies [1f4411c]
+- Updated dependencies [8e474db]
+  - @liquefy-ui/core@1.1.0
+
 ## 1.0.0
 
 ### Minor Changes

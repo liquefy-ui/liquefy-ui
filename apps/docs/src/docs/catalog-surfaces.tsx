@@ -140,7 +140,7 @@ export const surfaceDocs: ComponentDoc[] = [
       { description: 'How far the lens softens what it refracts, in pixels. Not the backdrop blur.', name: 'softness', type: 'number' },
       { description: 'Width of the refracting band at the rim. Defaults to 22% of the short side.', name: 'bezel', type: 'number' },
       { defaultValue: '2', description: 'Exponent of the bezel cross-section: 1 is an even ramp, higher piles the bend against the rim.', name: 'curve', type: 'number' },
-      { defaultValue: 'provider', description: 'Lit rim glow, click ripple, iridescent shimmer and drifting sparkle. Glow and shimmer are on by default, ripple and sparkle off.', name: 'glow / ripple / shimmer / sparkle', type: 'boolean' },
+      { defaultValue: 'provider', description: 'Lit rim glow, click ripple, iridescent shimmer and drifting sparkle. Glow is on by default; ripple, shimmer and sparkle are off.', name: 'glow / ripple / shimmer / sparkle', type: 'boolean' },
       { defaultValue: 'true', description: 'Enables pointer springs and shader interaction.', name: 'interactive', type: 'boolean' },
       { defaultValue: 'false', description: 'Dims the glass for a surface sitting on a bright backdrop.', name: 'overLight', type: 'boolean' },
       { description: 'Inner spacing as pixels or any CSS length.', name: 'padding', type: 'number | string' },
