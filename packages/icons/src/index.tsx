@@ -248,6 +248,15 @@ export const FolderIcon = (props: IconProps): ReactElement => (
   </IconBase>
 )
 
+export const GridIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <rect height="7" rx="1.8" width="7" x="3.5" y="3.5" />
+    <rect height="7" rx="1.8" width="7" x="13.5" y="3.5" />
+    <rect height="7" rx="1.8" width="7" x="3.5" y="13.5" />
+    <rect height="7" rx="1.8" width="7" x="13.5" y="13.5" />
+  </IconBase>
+)
+
 export const HeartIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="M12 20s-7.6-4.4-9-9.2C2.1 7.7 4 5 6.9 5c2 0 3.6 1.1 5.1 3 1.5-1.9 3.1-3 5.1-3 2.9 0 4.8 2.7 3.9 5.8-1.4 4.8-9 9.2-9 9.2Z" />
