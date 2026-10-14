@@ -77,7 +77,7 @@ A few of them are worth knowing about before making changes:
 
 ## The documentation site
 
-Twelve doc pages live in `apps/docs/src/docs/pages/*.tsx`, registered in
+Thirteen doc pages live in `apps/docs/src/docs/pages/*.tsx`, registered in
 `apps/docs/src/docs/docs-nav.tsx` — one `DocEntry` per page, grouped into sidebar
 categories. The 36 component pages come from `apps/docs/src/docs/catalog-*.tsx`,
 and the shadcn registry publishes 40 items built from the same source. Old

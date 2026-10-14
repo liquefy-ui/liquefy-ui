@@ -1,11 +1,14 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { renderToStaticMarkup } from 'react-dom/server'
+import * as icons from '@liquefy-ui/icons'
+import * as lab from '@liquefy-ui/lab'
 import { LiquefyProvider } from '@liquefy-ui/react'
 import * as liquefy from '@liquefy-ui/react'
 import { describe, expect, it } from 'vitest'
 import { catalog, componentCount } from '../src/docs/catalog'
 import { docCategories, docCount, docOrder, findDocPage } from '../src/docs/docs-nav'
 import { iconCount, iconEntries, iconsImportLine } from '../src/docs/icons-gallery'
+import { dropletMenuCode, labUsage } from '../src/docs/pages/lab'
 import type { ComponentDoc } from '../src/docs/types'
 import { analyticsRoute } from '../src/site/analytics'
 
@@ -148,6 +151,35 @@ describe('documentation pages', () => {
       expect(headings.length, `${doc.slug}: h2 count`).toBeGreaterThan(1)
       expect(withId.length, `${doc.slug}: h2 without id`).toBe(headings.length)
     }
+  })
+})
+
+// Lab is documented on a doc page rather than in the catalogue, so its examples
+// are held to the catalogue's rule here: every name they import has to exist.
+describe('the lab page', () => {
+  const packages: Record<string, object> = {
+    '@liquefy-ui/icons': icons,
+    '@liquefy-ui/lab': lab,
+    '@liquefy-ui/react': liquefy,
+  }
+
+  it('only imports names its packages export', () => {
+    const examples = [
+      labUsage,
+      ...(['around', 'top', 'top-left'] as const).map((placement) => dropletMenuCode(placement, 200)),
+    ]
+    const unknown = examples.flatMap((code) =>
+      [...code.matchAll(/import \{([^}]*)\} from '([^']+)'/g)].flatMap(([, names, from]) =>
+        names.split(',').map((name) => name.trim()).filter(Boolean)
+          .filter((name) => !(name in (packages[from] ?? {})))
+          .map((name) => `${from}: ${name}`)))
+    expect(unknown).toEqual([])
+  })
+
+  it('leaves props at their default out of the demo source', () => {
+    expect(dropletMenuCode('around', 120)).not.toMatch(/placement=|stagger=/)
+    expect(dropletMenuCode('top-left', 60)).toContain('placement="top-left"')
+    expect(dropletMenuCode('top-left', 60)).toContain('stagger={60}')
   })
 })
 

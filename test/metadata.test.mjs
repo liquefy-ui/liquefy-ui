@@ -139,8 +139,8 @@ describe('the README', () => {
 
     expect(readme).toContain(`${componentPages} components and ${icons.names.length} icons`)
     expect(contributing).toContain(`${registry.items.length} items`)
-    expect(docPages).toBe(12)
-    expect(contributing.toLowerCase()).toContain('twelve doc pages')
+    expect(docPages).toBe(13)
+    expect(contributing.toLowerCase()).toContain('thirteen doc pages')
     // The catalogue and the registry are built from the same source, so a drift
     // between them means one of the two builders stopped seeing a file.
     expect(registry.items.length).toBe(entries.length + 1)
