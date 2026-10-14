@@ -3,6 +3,7 @@ import {
   LiquidAlert,
   LiquidButton,
   LiquidDialog,
+  LiquidGauge,
   LiquidProgress,
   LiquidSkeleton,
   LiquidSpinner,
@@ -204,6 +205,52 @@ export const feedbackDocs: ComponentDoc[] = [
     ],
     propsTitle: 'LiquidSpinner',
     slug: 'spinner',
+  },
+  {
+    demos: [
+      {
+        code: `<LiquidGauge label="Memory" value={42} />
+<LiquidGauge label="Disk" tint="#f4b64f" value={78} />
+<LiquidGauge label="Swap" tint="#ff5d73" value={93} />`,
+        render: () => (
+          <>
+            <LiquidGauge label="Memory" value={42} />
+            <LiquidGauge label="Disk" tint="#f4b64f" value={78} />
+            <LiquidGauge label="Swap" tint="#ff5d73" value={93} />
+          </>
+        ),
+        title: 'Levels',
+      },
+      {
+        code: `<LiquidGauge label="Storage" max={512} size={64} value={384} />
+<LiquidGauge label="Storage" max={512} size={112} thickness={2} value={384}>
+  384<small>GB</small>
+</LiquidGauge>`,
+        render: () => (
+          <>
+            <LiquidGauge label="Storage" max={512} size={64} value={384} />
+            <LiquidGauge label="Storage" max={512} size={112} thickness={2} value={384}>
+              384<small>GB</small>
+            </LiquidGauge>
+          </>
+        ),
+        title: 'Sizes and a custom reading',
+      },
+    ],
+    description: 'A ring meter with the reading in its middle. Use it for a level that goes up and down, like memory or disk in use; for a task heading for done, use Progress.',
+    importLine: "import { LiquidGauge } from '@liquefy-ui/react'",
+    name: 'Gauge',
+    props: [
+      { description: 'Accessible name: what is being measured.', name: 'label', type: 'string' },
+      { description: 'Current reading, from 0 to max. Clamped at both ends.', name: 'value', type: 'number' },
+      { defaultValue: '100', description: 'Value that fills the ring.', name: 'max', type: 'number' },
+      { defaultValue: '88', description: 'Rendered diameter in pixels. The reading scales with it.', name: 'size', type: 'number' },
+      { defaultValue: '2.4', description: 'Stroke width of the ring, on a 24-unit scale.', name: 'thickness', type: 'number' },
+      { description: 'Arc color override. The reading keeps the text color.', name: 'tint', type: 'string' },
+      { description: 'Replaces the percentage in the middle.', name: 'children', type: 'ReactNode' },
+    ],
+    propsTitle: 'LiquidGauge',
+    slug: 'gauge',
   },
   {
     demos: [

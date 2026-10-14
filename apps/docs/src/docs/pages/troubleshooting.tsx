@@ -159,6 +159,29 @@ export const SaveButton = ({ onSave }: { onSave: () => void }) => (
         </p>
       </Section>
 
+      <Section id="scrollbar" title="A scrolling dialog flickers a horizontal scrollbar">
+        <p>
+          A text field tilts toward the pointer, and a tilted field reaches a few pixels past its own
+          box. Inside a container set to <code>overflow: auto</code> that overhang counts as content, so
+          hovering the field adds a horizontal scrollbar and leaving it takes the scrollbar away again.
+          Scroll only the axis you mean to, and give the focus ring — 5px outside the field — room
+          inside the clip.
+        </p>
+        <CodeBlock
+          code={`.my-dialog .lq-dialog__body {
+  max-height: calc(100dvh - 200px);
+  overflow: hidden auto;     /* vertical only */
+  margin-inline: -8px;       /* keep the column where it was… */
+  padding: 6px 8px;          /* …and leave the ring room to draw */
+}`}
+        />
+        <p>
+          The dialog body does not scroll unless you make it, which is why this is yours to set rather
+          than the library&rsquo;s: clipping it by default would cut shadows and rings in every dialog
+          that never needed a scrollbar.
+        </p>
+      </Section>
+
       <Section id="ask" title="Still stuck">
         <p>
           The MCP server answers questions about the real exports, and <code>/llms-full.txt</code> contains
@@ -170,5 +193,5 @@ export const SaveButton = ({ onSave }: { onSave: () => void }) => (
     </>
   ),
   slug: 'troubleshooting',
-  summary: 'Unstyled output, layer order, RSC handlers, portals, ignored overrides, theme flash, tests.',
+  summary: 'Unstyled output, layer order, RSC handlers, portals, ignored overrides, theme flash, scrollbars, tests.',
 }

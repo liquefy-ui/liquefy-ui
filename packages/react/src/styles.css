@@ -168,6 +168,25 @@
     }
   }
 
+  /* With a fine pointer the tilt stays, until the field takes focus. A field
+     rotated toward the pointer foreshortens its focus outline along one edge, so
+     the ring reads as cut off while you type, and the motion is no help once the
+     caret is in it. So a focused field lies flat, and so does a surface holding
+     one — a card tilting under a flat field drags the ring with it. The dialog
+     surface is left out: it lifts on open, and flattening it on focus makes the
+     whole dialog jump, while the field inside it lying flat is already enough. */
+  .lq-text-field__control:focus-within {
+    transform: none;
+    transform-style: flat;
+  }
+
+  /* Its own rule for the same reason as above: `:has()` must not take the
+     field's selector down with it. */
+  .lq-surface:not(.lq-dialog__surface):has(.lq-text-field__control:focus-within) {
+    transform: none;
+    transform-style: flat;
+  }
+
   /* `-webkit-backdrop-filter` is written before the standard property, here and
      everywhere else in this file, and the order is load-bearing. Lightning CSS —
      what Vite hands a stylesheet to — reads the two as one property declared
@@ -2513,6 +2532,50 @@
       stroke-dasharray: 12 100;
       stroke-dashoffset: -100;
     }
+  }
+
+  /* ---------- Gauge ---------- */
+  /* The reading sits in the middle of the ring, sized off the ring itself so a
+     gauge scales as one piece. `--lq-gauge-size` is written by the component. */
+  .lq-gauge {
+    display: inline-grid;
+    flex: none;
+    height: var(--lq-gauge-size);
+    place-items: center;
+    position: relative;
+    width: var(--lq-gauge-size);
+  }
+
+  .lq-gauge__ring {
+    inset: 0;
+    position: absolute;
+  }
+
+  .lq-gauge__track {
+    stroke: color-mix(in srgb, var(--lq-foreground) 12%, transparent);
+  }
+
+  .lq-gauge__arc {
+    stroke: color-mix(in srgb, var(--lq-gauge-tint, var(--lq-accent)) 82%, white);
+    transition: stroke-dasharray 480ms var(--lq-easing);
+  }
+
+  /* The tint stays on the arc. A warning yellow is a fine stroke and an
+     unreadable number on a light surface. */
+  .lq-gauge__value {
+    font-size: calc(var(--lq-gauge-size) * 0.25);
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    position: relative;
+  }
+
+  .lq-gauge__value small {
+    color: var(--lq-muted);
+    font-size: 0.55em;
+    font-weight: 700;
+    margin-left: 0.05em;
   }
 
   /* ---------- Skeleton ---------- */
