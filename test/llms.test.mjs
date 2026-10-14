@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { HOMEPAGE, readCatalog, readCoreApi, readIcons, readLabApi } from '../scripts/component-catalog.mjs'
+import { catalog } from '../packages/mcp/src/catalog.generated.ts'
 import { tools } from '../packages/mcp/src/server.ts'
 
 /**
@@ -34,6 +35,12 @@ const headingIndexes = lines
 /** Names the entry point re-exports, i.e. what may be presented as importable. */
 const publicNames = new Set(entries.flatMap((entry) => entry.publicValues))
 const internalNames = entries.flatMap((entry) => entry.internalValues)
+const entryPoint = readFileSync(new URL('../packages/react/src/index.ts', import.meta.url), 'utf8')
+
+/** The `code` names in every bullet or rule that says something is not exported. */
+const namesCalledInternal = (rules) => rules
+  .filter((rule) => /not exported/i.test(rule))
+  .flatMap((rule) => [...rule.matchAll(/`([A-Za-z_$][\w$]*)`/g)].map(([, name]) => name))
 
 describe('llms.txt structure', () => {
   // https://llmstxt.org: H1, blockquote summary, prose with no headings, then H2
@@ -111,6 +118,25 @@ describe('what the generated files claim', () => {
     for (const file of [short, full]) {
       for (const name of internalNames) {
         expect(file, name).not.toContain(`import { ${name} }`)
+      }
+    }
+  })
+
+  // The rules name a few internal exports as examples, and those lists outlive the
+  // names in them: useLiquefyPortalContainer was still called internal by llms.txt
+  // and the MCP conventions after the entry point started exporting it.
+  it('calls a name "not exported" only when the entry point leaves it out', () => {
+    const exported = new Set(entryPoint.match(/[A-Za-z_$][\w$]*/g))
+    const claims = {
+      'llms.txt': namesCalledInternal(short.split(/\n(?=- )|\n\n/)),
+      'llms-full.txt': namesCalledInternal(full.split(/\n(?=- )|\n\n/)),
+      'MCP conventions': namesCalledInternal(catalog.conventions),
+    }
+    for (const [source, names] of Object.entries(claims)) {
+      expect(names.length, source).toBeGreaterThan(0)
+      for (const name of names) {
+        expect(exported.has(name), `${source}: ${name} is exported`).toBe(false)
+        expect(internalNames, `${source}: ${name} is not a real export`).toContain(name)
       }
     }
   })
