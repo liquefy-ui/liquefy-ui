@@ -4,8 +4,30 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { afterEach, describe, expect, it } from 'vitest'
+import type { GlassMergeShape } from '@liquefy-ui/core'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DropletMenu, type DropletMenuItem } from '../src/droplet-menu'
+
+// Every frame's shapes, as the glass surface is handed them.
+const glass = vi.hoisted(() => ({ frames: [] as GlassMergeShape[][] }))
+vi.mock('@liquefy-ui/core', async (importOriginal) => {
+  const core = await importOriginal<typeof import('@liquefy-ui/core')>()
+  return {
+    ...core,
+    attachGlassMerge: (...args: Parameters<typeof core.attachGlassMerge>) => {
+      const controller = core.attachGlassMerge(...args)
+      return {
+        destroy: controller.destroy,
+        mode: controller.mode,
+        setShapes: (shapes: readonly GlassMergeShape[]) => {
+          glass.frames.push(shapes.map((shape) => ({ ...shape })))
+          controller.setShapes(shapes)
+        },
+      }
+    },
+  }
+})
+const lastFrame = () => glass.frames.at(-1) ?? []
 
 const Glyph = () => <svg aria-hidden="true" />
 
@@ -21,8 +43,15 @@ const mount = (node: Parameters<typeof render>[0], motion = false) =>
 
 const focused = () => document.activeElement
 
+// The tests that wait for droplets to come home wait for real frames. The
+// timeline counts at most 1/30 s per frame however long the frame took, so on
+// a loaded machine the return takes longer in wall-clock time than it
+// animates — they get a budget sized for a busy CI runner, not an idle laptop.
+const RETURN_BUDGET = 15_000
+
 afterEach(() => {
   document.body.innerHTML = ''
+  glass.frames = []
 })
 
 describe('DropletMenu', () => {
@@ -111,8 +140,8 @@ describe('DropletMenu', () => {
     expect(trigger.getAttribute('aria-expanded')).toBe('false')
     expect(screen.queryByRole('menu', { hidden: true })).not.toBeNull()
 
-    await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: 4000 })
-  })
+    await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: RETURN_BUDGET })
+  }, RETURN_BUDGET + 5_000)
 
   // Two synchronous renders leave no frame in between, so no droplet has left
   // when the close arrives — everything reads as home, and the popup Base UI
@@ -127,18 +156,68 @@ describe('DropletMenu', () => {
     rerender(menu(true))
     expect(screen.queryByRole('menu')).not.toBeNull()
     rerender(menu(false))
-    await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: 4000 })
-  })
+    await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: RETURN_BUDGET })
+  }, RETURN_BUDGET + 5_000)
 
-  it('lays the droplets over the trigger and portals them into the provider', async () => {
+  it('lays the droplets over the trigger, next to their glass', async () => {
     const user = userEvent.setup()
     const { container } = mount(<DropletMenu icon={<Glyph />} items={items()} label="Create" />)
     await user.click(screen.getByRole('button', { name: 'Create' }))
     const menu = await screen.findByRole('menu')
-    expect(container.querySelector('.lq-portal')?.contains(menu)).toBe(true)
+    // Portalled into the menu itself rather than out to the provider, so the
+    // buttons and the glass are clipped and stacked by the same ancestors.
+    const root = container.querySelector('.lq-droplet-menu')!
+    expect(root.contains(menu)).toBe(true)
+    expect(root.contains(root.querySelector('.lq-glass-merge__surface'))).toBe(true)
     // Settled droplets sit at their offsets from the trigger's centre.
     const first = within(menu).getByRole('menuitem', { name: 'Camera' }).parentElement
     expect(first?.style.transform).toMatch(/translate\(0\.00px, -\d+\.\d+px\)/)
+  })
+
+  it('draws the trigger and every droplet as one glass body', async () => {
+    const user = userEvent.setup()
+    mount(<DropletMenu icon={<Glyph />} items={items()} label="Create" />)
+
+    // Closed: the trigger alone, a 56px circle.
+    expect(lastFrame()).toHaveLength(1)
+    const [closed] = lastFrame()
+    expect(closed).toMatchObject({ height: 56, radius: 28, stretch: 1, width: 56 })
+
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+    await screen.findByRole('menu')
+    // Open: the trigger and all three droplets, the disabled one included,
+    // each one size down and at its place around the trigger's centre.
+    const [trigger, ...droplets] = lastFrame()
+    expect(droplets).toHaveLength(3)
+    droplets.forEach((droplet) => expect(droplet).toMatchObject({ height: 46, radius: 23, width: 46 }))
+    const camera = droplets[0]!
+    expect(camera.x - trigger!.x).toBeCloseTo(0, 1)
+    expect(camera.y - trigger!.y).toBeLessThan(-50)
+
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+    expect(lastFrame()).toHaveLength(1)
+  })
+
+  it('keeps the glass out from under anything that would hide the page from it', () => {
+    const { container } = mount(<DropletMenu icon={<Glyph />} items={items()} label="Create" />, true)
+    const surface = container.querySelector<HTMLElement>('.lq-glass-merge__surface')!
+    for (let element = surface.parentElement; element; element = element.parentElement) {
+      const style = getComputedStyle(element)
+      expect(Number(style.opacity || 1)).toBe(1)
+      for (const property of ['filter', 'clip-path', 'mask', 'mask-image', 'backdrop-filter']) {
+        expect(['', 'none']).toContain(style.getPropertyValue(property))
+      }
+      expect(style.willChange).not.toMatch(/opacity|filter/)
+    }
+  })
+
+  it('leaves the buttons clear, with no glass of their own', async () => {
+    const user = userEvent.setup()
+    const { container } = mount(<DropletMenu icon={<Glyph />} items={items()} label="Create" />)
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+    await screen.findByRole('menu')
+    expect(container.querySelector('.lq-button, .lq-surface__edge, .lq-surface__shader')).toBeNull()
   })
 
   it('follows a controlled open prop both ways without reporting it back', async () => {
