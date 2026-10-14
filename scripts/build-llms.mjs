@@ -101,8 +101,8 @@ const RULES = `Rules an agent should not have to guess:
   \`_hover\`, \`_focusVisible\`, \`_disabled\`, \`_dark\`. There is no \`styled()\` and no
   \`sx\` prop.
 - Everything is imported from the package root. There are no deep entry points,
-  and names not listed below — \`compileLiquidStyles\`, \`useLiquefyPortalContainer\`,
-  the internal glyphs — are not exported from it.
+  and names not listed below — \`compileLiquidStyles\`, the internal glyphs such as
+  \`CheckGlyph\` — are not exported from it.
 - Overlays (Dialog, Drawer, Menu, Select, Tooltip) are built on Base UI and render
   into a portal inside the provider. Focus handling, Escape and collision-aware
   placement are already done; do not re-implement them.

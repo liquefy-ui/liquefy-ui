@@ -142,11 +142,10 @@ const readTypeDeclarations = (source) => {
 }
 
 /**
- * What `@liquefy-ui/react` actually exports, read from its entry point. Every
- * source file has exports of its own — `compileLiquidStyles` for the tests,
- * `CheckGlyph` for the components, `useLiquefyPortalContainer` for the portal —
- * and advertising those as importable is how an agent ends up writing an import
- * that does not resolve.
+ * What `@liquefy-ui/react` actually exports, read from its entry point. Source
+ * files export more than the package does — `compileLiquidStyles` for the tests,
+ * `CheckGlyph` and the other glyphs for the components — and advertising those
+ * as importable is how an agent ends up writing an import that does not resolve.
  */
 export const readPublicApi = async () => {
   const source = await readFile(new URL('index.ts', srcDir), 'utf8')
