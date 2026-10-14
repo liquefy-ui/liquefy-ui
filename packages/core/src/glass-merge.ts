@@ -9,7 +9,7 @@ import {
   traceContours,
   type PreparedShape,
 } from './glass-merge-geometry'
-import { createElement, getDefsRoot, isLensSupported } from './lens-filter'
+import { createElement, isLensSupported } from './lens-filter'
 import { mediaQuery } from './media'
 import type { GlassMergeController, GlassMergeOptions, GlassMergeShape } from './types'
 
@@ -25,6 +25,11 @@ const SHARPNESS = 24
 const GRID_STEP = 4
 const FROST = 'blur(1.5px) saturate(1.4) brightness(1.05)'
 const SOLID = 'var(--lq-solid-fill, rgb(239, 244, 255))'
+/** `.lq-button`'s cast shadow, `0 8px 20px`: a blur radius of 20px is a σ of 10. */
+const SHADOW_BLUR = 10
+const SHADOW_DROP = 8
+/** `--lq-rim-width`. */
+const RIM_WIDTH = 1.6
 
 type Settings = {
   bezel: number
@@ -59,12 +64,93 @@ const observeSize = (element: HTMLElement, onResize: () => void): ResizeObserver
   return observer
 }
 
+type AddPrimitive = <Tag extends keyof SVGElementTagNameMap>(
+  tag: Tag,
+  attributes: Record<string, string>,
+  parent?: Element,
+) => SVGElementTagNameMap[Tag]
+
+const primitives = (filter: SVGFilterElement): AddPrimitive => (tag, attributes, parent = filter) => {
+  const child = createElement(tag, attributes)
+  parent.appendChild(child)
+  return child
+}
+
+/**
+ * The filters live in a hidden `<svg>` inside the element rather than in one
+ * shared at the end of the body, so that their colours can be the theme's
+ * custom properties: a filter primitive inherits them like any element does,
+ * and follows a theme switch with no script.
+ */
+const filterHost = (): SVGSVGElement => createElement('svg', {
+  'aria-hidden': 'true',
+  height: '0',
+  style: 'position: absolute; width: 0; height: 0; overflow: hidden',
+  width: '0',
+})
+
+/**
+ * What `.lq-button` dresses its glass in, drawn from the merged outline
+ * instead of a rectangle: the cast shadow, the lit ring of `.lq-surface__edge`,
+ * and the inset highlight along the top with its shade along the bottom.
+ * `mask` names the outline as an alpha mask. Returns the results to merge,
+ * the shadow first, so the glass can go between it and the rest.
+ */
+const addDressing = (
+  add: AddPrimitive,
+  mask: string,
+): { edges: string[], shadow: string, shadowBlur: SVGFEGaussianBlurElement } => {
+  // Blurred and dropped, then kept outside the outline, so it falls on the page
+  // around the glass and never darkens the glass itself.
+  const shadowBlur = add('feGaussianBlur', { in: mask, result: 'lq-shadow-blur', stdDeviation: String(SHADOW_BLUR) })
+  add('feOffset', { dy: String(SHADOW_DROP), in: 'lq-shadow-blur', result: 'lq-shadow-drop' })
+  add('feFlood', {
+    result: 'lq-shadow-color',
+    style: 'flood-color: var(--lq-shadow-color, rgba(4, 9, 24, 0.14)); flood-opacity: 0.4',
+  })
+  add('feComposite', { in: 'lq-shadow-color', in2: 'lq-shadow-drop', operator: 'in', result: 'lq-shadow-cast' })
+  add('feComposite', { in: 'lq-shadow-cast', in2: mask, operator: 'out', result: 'lq-shadow' })
+
+  // The ring: the outline less itself eroded by the rim width. One diffuse
+  // light from the top left, over a slightly softened copy of the outline,
+  // shades it by which way each stretch of edge faces — bright up and to the
+  // left, dimmer down and to the right, as the ring's gradient runs on a
+  // single surface, but following every droplet and neck.
+  add('feMorphology', { in: mask, operator: 'erode', radius: String(RIM_WIDTH), result: 'lq-core' })
+  add('feComposite', { in: mask, in2: 'lq-core', operator: 'out', result: 'lq-ring' })
+  add('feGaussianBlur', { in: mask, result: 'lq-bevel', stdDeviation: '1.4' })
+  const light = add('feDiffuseLighting', {
+    diffuseConstant: '1', in: 'lq-bevel', 'lighting-color': '#fff', result: 'lq-lit', surfaceScale: '3',
+  })
+  add('feDistantLight', { azimuth: '225', elevation: '35' }, light)
+  // How lit, as alpha: never fully dark, so the ring still closes on the shaded side.
+  add('feColorMatrix', {
+    in: 'lq-lit', result: 'lq-facing', type: 'matrix', values: '0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.9 0 0 0 0.25',
+  })
+  add('feComposite', { in: 'lq-facing', in2: 'lq-ring', operator: 'in', result: 'lq-ring-lit' })
+  add('feFlood', { result: 'lq-rim-color', style: 'flood-color: var(--lq-rim-bright, #fff)' })
+  add('feComposite', { in: 'lq-rim-color', in2: 'lq-ring-lit', operator: 'in', result: 'lq-rim' })
+
+  // The inset lines: inside the outline but not inside itself moved a pixel
+  // down (the highlight along the top) or up (the shade along the bottom).
+  const inset = (dy: string, color: string, name: string) => {
+    add('feOffset', { dy, in: mask, result: `lq-${name}-shift` })
+    add('feComposite', { in: mask, in2: `lq-${name}-shift`, operator: 'out', result: `lq-${name}-band` })
+    add('feFlood', { result: `lq-${name}-color`, style: `flood-color: ${color}` })
+    add('feComposite', { in: `lq-${name}-color`, in2: `lq-${name}-band`, operator: 'in', result: `lq-${name}` })
+  }
+  inset('1', 'var(--lq-glass-bright, rgba(255, 255, 255, 0.32))', 'sheen')
+  inset('-1', 'var(--lq-glass-shade, rgba(73, 111, 209, 0.07))', 'shade')
+
+  return { edges: ['lq-rim', 'lq-sheen', 'lq-shade'], shadow: 'lq-shadow', shadowBlur }
+}
+
 /**
  * The lens built inside the filter. Each shape is an `feImage` sprite; the
  * sprites are merged, blurred and cut at half into one metaball mask; that
  * mask blurred again is a height field whose slope is the displacement map;
- * the backdrop is bent by it and cut to the mask, and two lighting passes
- * over the mask's edge give the rim. Script per frame is the sprites'
+ * the backdrop is bent by it and cut to the mask, and the mask's edge gives
+ * the shadow, the rim and the inset lines. Script per frame is the sprites'
  * attribute writes. Nothing is drawn on a canvas and nothing is encoded.
  */
 const attachLens = (element: HTMLElement, settings: Settings): GlassMergeController => {
@@ -85,15 +171,7 @@ const attachLens = (element: HTMLElement, settings: Settings): GlassMergeControl
     x: '0',
     y: '0',
   })
-  const add = <Tag extends keyof SVGElementTagNameMap>(
-    tag: Tag,
-    attributes: Record<string, string>,
-    parent: Element = filter,
-  ): SVGElementTagNameMap[Tag] => {
-    const child = createElement(tag, attributes)
-    parent.appendChild(child)
-    return child
-  }
+  const add = primitives(filter)
 
   // The sprites' feImages go in front of this, one per shape.
   const merge = add('feMerge', { result: 'lq-shapes' })
@@ -152,25 +230,13 @@ const attachLens = (element: HTMLElement, settings: Settings): GlassMergeControl
   add('feComposite', { in: 'lq-veil', in2: 'lq-lens', operator: 'over', result: 'lq-lit' })
   add('feComposite', { in: 'lq-lit', in2: 'lq-mask', operator: 'in', result: 'lq-glass' })
 
-  // The rim: a thin bevel lit from above for the bright lip and from below,
-  // weaker, for the shade line — .lq-surface's two inset lines, following the
-  // merged outline instead of a rectangle.
-  add('feGaussianBlur', { in: 'lq-mask', result: 'lq-bevel', stdDeviation: '1.4' })
-  const lip = add('feSpecularLighting', {
-    in: 'lq-bevel', 'lighting-color': '#fff', result: 'lq-lip', specularConstant: '1.15', specularExponent: '42', surfaceScale: '3',
-  })
-  add('feDistantLight', { azimuth: '268', elevation: '22' }, lip)
-  const shade = add('feSpecularLighting', {
-    in: 'lq-bevel', 'lighting-color': '#fff', result: 'lq-shade', specularConstant: '0.4', specularExponent: '42', surfaceScale: '3',
-  })
-  add('feDistantLight', { azimuth: '90', elevation: '22' }, shade)
-  arithmetic('lq-lip', 'lq-shade', '1', '1', '0', 'lq-specular')
-  add('feComposite', { in: 'lq-specular', in2: 'lq-mask', operator: 'in', result: 'lq-rim' })
+  const dressing = addDressing(add, 'lq-mask')
   const out = add('feMerge', {})
-  add('feMergeNode', { in: 'lq-glass' }, out)
-  add('feMergeNode', { in: 'lq-rim' }, out)
+  for (const result of [dressing.shadow, 'lq-glass', ...dressing.edges]) add('feMergeNode', { in: result }, out)
 
-  getDefsRoot().appendChild(filter)
+  const host = filterHost()
+  host.appendChild(filter)
+  element.appendChild(host)
 
   type Slot = { attributes: Record<string, string>, image: SVGFEImageElement, node: SVGFEMergeNodeElement }
   const slots: Slot[] = []
@@ -182,9 +248,16 @@ const attachLens = (element: HTMLElement, settings: Settings): GlassMergeControl
     slot.image.setAttribute(name, value)
   }
 
+  // A primitive with no region of its own is cut to the box its inputs cover,
+  // which here is the sprites'. The shadow is meant to spill out of that box,
+  // so its blur, and everything after it, gets the whole filter.
+  dressing.shadowBlur.setAttribute('x', '0')
+  dressing.shadowBlur.setAttribute('y', '0')
   const resize = (): void => {
-    filter.setAttribute('width', String(element.offsetWidth))
-    filter.setAttribute('height', String(element.offsetHeight))
+    for (const target of [filter, dressing.shadowBlur]) {
+      target.setAttribute('width', String(element.offsetWidth))
+      target.setAttribute('height', String(element.offsetHeight))
+    }
   }
   const resizeObserver = observeSize(element, resize)
   resize()
@@ -205,7 +278,7 @@ const attachLens = (element: HTMLElement, settings: Settings): GlassMergeControl
       if (destroyed) return
       destroyed = true
       resizeObserver?.disconnect()
-      filter.remove()
+      host.remove()
       restoreStyles()
       delete element.dataset.glassMerge
     },
@@ -241,11 +314,15 @@ const attachLens = (element: HTMLElement, settings: Settings): GlassMergeControl
   }
 }
 
+/** How far the dressing reaches past the outline: the shadow's blur and drop. */
+const DRESSING_REACH = SHADOW_BLUR * 3 + SHADOW_DROP + 2
+
 /**
- * The outline for engines without the lens, and for less transparency: the
- * element clipped every frame to the merged outline, traced by marching
- * squares over the smooth-min field, with the ordinary blurred material (or a
- * solid fill) and the rim drawn as SVG from the same contour.
+ * The outline for engines without the lens, and for less transparency: a
+ * layer clipped every frame to the merged outline, traced by marching squares
+ * over the smooth-min field, with the ordinary blurred material (or a solid
+ * fill), and the same shadow, ring and inset lines as the lens, made by the
+ * same filter from that contour.
  */
 const attachOutline = (element: HTMLElement, settings: Settings, opaque: boolean): GlassMergeController => {
   const id = `lq-merge-${(mergeCount += 1)}`
@@ -253,59 +330,64 @@ const attachOutline = (element: HTMLElement, settings: Settings, opaque: boolean
   const fill = opaque
     ? tint ? `color-mix(in srgb, ${tint} 14%, ${SOLID})` : SOLID
     : tint ? `color-mix(in srgb, ${tint} 14%, transparent)` : 'rgba(255, 255, 255, 0.06)'
-  const styles: Record<string, string> = {
+  // The layers are laid over the element from its top-left corner.
+  const restoreStyles = typeof getComputedStyle === 'function' && getComputedStyle(element).position === 'static'
+    ? setStyles(element, { position: 'relative' })
+    : () => {}
+  element.dataset.glassMerge = 'outline'
+
+  // The glass is a child rather than the element itself, so that its clip-path
+  // trims the frost to the outline without trimming the shadow outside it.
+  const frost = document.createElement('div')
+  frost.setAttribute('aria-hidden', 'true')
+  setStyles(frost, {
     '-webkit-backdrop-filter': opaque ? 'none' : FROST,
     'backdrop-filter': opaque ? 'none' : FROST,
     'background-color': fill,
     'clip-path': 'inset(50%)',
-  }
-  // The rim is laid over the element from its top-left corner.
-  if (typeof getComputedStyle === 'function' && getComputedStyle(element).position === 'static') {
-    styles.position = 'relative'
-  }
-  const restoreStyles = setStyles(element, styles)
-  element.dataset.glassMerge = 'outline'
+    inset: '0',
+    'pointer-events': 'none',
+    position: 'absolute',
+  })
+  element.appendChild(frost)
 
-  // Inside the element, so its clip-path trims the rim to the glass: a 2px
-  // stroke shows its inner pixel, and the lip and the shade line are the area
-  // inside the outline but not inside itself moved a pixel down or up.
-  const rim = createElement('svg', {
+  // Over the glass: the contour, filled, through the lens's own dressing. The
+  // shadow lands outside the outline and the ring and lines inside it.
+  const dressing = createElement('svg', {
     'aria-hidden': 'true',
     height: '100%',
     style: 'position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none',
     width: '100%',
   })
   const defs = createElement('defs', {})
-  rim.appendChild(defs)
-  const outline = createElement('path', { 'fill-rule': 'evenodd', id: `${id}-outline` })
+  dressing.appendChild(defs)
+  const outline = createElement('path', { fill: '#fff', 'fill-rule': 'evenodd', id: `${id}-outline` })
   defs.appendChild(outline)
-  const offsetMask = (name: string, dy: string) => {
-    const mask = createElement('mask', {
-      height: '100%', id: `${id}-${name}`, maskUnits: 'userSpaceOnUse', width: '100%', x: '0', y: '0',
-    })
-    mask.appendChild(createElement('rect', { fill: '#fff', height: '100%', width: '100%' }))
-    mask.appendChild(createElement('use', { fill: '#000', href: `#${id}-outline`, transform: `translate(0 ${dy})` }))
-    defs.appendChild(mask)
-  }
-  offsetMask('lip', '1')
-  offsetMask('shade', '-1.25')
-  rim.appendChild(createElement('rect', {
-    height: '100%', mask: `url(#${id}-lip)`, style: 'fill: var(--lq-glass-bright, rgba(255, 255, 255, 0.5))', width: '100%',
-  }))
-  rim.appendChild(createElement('rect', {
-    height: '100%', mask: `url(#${id}-shade)`, style: 'fill: var(--lq-glass-shade, rgba(0, 0, 0, 0.12))', width: '100%',
-  }))
-  rim.appendChild(createElement('use', {
-    fill: 'none', href: `#${id}-outline`, 'stroke-width': '2', style: 'stroke: var(--lq-clear-line, rgba(255, 255, 255, 0.3))',
-  }))
-  element.appendChild(rim)
+  const filter = createElement('filter', {
+    'color-interpolation-filters': 'sRGB',
+    filterUnits: 'userSpaceOnUse',
+    height: '0',
+    id: `${id}-dressing`,
+    primitiveUnits: 'userSpaceOnUse',
+    width: '0',
+    x: '0',
+    y: '0',
+  })
+  defs.appendChild(filter)
+  const add = primitives(filter)
+  const results = addDressing(add, 'SourceAlpha')
+  const out = add('feMerge', {})
+  for (const result of [results.shadow, ...results.edges]) add('feMergeNode', { in: result }, out)
+  dressing.appendChild(createElement('use', { filter: `url(#${id}-dressing)`, href: `#${id}-outline` }))
+  element.appendChild(dressing)
 
   let destroyed = false
   return {
     destroy: () => {
       if (destroyed) return
       destroyed = true
-      rim.remove()
+      frost.remove()
+      dressing.remove()
       restoreStyles()
       delete element.dataset.glassMerge
     },
@@ -317,8 +399,16 @@ const attachOutline = (element: HTMLElement, settings: Settings, opaque: boolean
       // be resizing in the same frame, and its size is only known after layout.
       const box = shapeBounds(visible, settings.spacing + GRID_STEP)
       const path = box ? contourPath(traceContours(box, GRID_STEP, mergedField(visible, settings.spacing))) : ''
-      element.style.setProperty('clip-path', path ? `path(evenodd, '${path}')` : 'inset(50%)')
+      frost.style.setProperty('clip-path', path ? `path(evenodd, '${path}')` : 'inset(50%)')
       outline.setAttribute('d', path)
+      // The filter covers the shapes and the shadow around them, no more: an
+      // engine that rasterises the whole region pays for every pixel of it.
+      if (box) {
+        filter.setAttribute('x', String(box.x - DRESSING_REACH))
+        filter.setAttribute('y', String(box.y - DRESSING_REACH))
+        filter.setAttribute('width', String(box.width + DRESSING_REACH * 2))
+        filter.setAttribute('height', String(box.height + DRESSING_REACH * 2))
+      }
     },
   }
 }
@@ -330,9 +420,16 @@ const attachOutline = (element: HTMLElement, settings: Settings, opaque: boolean
  * be replaced on every animation frame.
  *
  * Where SVG filters run inside `backdrop-filter` (Chromium) the whole lens —
- * silhouette, refraction and rim — is built inside one filter. Elsewhere, or
- * when the lens or transparency is turned off, the element is clipped to the
- * merged outline over a blurred or solid material. `mode` says which.
+ * silhouette, refraction, rim and shadow — is built inside one filter.
+ * Elsewhere, or when the lens or transparency is turned off, a layer clipped
+ * to the merged outline holds a blurred or solid material, with the same rim
+ * and shadow over it. `mode` says which. The colours are the theme's: the
+ * rim, the inset lines and the shadow read `--lq-rim-bright`,
+ * `--lq-glass-bright`, `--lq-glass-shade` and `--lq-shadow-color`.
+ *
+ * The shadow falls up to 40px below the shapes and 30px to either side. In
+ * the lens it is part of the element's backdrop filter, which cannot draw
+ * outside the element, so leave the element that much room around them.
  *
  * The element draws nothing else: give it no background, border or shadow,
  * and keep it out from under anything with `opacity`, `filter`, `clip-path`,

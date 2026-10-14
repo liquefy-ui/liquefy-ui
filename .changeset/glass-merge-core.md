@@ -17,3 +17,11 @@ WebGL. Script per frame is a few attribute writes. Elsewhere — and with
 user asks for less transparency — the element is clipped to the merged outline
 over the usual frost (or a solid fill), with the rim drawn as SVG from the same
 contour. The controller's `mode` says which one you got.
+
+Either way the glass is dressed like `LiquidIconButton`, along the merged outline:
+the lit ring of the rim, the inset highlight along the top with its shade along the
+bottom, and the cast shadow, which falls outside the glass and never darkens it. The
+colours come from the theme's custom properties (`--lq-rim-bright`,
+`--lq-glass-bright`, `--lq-glass-shade`, `--lq-shadow-color`), so they follow light
+and dark. The shadow reaches 40px below the shapes and 30px to the sides; in the lens
+it is drawn inside the element, so leave the element that much room.

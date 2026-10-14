@@ -53,8 +53,27 @@ describe('attachGlassMerge, lens', () => {
     expect(filter.getAttribute('width')).toBe('400')
     expect(filter.getAttribute('height')).toBe('300')
     expect(filter.querySelectorAll('feDisplacementMap')).toHaveLength(1)
-    expect(filter.querySelectorAll('feSpecularLighting')).toHaveLength(2)
     expect(filter.querySelectorAll('feImage')).toHaveLength(0)
+  })
+
+  it('dresses the glass in the theme: its rim, inset lines and shadow read the tokens', () => {
+    lens.supported = true
+    const { element } = mount()
+    const filter = filterOf(element)!
+    // Inside the element, so the primitives inherit the provider's custom properties.
+    expect(element.contains(filter)).toBe(true)
+    const floods = [...filter.querySelectorAll('feFlood')].map((flood) => flood.getAttribute('style') ?? '')
+    for (const token of ['--lq-rim-bright', '--lq-glass-bright', '--lq-glass-shade', '--lq-shadow-color']) {
+      expect(floods.some((style) => style.includes(`var(${token}`))).toBe(true)
+    }
+    expect(filter.querySelectorAll('feMorphology')).toHaveLength(1)
+    expect(filter.querySelectorAll('feDiffuseLighting')).toHaveLength(1)
+    // The shadow goes under the glass, the rim and the lines over it.
+    const merged = [...filter.querySelectorAll(':scope > feMerge:last-of-type > feMergeNode')].map((node) => node.getAttribute('in'))
+    expect(merged).toEqual(['lq-shadow', 'lq-glass', 'lq-rim', 'lq-sheen', 'lq-shade'])
+    // and it may spill out of the sprites' box, as far as the element reaches.
+    const shadowBlur = filter.querySelector('[result="lq-shadow-blur"]')!
+    expect([shadowBlur.getAttribute('width'), shadowBlur.getAttribute('height')]).toEqual(['400', '300'])
   })
 
   it('gives each visible shape one sprite, in front of the merge, and none to a shape with no size', () => {
@@ -106,6 +125,27 @@ describe('attachGlassMerge, outline', () => {
     expect(controller.mode).toBe('outline')
     expect(element.dataset.glassMerge).toBe('outline')
     expect(element.querySelector('svg')).not.toBeNull()
+  })
+
+  it('clips a layer of its own, so the shadow outside the outline is not clipped with it', () => {
+    const { element } = mount()
+    const frost = element.firstElementChild as HTMLElement
+    expect(frost.style.getPropertyValue('backdrop-filter')).toContain('blur(')
+    expect(element.style.getPropertyValue('backdrop-filter')).toBe('')
+  })
+
+  it('dresses the outline with the same filter as the lens, over the shapes and their shadow', () => {
+    const { controller, element } = mount()
+    const filter = element.querySelector('filter')!
+    expect(filter.querySelectorAll('feMorphology')).toHaveLength(1)
+    expect(filter.querySelectorAll('feDiffuseLighting')).toHaveLength(1)
+    controller.setShapes([circle(100, 100, 28)])
+    const left = Number(filter.getAttribute('x'))
+    const right = left + Number(filter.getAttribute('width'))
+    const bottom = Number(filter.getAttribute('y')) + Number(filter.getAttribute('height'))
+    expect(left).toBeLessThan(100 - 28 - 30)
+    expect(right).toBeGreaterThan(100 + 28 + 30)
+    expect(bottom).toBeGreaterThan(100 + 28 + 38)
   })
 
   it('is also what lens or transparency turned off get, and reduced transparency when asked to respect it', () => {

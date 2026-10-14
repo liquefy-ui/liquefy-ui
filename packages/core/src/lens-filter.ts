@@ -24,8 +24,7 @@ export const isLensSupported = (): boolean => {
   return lensSupport
 }
 
-// Shared with glass-merge.ts, which keeps its filters in the same hidden <svg>.
-export const getDefsRoot = (): SVGSVGElement => {
+const getDefsRoot = (): SVGSVGElement => {
   if (defsRoot?.isConnected) return defsRoot
 
   defsRoot = document.createElementNS(SVG_NS, 'svg')
