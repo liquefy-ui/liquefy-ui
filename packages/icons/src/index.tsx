@@ -242,6 +242,13 @@ export const FilterIcon = (props: IconProps): ReactElement => (
   </IconBase>
 )
 
+export const FlaskIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <path d="M9.5 3.5V9l-4.8 9.7Q3.8 20.5 5.8 20.5h12.4q2 0 1.1-1.8L14.5 9V3.5" />
+    <path d="M8 3.5h8M6.3 15.5h11.4" />
+  </IconBase>
+)
+
 export const FolderIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="M3.5 7a2.5 2.5 0 0 1 2.5-2.5h3.4c.7 0 1.4.3 1.9.9l1 1.1h6.2A2.5 2.5 0 0 1 21 9v8a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 17V7Z" />
