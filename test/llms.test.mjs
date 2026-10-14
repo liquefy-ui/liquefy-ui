@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { HOMEPAGE, readCatalog, readCoreApi, readIcons } from '../scripts/component-catalog.mjs'
+import { HOMEPAGE, readCatalog, readCoreApi, readIcons, readLabApi } from '../scripts/component-catalog.mjs'
 import { tools } from '../packages/mcp/src/server.ts'
 
 /**
@@ -23,6 +23,7 @@ const pages = readdirSync(pagesDir)
 const { entries } = await readCatalog()
 const icons = await readIcons()
 const core = await readCoreApi()
+const lab = await readLabApi()
 
 const lines = short.split('\n')
 const headingIndexes = lines
@@ -96,9 +97,10 @@ describe('llms.txt links', () => {
     expect(missing).toEqual([])
   })
 
-  it('has a page for the icon set and for the engine', () => {
+  it('has a page for the icon set, the engine and lab', () => {
     expect(pages).toContain('icons.md')
     expect(pages).toContain('core.md')
+    expect(pages).toContain('lab.md')
     expect(pages).toContain('mcp.md')
   })
 })
@@ -129,6 +131,19 @@ describe('what the generated files claim', () => {
   it('names every icon and every core export in the full reference', () => {
     for (const name of icons.names) expect(full, name).toContain(name)
     for (const name of [...core.values, ...core.types]) expect(full, name).toContain(name)
+  })
+
+  // Lab is a second component package, and its props are read out of its source
+  // for the same reason the components' are.
+  it('names every lab export and carries its declarations', () => {
+    const labPage = readFileSync(new URL('lab.md', pagesDir), 'utf8')
+    expect(lab.values).toContain('DropletMenu')
+    for (const file of [labPage, full]) {
+      for (const name of [...lab.values, ...lab.types]) expect(file, name).toContain(name)
+      for (const declaration of lab.declarations) expect(file, declaration.name).toContain(declaration.text)
+      expect(file).toContain("import { DropletMenu } from '@liquefy-ui/lab'")
+    }
+    expect(lab.declarations.map((declaration) => declaration.name).sort()).toEqual(lab.types)
   })
 
   it('carries the real type declarations, whole', () => {
