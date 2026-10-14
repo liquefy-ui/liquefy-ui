@@ -113,10 +113,21 @@ droplet in flight.
 | `tint` | — | A colour mixed into the glass |
 | `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component. Size the element to cover everywhere the shapes go |
 
-In Chromium the refraction, the merged outline and the lit rim are all built inside
-one SVG backdrop filter (`mode: 'lens'`). Safari and Firefox, and a provider with
-`lens` or `transparency` off, get the element clipped to the merged outline over
-the usual frost or a solid fill (`mode: 'outline'`).
+The glass wears what `LiquidIconButton` does, following the merged outline instead
+of a rectangle: the lit ring of the rim, brighter where an edge faces up and to the
+left, the inset highlight along the top and the shade along the bottom, and the cast
+shadow, which falls on the page around the glass but never on it. Their colours are
+the theme's (`--lq-rim-bright`, `--lq-glass-bright`, `--lq-glass-shade`,
+`--lq-shadow-color`), in light and dark alike.
+
+In Chromium the refraction, the merged outline, the rim and the shadow are all built
+inside one SVG backdrop filter (`mode: 'lens'`). Safari and Firefox, and a provider
+with `lens` or `transparency` off, get a layer clipped to the merged outline over the
+usual frost or a solid fill, with the same rim and shadow (`mode: 'outline'`).
+
+The shadow falls up to 40px below the shapes and 30px to either side. A backdrop
+filter cannot draw outside its element, so size the element to leave that much room
+around the shapes, or the shadow is cut off at its edge.
 
 Nothing above the surface may have `opacity`, `filter`, `clip-path`, `mask` or
 `will-change: opacity`: each of those makes the glass see only what is inside it,

@@ -74,6 +74,12 @@ const OVERSHOOT = 1.45
 const SWELL = 1.6
 /** The trigger squashes by up to about a fifth either way. */
 const TRIGGER_SWELL = 1.25
+/**
+ * Room for the glass's cast shadow, which the lens draws inside the surface:
+ * it falls up to 40px below the shapes and 30px to either side (see
+ * `attachGlassMerge`).
+ */
+const SHADOW_ROOM = { above: 22, below: 40, side: 30 }
 
 const AT_HOME = 'translate(-50%, -50%) scale(0)'
 
@@ -92,7 +98,7 @@ type GlassBox = { height: number, left: number, top: number, width: number }
  * Where the glass surface sits relative to the trigger's top-left corner. While
  * the droplets are out it covers everywhere they can reach, overshoot
  * included, on the side they land on; otherwise only the trigger, so an
- * invisible box never widens the page.
+ * invisible box widens the page no more than the trigger's shadow does.
  */
 const glassBox = (offsets: readonly DropletPoint[], triggerPixels: number, dropletPixels: number, out: boolean): GlassBox => {
   const reach = Math.ceil((triggerPixels / 2) * TRIGGER_SWELL) + 2
@@ -109,8 +115,10 @@ const glassBox = (offsets: readonly DropletPoint[], triggerPixels: number, dropl
       bottom = Math.max(bottom, y * OVERSHOOT + pad)
     }
   }
-  left = Math.floor(left)
-  top = Math.floor(top)
+  left = Math.floor(left - SHADOW_ROOM.side)
+  top = Math.floor(top - SHADOW_ROOM.above)
+  right += SHADOW_ROOM.side
+  bottom += SHADOW_ROOM.below
   return {
     height: Math.ceil(bottom) - top,
     left: triggerPixels / 2 + left,
