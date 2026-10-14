@@ -1,4 +1,6 @@
+export type { GlassMergeShape } from '@liquefy-ui/core'
 export { DropletMenu, type DropletMenuItem, type DropletMenuProps } from './droplet-menu'
+export { GlassMerge, type GlassMergeHandle, type GlassMergeProps } from './glass-merge'
 export {
   DropletChoreography,
   dropletAngles,

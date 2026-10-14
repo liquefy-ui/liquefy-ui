@@ -22,6 +22,11 @@ A round glass trigger that buds its items off one at a time. Each droplet stretc
 along the way it is travelling, swings past its place and jiggles to rest; closing
 calls them home in reverse.
 
+The trigger and the droplets are one body of glass, drawn by a single
+[`GlassMerge`](#glassmerge) surface: a droplet leaving pulls a neck of glass out of
+the trigger that thins and lets go before it lands, and one coming home melts back
+in. The buttons over it are clear.
+
 ```tsx
 import { CalendarIcon, FileTextIcon, ImageIcon, PlusIcon } from '@liquefy-ui/icons'
 import { DropletMenu } from '@liquefy-ui/lab'
@@ -63,6 +68,71 @@ last droplet is home, while `aria-expanded` turns false the moment it closes.
 
 With `motion={false}` on the provider, or `prefers-reduced-motion: reduce`, the
 droplets appear and disappear in place.
+
+The droplets are laid out beside the trigger, not portalled out to the provider,
+so that a droplet and its glass are always clipped and stacked alike: an ancestor
+with `overflow: hidden` clips both. While droplets are out the menu lifts itself to
+the menu layer (`z-index: 85`). Nothing above it may have `opacity`, `filter`,
+`clip-path`, `mask` or `will-change: opacity`, or the glass has nothing behind it to
+bend — see [GlassMerge](#glassmerge). A disabled droplet fades its icon; its glass is
+part of the one body and stays as it is.
+
+## GlassMerge
+
+Glass shapes that melt into one another when they come within `spacing` of each
+other — SwiftUI's `GlassEffectContainer`. It is one surface the size of the
+element, drawing the shapes it is given in its own pixels from its top-left, and
+nothing else. Buttons and labels go in as children, over the glass.
+
+```tsx
+import { GlassMerge, type GlassMergeHandle } from '@liquefy-ui/lab'
+
+const circle = (x: number, y: number, r: number) => ({ x, y, width: r * 2, height: r * 2, radius: r })
+
+<GlassMerge shapes={[circle(60, 60, 28), circle(116, 60, 23)]} spacing={16} style={{ width: 200, height: 120 }}>
+  <button className="over-the-first-shape">…</button>
+</GlassMerge>
+```
+
+Anything that moves drives it through the ref instead, so a frame costs no render:
+
+```tsx
+const glass = useRef<GlassMergeHandle>(null)
+// once a frame:
+glass.current?.setShapes([trigger, ...droplets])
+```
+
+A shape is `{ x, y, width, height, radius }` with `x` and `y` its centre, plus an
+optional `stretch` along an `angle` in degrees — the squash and stretch of a
+droplet in flight.
+
+| Prop | Default | |
+| --- | --- | --- |
+| `shapes` | — | Shapes for a layout that holds still |
+| `spacing` | `16` | Largest gap, in pixels, that two shapes still bridge |
+| `bezel` | `14` | Width of the refracting band at the rim, in pixels |
+| `tint` | — | A colour mixed into the glass |
+| `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component. Size the element to cover everywhere the shapes go |
+
+The glass wears what `LiquidIconButton` does, following the merged outline instead
+of a rectangle: the lit ring of the rim, brighter where an edge faces up and to the
+left, the inset highlight along the top and the shade along the bottom, and the cast
+shadow, which falls on the page around the glass but never on it. Their colours are
+the theme's (`--lq-rim-bright`, `--lq-glass-bright`, `--lq-glass-shade`,
+`--lq-shadow-color`), in light and dark alike.
+
+In Chromium the refraction, the merged outline, the rim and the shadow are all built
+inside one SVG backdrop filter (`mode: 'lens'`). Safari and Firefox, and a provider
+with `lens` or `transparency` off, get a layer clipped to the merged outline over the
+usual frost or a solid fill, with the same rim and shadow (`mode: 'outline'`).
+
+The shadow falls up to 40px below the shapes and 30px to either side. A backdrop
+filter cannot draw outside its element, so size the element to leave that much room
+around the shapes, or the shadow is cut off at its edge.
+
+Nothing above the surface may have `opacity`, `filter`, `clip-path`, `mask` or
+`will-change: opacity`: each of those makes the glass see only what is inside it,
+which is nothing. Fade or clip the content, never a wrapper around the glass.
 
 ### The timeline on its own
 
