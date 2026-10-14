@@ -229,6 +229,13 @@ export const EyeOffIcon = (props: IconProps): ReactElement => (
   </IconBase>
 )
 
+export const FileTextIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <path d="M14 3.5H7.3A1.8 1.8 0 0 0 5.5 5.3v13.4a1.8 1.8 0 0 0 1.8 1.8h9.4a1.8 1.8 0 0 0 1.8-1.8V8L14 3.5Z" />
+    <path d="M13.8 3.7V8.2h4.4M9 12.5h6M9 16h4" />
+  </IconBase>
+)
+
 export const FilterIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="M4 5.5h16l-6.2 7.2v5.2L10.2 20v-7.3L4 5.5Z" />
@@ -238,6 +245,15 @@ export const FilterIcon = (props: IconProps): ReactElement => (
 export const FolderIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="M3.5 7a2.5 2.5 0 0 1 2.5-2.5h3.4c.7 0 1.4.3 1.9.9l1 1.1h6.2A2.5 2.5 0 0 1 21 9v8a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 17V7Z" />
+  </IconBase>
+)
+
+export const GridIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <rect height="7" rx="1.8" width="7" x="3.5" y="3.5" />
+    <rect height="7" rx="1.8" width="7" x="13.5" y="3.5" />
+    <rect height="7" rx="1.8" width="7" x="3.5" y="13.5" />
+    <rect height="7" rx="1.8" width="7" x="13.5" y="13.5" />
   </IconBase>
 )
 
@@ -347,6 +363,13 @@ export const TrashIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="M4.5 6.5h15M9.5 6V4.8A1.8 1.8 0 0 1 11.3 3h1.4a1.8 1.8 0 0 1 1.8 1.8V6M6.2 6.5l.8 12A2.2 2.2 0 0 0 9.2 20.5h5.6a2.2 2.2 0 0 0 2.2-2l.8-12" />
     <path d="M10 10.5v6M14 10.5v6" />
+  </IconBase>
+)
+
+export const TrendingUpIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <path d="m3.5 17 6-6 4 4 7-7.5" />
+    <path d="M15 7.5h5.5V13" />
   </IconBase>
 )
 
