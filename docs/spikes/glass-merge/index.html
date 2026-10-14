@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glass merge spike</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: #222 url('../../../apps/docs/public/scenes/coast.jpg') center / cover no-repeat;
+    font: 13px/1.4 system-ui, sans-serif;
+    overflow: hidden;
+  }
+  body.grid {
+    background:
+      repeating-linear-gradient(0deg, #1d2430 0 2px, transparent 2px 16px),
+      repeating-linear-gradient(90deg, #1d2430 0 2px, transparent 2px 16px),
+      linear-gradient(120deg, #f6d7a7, #9ad0ec 55%, #c3b1e1);
+  }
+  #stage { position: absolute; left: 40px; top: 40px; }
+  #hud {
+    position: fixed; right: 8px; bottom: 8px; padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.55); color: #fff; border-radius: 4px; font-variant-numeric: tabular-nums;
+  }
+  .glass {
+    position: absolute; left: 0; top: 0;
+    -webkit-backdrop-filter: blur(1.5px) saturate(1.4) brightness(1.05) var(--lens, );
+    backdrop-filter: blur(1.5px) saturate(1.4) brightness(1.05) var(--lens, );
+  }
+  .glass.droplet {
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1.25px 0 rgba(0, 0, 0, 0.12),
+      0 10px 28px rgba(0, 0, 0, 0.22);
+  }
+  .glass.sheet { background: rgba(255, 255, 255, 0.06); }
+  .rim { position: absolute; left: 0; top: 0; pointer-events: none; }
+  .outline { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="hud"></div>
+<svg id="defs" width="0" height="0" style="position:absolute" aria-hidden="true"><defs></defs></svg>
+<script type="module" src="./proto.js"></script>
+</body>
+</html>

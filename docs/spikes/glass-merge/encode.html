@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Map encode cost</title>
+</head>
+<body>
+<script type="module">
+// What approach (b) pays on the main thread every frame: drawing a
+// displacement map into a canvas and turning it into something feImage can
+// load. A smooth radial field stands in for the map; PNG cost depends on the
+// content, and a real lens map is just as smooth.
+const sizes = [[200, 150], [400, 300], [800, 500], [1200, 800]]
+const scales = [1, 0.5, 0.25]
+const rounds = 12
+const results = []
+
+const paint = (context, width, height, phase) => {
+  const image = context.createImageData(width, height)
+  const data = image.data
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const dx = (x / width - 0.5 + 0.05 * Math.sin(phase)) * 2
+      const dy = (y / height - 0.5) * 2
+      const i = (y * width + x) * 4
+      data[i] = 128 + 120 * dx * Math.exp(-4 * (dx * dx + dy * dy))
+      data[i + 1] = 128 + 120 * dy * Math.exp(-4 * (dx * dx + dy * dy))
+      data[i + 2] = dx * dx + dy * dy < 0.6 ? 255 : 0
+      data[i + 3] = 255
+    }
+  }
+  context.putImageData(image, 0, 0)
+}
+
+for (const [width, height] of sizes) {
+  for (const scale of scales) {
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(width * scale)
+    canvas.height = Math.round(height * scale)
+    const context = canvas.getContext('2d')
+    let png = 0
+    let blob = 0
+    let bytes = 0
+    for (let round = 0; round < rounds; round += 1) {
+      paint(context, canvas.width, canvas.height, round)
+      let start = performance.now()
+      const url = canvas.toDataURL('image/png')
+      png += performance.now() - start
+      bytes += url.length
+      start = performance.now()
+      await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
+      blob += performance.now() - start
+    }
+    results.push({
+      blobRoundTrip: +(blob / rounds).toFixed(2),
+      container: `${width}x${height}`,
+      dataUrlKB: Math.round(bytes / rounds / 1024),
+      map: `${canvas.width}x${canvas.height}`,
+      toDataURL: +(png / rounds).toFixed(2),
+    })
+  }
+}
+window.encodeResults = results
+window.__ready = true
+</script>
+</body>
+</html>

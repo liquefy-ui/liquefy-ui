@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Backdrop root probe</title>
+<style>
+  body {
+    margin: 0; padding: 16px; font: 12px/1.3 system-ui, sans-serif; color: #111;
+    background:
+      repeating-linear-gradient(90deg, #111 0 3px, transparent 3px 12px),
+      linear-gradient(120deg, #f6d7a7, #9ad0ec 55%, #c3b1e1);
+  }
+  .grid { display: grid; grid-template-columns: repeat(4, 200px); gap: 16px; }
+  .case { position: relative; height: 130px; }
+  .case p { position: absolute; left: 0; right: 0; bottom: -4px; margin: 0; background: #fff; padding: 2px 4px; }
+  .host { position: absolute; inset: 0 0 18px 0; }
+  .glass {
+    position: absolute; left: 30px; top: 16px; width: 140px; height: 80px; border-radius: 24px;
+    backdrop-filter: blur(6px) saturate(1.8); background: rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  }
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="case"><div class="host"><div class="glass"></div></div><p>control</p></div>
+  <div class="case"><div class="host"><div class="glass" style="clip-path: path(evenodd, 'M10 40 C10 0 60 0 70 30 C80 0 130 0 130 40 C130 80 80 80 70 50 C60 80 10 80 10 40 Z')"></div></div><p>own clip-path: path()</p></div>
+  <div class="case"><div class="host"><div class="glass" style="opacity: 0.5"></div></div><p>own opacity 0.5</p></div>
+  <div class="case"><div class="host"><div class="glass" style="filter: url(#none)"></div></div><p>own filter</p></div>
+  <div class="case"><div class="host" style="opacity: 0.99"><div class="glass"></div></div><p>parent opacity 0.99</p></div>
+  <div class="case"><div class="host" style="clip-path: inset(0)"><div class="glass"></div></div><p>parent clip-path inset(0)</p></div>
+  <div class="case"><div class="host" style="filter: blur(0)"><div class="glass"></div></div><p>parent filter blur(0)</p></div>
+  <div class="case"><div class="host" style="mask-image: linear-gradient(#000, #000)"><div class="glass"></div></div><p>parent mask-image</p></div>
+  <div class="case"><div class="host" style="will-change: opacity"><div class="glass"></div></div><p>parent will-change: opacity</p></div>
+  <div class="case"><div class="host" style="transform: translateZ(0); will-change: transform"><div class="glass"></div></div><p>parent transform</p></div>
+  <div class="case"><div class="host" style="overflow: hidden; border-radius: 40px"><div class="glass"></div></div><p>parent overflow+radius</p></div>
+  <div class="case"><div class="host" style="mix-blend-mode: multiply"><div class="glass"></div></div><p>parent mix-blend-mode</p></div>
+  <div class="case"><div class="host" style="backdrop-filter: saturate(1)"><div class="glass"></div></div><p>parent backdrop-filter</p></div>
+  <div class="case"><div class="host" style="contain: paint"><div class="glass"></div></div><p>parent contain: paint</p></div>
+  <div class="case"><div class="host" style="isolation: isolate"><div class="glass"></div></div><p>parent isolation</p></div>
+  <div class="case"><div class="host" style="clip-path: inset(0); "><div style="position:absolute; inset:0; background: repeating-linear-gradient(0deg, #c00 0 3px, transparent 3px 12px)"></div><div class="glass"></div></div><p>parent clip-path, own stripes</p></div>
+</div>
+<svg width="0" height="0" style="position:absolute"><filter id="none"><feOffset/></filter></svg>
+<script>window.__ready = true</script>
+</body>
+</html>
