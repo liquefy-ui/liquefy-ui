@@ -24,7 +24,8 @@ export const isLensSupported = (): boolean => {
   return lensSupport
 }
 
-const getDefsRoot = (): SVGSVGElement => {
+// Shared with glass-merge.ts, which keeps its filters in the same hidden <svg>.
+export const getDefsRoot = (): SVGSVGElement => {
   if (defsRoot?.isConnected) return defsRoot
 
   defsRoot = document.createElementNS(SVG_NS, 'svg')
@@ -37,7 +38,7 @@ const getDefsRoot = (): SVGSVGElement => {
   return defsRoot
 }
 
-const createElement = <Tag extends keyof SVGElementTagNameMap>(
+export const createElement = <Tag extends keyof SVGElementTagNameMap>(
   tag: Tag,
   attributes: Record<string, string>,
 ): SVGElementTagNameMap[Tag] => {

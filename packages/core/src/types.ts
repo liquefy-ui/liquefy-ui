@@ -96,6 +96,45 @@ export type LensFilterController = {
   refresh: () => void
 }
 
+export type GlassMergeShape = {
+  /** Centre, in pixels from the container's top-left. */
+  x: number
+  y: number
+  width: number
+  height: number
+  /** Corner radius; `min(width, height) / 2` makes a circle or a pill. */
+  radius: number
+  /** Squash and stretch along `angle`: longer by this factor along it, shorter by it across. 1 is none. */
+  stretch?: number
+  /** Direction of the stretch, in degrees clockwise from the x axis. */
+  angle?: number
+}
+
+export type GlassMergeOptions = {
+  /** Width of the refracting band at the rim, in pixels. */
+  bezel?: number
+  /** False draws the outline even where the lens is supported, the way a provider's `lens={false}` turns it off. */
+  lens?: boolean
+  /** Draws the outline with a solid fill when the user asks the system for less transparency. */
+  respectReducedTransparency?: boolean
+  /** Largest gap, in pixels, that two shapes still bridge. SwiftUI's `spacing`. */
+  spacing?: number
+  /** How much of the bend the material can take without folding to spend, 0 to 1. */
+  strength?: number
+  /** A colour mixed into the glass, as on the tinted variant. */
+  tint?: string
+  /** False draws the outline with a solid fill, as a provider's `transparency={false}` does for every surface. */
+  transparency?: boolean
+}
+
+export type GlassMergeController = {
+  /** Which renderer was chosen: the lens built inside the filter, or the clipped outline. Fixed for the controller's life. */
+  readonly mode: 'lens' | 'outline'
+  /** Cheap enough to call on every animation frame. */
+  setShapes: (shapes: readonly GlassMergeShape[]) => void
+  destroy: () => void
+}
+
 export type LiquefyTokens = {
   accent: string
   border: string
