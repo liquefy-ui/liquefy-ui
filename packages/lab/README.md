@@ -63,6 +63,52 @@ last droplet is home, while `aria-expanded` turns false the moment it closes.
 With `motion={false}` on the provider, or `prefers-reduced-motion: reduce`, the
 droplets appear and disappear in place.
 
+## GlassMerge
+
+Glass shapes that melt into one another when they come within `spacing` of each
+other — SwiftUI's `GlassEffectContainer`. It is one surface the size of the
+element, drawing the shapes it is given in its own pixels from its top-left, and
+nothing else. Buttons and labels go in as children, over the glass.
+
+```tsx
+import { GlassMerge, type GlassMergeHandle } from '@liquefy-ui/lab'
+
+const circle = (x: number, y: number, r: number) => ({ x, y, width: r * 2, height: r * 2, radius: r })
+
+<GlassMerge shapes={[circle(60, 60, 28), circle(116, 60, 23)]} spacing={16} style={{ width: 200, height: 120 }}>
+  <button className="over-the-first-shape">…</button>
+</GlassMerge>
+```
+
+Anything that moves drives it through the ref instead, so a frame costs no render:
+
+```tsx
+const glass = useRef<GlassMergeHandle>(null)
+// once a frame:
+glass.current?.setShapes([trigger, ...droplets])
+```
+
+A shape is `{ x, y, width, height, radius }` with `x` and `y` its centre, plus an
+optional `stretch` along an `angle` in degrees — the squash and stretch of a
+droplet in flight.
+
+| Prop | Default | |
+| --- | --- | --- |
+| `shapes` | — | Shapes for a layout that holds still |
+| `spacing` | `16` | Largest gap, in pixels, that two shapes still bridge |
+| `bezel` | `14` | Width of the refracting band at the rim, in pixels |
+| `tint` | — | A colour mixed into the glass |
+| `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component. Size the element to cover everywhere the shapes go |
+
+In Chromium the refraction, the merged outline and the lit rim are all built inside
+one SVG backdrop filter (`mode: 'lens'`). Safari and Firefox, and a provider with
+`lens` or `transparency` off, get the element clipped to the merged outline over
+the usual frost or a solid fill (`mode: 'outline'`).
+
+Nothing above the surface may have `opacity`, `filter`, `clip-path`, `mask` or
+`will-change: opacity`: each of those makes the glass see only what is inside it,
+which is nothing. Fade or clip the content, never a wrapper around the glass.
+
 ### The timeline on its own
 
 `DropletChoreography` is the motion model with no DOM attached — springs for each
