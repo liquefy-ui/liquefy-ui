@@ -21,6 +21,11 @@ A round glass trigger that buds its items off one at a time. Each droplet stretc
 along the way it is travelling, swings past its place and jiggles to rest; closing
 calls them home in reverse.
 
+The trigger and the droplets are one body of glass, drawn by a single
+[`GlassMerge`](#glassmerge) surface: a droplet leaving pulls a neck of glass out of
+the trigger that thins and lets go before it lands, and one coming home melts back
+in. The buttons over it are clear.
+
 ```tsx
 import { CalendarIcon, FileTextIcon, ImageIcon, PlusIcon } from '@liquefy-ui/icons'
 import { DropletMenu } from '@liquefy-ui/lab'
@@ -62,6 +67,14 @@ last droplet is home, while `aria-expanded` turns false the moment it closes.
 
 With `motion={false}` on the provider, or `prefers-reduced-motion: reduce`, the
 droplets appear and disappear in place.
+
+The droplets are laid out beside the trigger, not portalled out to the provider,
+so that a droplet and its glass are always clipped and stacked alike: an ancestor
+with `overflow: hidden` clips both. While droplets are out the menu lifts itself to
+the menu layer (`z-index: 85`). Nothing above it may have `opacity`, `filter`,
+`clip-path`, `mask` or `will-change: opacity`, or the glass has nothing behind it to
+bend — see [GlassMerge](#glassmerge). A disabled droplet fades its icon; its glass is
+part of the one body and stays as it is.
 
 ## GlassMerge
 

@@ -7,13 +7,12 @@ import {
 import { useLiquefyConfig, useLiquidStyles, type LiquidStyleProps } from '@liquefy-ui/react'
 import {
   forwardRef,
-  useEffect,
   useImperativeHandle,
-  useLayoutEffect,
   useRef,
   type CSSProperties,
   type ReactNode,
 } from 'react'
+import { useBeforePaint } from './use-before-paint'
 
 export type GlassMergeProps = LiquidStyleProps & {
   /** Width of the refracting band at the rim, in pixels. */
@@ -33,10 +32,6 @@ export type GlassMergeProps = LiquidStyleProps & {
 export type GlassMergeHandle = Pick<GlassMergeController, 'mode' | 'setShapes'>
 
 const NO_SHAPES: readonly GlassMergeShape[] = []
-
-// Attaching before paint means a caller's own layout effect can already hand
-// over shapes, and the first frame shows them. The server has no layout.
-const useBeforePaint = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 /**
  * Glass shapes that melt into one another when they come within `spacing` of
@@ -82,6 +77,8 @@ export const GlassMerge = forwardRef<GlassMergeHandle, GlassMergeProps>(({
     },
   }), [config.lens, config.transparency])
 
+  // Before paint, so a caller's own layout effect can already hand over
+  // shapes and the first frame shows them.
   useBeforePaint(() => {
     const surface = surfaceRef.current
     if (!surface) return undefined

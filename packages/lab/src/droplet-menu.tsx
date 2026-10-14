@@ -1,8 +1,7 @@
 import { Menu } from '@base-ui/react/menu'
+import type { GlassMergeShape } from '@liquefy-ui/core'
 import {
-  LiquidIconButton,
   useLiquefyConfig,
-  useLiquefyPortalContainer,
   useLiquidStyles,
   type LiquidStyleProps,
 } from '@liquefy-ui/react'
@@ -21,7 +20,11 @@ import {
   dropletRadius,
   type DropletFrame,
   type DropletPlacement,
+  type DropletPoint,
+  type TriggerFrame,
 } from './droplet-motion'
+import { GlassMerge, type GlassMergeHandle } from './glass-merge'
+import { useBeforePaint } from './use-before-paint'
 
 export type DropletMenuItem = {
   disabled?: boolean
@@ -59,6 +62,19 @@ export type DropletMenuProps = LiquidStyleProps & {
 const PIXELS = { lg: 56, md: 46, sm: 36 } as const
 const DROPLET_SIZE = { lg: 'md', md: 'sm', sm: 'sm' } as const
 
+/**
+ * The largest gap the glass still bridges. Kept under the 14px droplets rest
+ * apart (GAP in droplet-motion.ts), so the neck forms as a droplet leaves and
+ * snaps before it lands, and neighbours at rest stay separate.
+ */
+const SPACING = 10
+/** How far past its place a droplet may swing, as a share of the distance — the springs at full wobbliness. */
+const OVERSHOOT = 1.45
+/** How much wider than itself a droplet may get on the way: landing plump, at full stretch. */
+const SWELL = 1.6
+/** The trigger squashes by up to about a fifth either way. */
+const TRIGGER_SWELL = 1.25
+
 const AT_HOME = 'translate(-50%, -50%) scale(0)'
 
 /**
@@ -69,6 +85,73 @@ const dropletTransform = ({ angle, scale, stretch, x, y }: DropletFrame): string
   ? AT_HOME
   : `translate(-50%, -50%) translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) rotate(${angle.toFixed(2)}deg) `
     + `scale(${(scale * stretch).toFixed(4)}, ${(scale / stretch).toFixed(4)}) rotate(${(-angle).toFixed(2)}deg)`
+
+type GlassBox = { height: number, left: number, top: number, width: number }
+
+/**
+ * Where the glass surface sits relative to the trigger's top-left corner. While
+ * the droplets are out it covers everywhere they can reach, overshoot
+ * included, on the side they land on; otherwise only the trigger, so an
+ * invisible box never widens the page.
+ */
+const glassBox = (offsets: readonly DropletPoint[], triggerPixels: number, dropletPixels: number, out: boolean): GlassBox => {
+  const reach = Math.ceil((triggerPixels / 2) * TRIGGER_SWELL) + 2
+  let left = -reach
+  let top = -reach
+  let right = reach
+  let bottom = reach
+  if (out) {
+    const pad = (dropletPixels / 2) * SWELL + 2
+    for (const { x, y } of offsets) {
+      left = Math.min(left, x * OVERSHOOT - pad)
+      top = Math.min(top, y * OVERSHOOT - pad)
+      right = Math.max(right, x * OVERSHOOT + pad)
+      bottom = Math.max(bottom, y * OVERSHOOT + pad)
+    }
+  }
+  left = Math.floor(left)
+  top = Math.floor(top)
+  return {
+    height: Math.ceil(bottom) - top,
+    left: triggerPixels / 2 + left,
+    top: triggerPixels / 2 + top,
+    width: Math.ceil(right) - left,
+  }
+}
+
+/** The trigger as a glass shape: a circle squashed by the choreography, area kept as the transform keeps it. */
+const triggerShape = (x: number, y: number, pixels: number, { scaleX, scaleY }: TriggerFrame): GlassMergeShape => {
+  const sx = Math.max(scaleX, 0.01)
+  const sy = Math.max(scaleY, 0.01)
+  const side = pixels * Math.sqrt(sx * sy)
+  return { angle: 0, height: side, radius: side / 2, stretch: Math.sqrt(sx / sy), width: side, x, y }
+}
+
+/** A droplet as a glass shape, stretched along its travel exactly as `dropletTransform` stretches its button. */
+const dropletShape = (x: number, y: number, pixels: number, frame: DropletFrame): GlassMergeShape => {
+  const side = pixels * frame.scale
+  return { angle: frame.angle, height: side, radius: side / 2, stretch: frame.stretch, width: side, x: x + frame.x, y: y + frame.y }
+}
+
+/**
+ * The trigger and the droplets are clear buttons over the glass, which is
+ * drawn underneath all of them by one surface. These are the only marks of
+ * their own: the focus ring every liquefy-ui button shows, and a disabled
+ * droplet's faded icon.
+ */
+const BUTTON: CSSProperties = {
+  alignItems: 'center',
+  appearance: 'none',
+  background: 'transparent',
+  border: 0,
+  borderRadius: '50%',
+  color: 'inherit',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  font: 'inherit',
+  justifyContent: 'center',
+  padding: 0,
+}
 
 const usePrefersReducedMotion = (): boolean => {
   const [reduced, setReduced] = useState(false)
@@ -87,6 +170,10 @@ const usePrefersReducedMotion = (): boolean => {
  * A round glass trigger that buds its items off one at a time. Each droplet
  * stretches along the way it is travelling, swings past its place and jiggles
  * to rest, and they come home in reverse when the menu closes.
+ *
+ * The trigger and every droplet are one body of glass, drawn by a single
+ * `GlassMerge` surface: a droplet leaving pulls a neck of glass out of the
+ * trigger that thins and lets go. The buttons themselves are clear.
  *
  * Behaviour is Base UI's menu — roving focus with the arrow keys, typeahead,
  * Escape, focus returned to the trigger — so the motion is the only thing this
@@ -110,10 +197,16 @@ export const DropletMenu = ({
   tint,
 }: DropletMenuProps) => {
   const config = useLiquefyConfig()
-  const portalContainer = useLiquefyPortalContainer()
   const prefersReducedMotion = usePrefersReducedMotion()
   const animated = config.motion && !prefersReducedMotion
   const root = useLiquidStyles('lq-droplet-menu', { className, style, styles })
+  const button = useLiquidStyles('lq-droplet-menu__button', {
+    styles: {
+      _disabled: { cursor: 'not-allowed', opacity: 0.45 },
+      // The same ring as `.lq-button:focus-visible`, which these are not.
+      _focusVisible: { outline: '2px solid color-mix(in srgb, var(--lq-accent) 72%, white)', outlineOffset: 3 },
+    },
+  })
 
   const controlled = openProp !== undefined
   // What Base UI is told. Opening follows the caller when controlled; closing
@@ -122,20 +215,28 @@ export const DropletMenu = ({
   const openRef = useRef(open)
   const closingRef = useRef(false)
   const silentRef = useRef(false)
+  // The droplets' glass and buttons stay up from the moment the menu opens
+  // until the last droplet is home, which outlasts `open`.
+  const [returning, setReturning] = useState(false)
+  const out = open || returning
 
   const actionsRef = useRef<Menu.Root.Actions | null>(null)
   const triggerRef = useRef<HTMLSpanElement | null>(null)
   const dropletRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const glassRef = useRef<GlassMergeHandle | null>(null)
+  const portalRef = useRef<HTMLSpanElement | null>(null)
   const frameRef = useRef(0)
 
   const dropletSize = DROPLET_SIZE[size]
+  const triggerPixels = PIXELS[size]
+  const dropletPixels = PIXELS[dropletSize]
   const choreography = useMemo(
     () => new DropletChoreography(items.length, { stagger, wobbliness: config.wobbliness }),
     // Rebuilt only when the feel changes; a new item count is a resize below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [stagger, config.wobbliness],
   )
-  const resolvedRadius = radius ?? dropletRadius(items.length, placement, PIXELS[dropletSize], PIXELS[size])
+  const resolvedRadius = radius ?? dropletRadius(items.length, placement, dropletPixels, triggerPixels)
   const offsets = useMemo(
     () => dropletOffsets(items.length, placement, resolvedRadius),
     [items.length, placement, resolvedRadius],
@@ -143,20 +244,36 @@ export const DropletMenu = ({
   const offsetsRef = useRef(offsets)
   offsetsRef.current = offsets
 
+  const box = useMemo(
+    () => glassBox(offsets, triggerPixels, dropletPixels, out),
+    [dropletPixels, offsets, out, triggerPixels],
+  )
+  const boxRef = useRef(box)
+  boxRef.current = box
+
   const paint = useCallback(() => {
     const trigger = choreography.trigger()
     if (triggerRef.current) {
       triggerRef.current.style.transform = `scale(${trigger.scaleX.toFixed(4)}, ${trigger.scaleY.toFixed(4)})`
     }
-    dropletRefs.current.forEach((element, index) => {
-      if (element) element.style.transform = dropletTransform(choreography.droplet(index))
-    })
-  }, [choreography])
+    // The trigger's centre, in the glass surface's own pixels.
+    const centreX = triggerPixels / 2 - boxRef.current.left
+    const centreY = triggerPixels / 2 - boxRef.current.top
+    const shapes = [triggerShape(centreX, centreY, triggerPixels, trigger)]
+    for (let index = 0; index < choreography.count; index += 1) {
+      const frame = choreography.droplet(index)
+      const element = dropletRefs.current[index]
+      if (element) element.style.transform = dropletTransform(frame)
+      if (frame.scale > 0) shapes.push(dropletShape(centreX, centreY, dropletPixels, frame))
+    }
+    glassRef.current?.setShapes(shapes)
+  }, [choreography, dropletPixels, triggerPixels])
 
   const finishClosing = useCallback(() => {
     if (openRef.current || !closingRef.current || !choreography.absorbed) return
     closingRef.current = false
     actionsRef.current?.unmount()
+    setReturning(false)
   }, [choreography])
 
   const run = useCallback(() => {
@@ -173,6 +290,12 @@ export const DropletMenu = ({
   }, [choreography, finishClosing, paint])
 
   useEffect(() => () => cancelAnimationFrame(frameRef.current), [])
+
+  // The glass shows the trigger from the first frame, and is redrawn in place
+  // whenever its surface grows for the droplets or shrinks back to the trigger.
+  useBeforePaint(() => {
+    paint()
+  }, [box, paint])
 
   useEffect(() => {
     choreography.resize(items.length)
@@ -196,6 +319,7 @@ export const DropletMenu = ({
     // Keyed on having been open, not on droplets being out: a menu closed
     // before its first droplet left still has a popup held mounted to release.
     closingRef.current = !open && wasOpen
+    if (closingRef.current) setReturning(true)
     if (open) choreography.open(offsetsRef.current)
     else choreography.close()
 
@@ -227,31 +351,62 @@ export const DropletMenu = ({
   }
 
   return (
-    <span className={root.className} style={{ display: 'inline-flex', verticalAlign: 'middle', ...root.style }}>
+    <span
+      className={root.className}
+      style={{
+        display: 'inline-flex',
+        // Its own stacking context, so the glass, the trigger and the droplets
+        // keep their order whatever surrounds them; lifted to the menu layer
+        // only while droplets are out, as the popup used to be.
+        isolation: 'isolate',
+        position: 'relative',
+        verticalAlign: 'middle',
+        zIndex: out ? 85 : undefined,
+        ...root.style,
+      }}
+    >
+      <GlassMerge
+        bezel={Math.max(10, dropletPixels * 0.22)}
+        ref={glassRef}
+        spacing={SPACING}
+        style={{ ...box, pointerEvents: 'none', position: 'absolute' }}
+        tint={tint}
+      />
       <Menu.Root actionsRef={actionsRef} modal={false} onOpenChange={handleOpenChange} open={open}>
         <span
           ref={triggerRef}
-          style={{ display: 'inline-flex', transformOrigin: 'center', willChange: animated ? 'transform' : undefined }}
+          style={{
+            display: 'inline-flex',
+            // Positioned, so it paints over the glass that comes before it.
+            position: 'relative',
+            transformOrigin: 'center',
+            willChange: animated ? 'transform' : undefined,
+          }}
         >
           <Menu.Trigger
-            render={(
-              <LiquidIconButton label={label} shape="circle" size={size} tint={tint}>
-                <span
-                  aria-hidden="true"
-                  style={{
-                    display: 'inline-flex',
-                    transform: `rotate(${open ? iconTurn : 0}deg)`,
-                    // A little past and back, the same overshoot the droplets land with.
-                    transition: animated ? 'transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1)' : undefined,
-                  }}
-                >
-                  {icon}
-                </span>
-              </LiquidIconButton>
-            )}
-          />
+            aria-label={label}
+            className={button.className}
+            style={{ ...BUTTON, height: triggerPixels, width: triggerPixels }}
+            title={label}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                display: 'inline-flex',
+                transform: `rotate(${open ? iconTurn : 0}deg)`,
+                // A little past and back, the same overshoot the droplets land with.
+                transition: animated ? 'transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1)' : undefined,
+              }}
+            >
+              {icon}
+            </span>
+          </Menu.Trigger>
         </span>
-        <Menu.Portal container={portalContainer ?? undefined}>
+        {/* The droplets are portalled next to their glass rather than out to the
+            provider: buttons and glass are clipped and stacked by the same
+            ancestors, so a droplet is never seen without its glass. */}
+        <span ref={portalRef} style={{ left: 0, position: 'absolute', top: 0 }} />
+        <Menu.Portal container={portalRef}>
           <Menu.Positioner
             align="center"
             // The popup is laid exactly over the trigger, and the droplets are
@@ -259,7 +414,7 @@ export const DropletMenu = ({
             collisionAvoidance={{ align: 'none', side: 'none' }}
             side="bottom"
             sideOffset={({ anchor }) => -anchor.height}
-            style={{ pointerEvents: 'none', zIndex: 85 }}
+            style={{ pointerEvents: 'none' }}
           >
             <Menu.Popup
               style={{ height: 'var(--anchor-height)', outline: 'none', position: 'relative', width: 'var(--anchor-width)' }}
@@ -290,9 +445,15 @@ export const DropletMenu = ({
                     nativeButton
                     onClick={() => item.onSelect?.()}
                     render={(
-                      <LiquidIconButton disabled={item.disabled} label={item.label} shape="circle" size={dropletSize} tint={tint}>
+                      <button
+                        aria-label={item.label}
+                        className={button.className}
+                        style={{ ...BUTTON, height: dropletPixels, width: dropletPixels }}
+                        title={item.label}
+                        type="button"
+                      >
                         {item.icon}
-                      </LiquidIconButton>
+                      </button>
                     )}
                   />
                 </span>
