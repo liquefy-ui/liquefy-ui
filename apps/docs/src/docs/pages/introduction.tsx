@@ -112,6 +112,11 @@ export const introductionDoc: DocEntry = {
               'Nothing at runtime.',
             ],
             [
+              <a className="text-link" href="#/docs/lab"><code>@liquefy-ui/lab</code></a>,
+              <>Experimental, motion-heavy components such as <code>DropletMenu</code>. Versioned <code>0.x</code>, so APIs may change between minors.</>,
+              <><code>@liquefy-ui/core</code>, <code>@base-ui/react</code>; <code>@liquefy-ui/react</code> as a peer</>,
+            ],
+            [
               <code>@liquefy-ui/mcp</code>,
               <>An MCP server that answers from the real exports, for coding agents.</>,
               'Nothing at runtime.',

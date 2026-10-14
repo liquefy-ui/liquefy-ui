@@ -32,6 +32,9 @@ importers:
       '@liquefy-ui/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@liquefy-ui/lab':
+        specifier: workspace:*
+        version: link:../../packages/lab
       '@liquefy-ui/react':
         specifier: workspace:*
         version: link:../../packages/react

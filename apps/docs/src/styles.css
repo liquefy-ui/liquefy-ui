@@ -2320,6 +2320,79 @@ kbd {
   padding: 28px 24px;
 }
 
+/* The lab page's demo. The droplets are the same glass as everything else, so
+   they are held over a photograph: the stage's own wash is too flat to show
+   what they bend. Each placement puts the trigger where it is meant to live. */
+
+.lab-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.lab-demo__scene {
+  align-items: center;
+  background: url('/scenes/fjord.jpg') center / cover;
+  border-radius: 12px;
+  display: flex;
+  height: 340px;
+  justify-content: center;
+  padding: 32px;
+  position: relative;
+}
+
+.lab-demo__scene[data-placement='top'] {
+  align-items: flex-end;
+}
+
+.lab-demo__scene[data-placement='top-left'] {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.lab-demo__credit {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.72rem;
+  font-weight: 550;
+  left: 16px;
+  position: absolute;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  top: 14px;
+}
+
+/* The labels share a top line and the controls share a centre line, although
+   the segmented control is taller than the slider. */
+.lab-demo__controls {
+  display: grid;
+  gap: 16px 28px;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.lab-demo__control {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-rows: auto 1fr;
+}
+
+.lab-demo__label {
+  align-items: baseline;
+  color: var(--fg-muted);
+  display: flex;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.lab-demo__label em {
+  color: var(--fg);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.76rem;
+  font-style: normal;
+}
+
 /* Prop tables */
 
 .docs-props {
@@ -2940,6 +3013,10 @@ kbd {
 @media (max-width: 560px) {
   .header-actions .jelly-toggle {
     display: none;
+  }
+
+  .lab-demo__controls {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
