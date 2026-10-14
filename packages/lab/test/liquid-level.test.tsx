@@ -172,6 +172,36 @@ describe('LiquidLevel', () => {
     expect(new Set(surface(meter))).toEqual(new Set([20]))
   })
 
+  it('still sloshes when the system asks for reduced motion', () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      addEventListener: () => {},
+      addListener: () => {},
+      matches: query.includes('prefers-reduced-motion'),
+      media: query,
+      removeEventListener: () => {},
+      removeListener: () => {},
+    }))
+    const clock = frames()
+    const level = (value: number) => (
+      <LiquefyProvider theme="dark" webgl={false}>
+        <LiquidLevel label="Water" size={100} value={value} />
+      </LiquefyProvider>
+    )
+    const { rerender } = render(level(20))
+    const meter = screen.getByRole('meter', { name: 'Water' })
+    clock.play(2)
+
+    rerender(level(80))
+    let highest = 100
+    for (let frame = 0; frame < 60; frame += 1) {
+      clock.play(1)
+      const heights = surface(meter)
+      highest = Math.min(highest, heights.reduce((sum, height) => sum + height, 0) / heights.length)
+    }
+    // Only the provider's `motion` turns the overshoot off, not the OS setting.
+    expect(highest).toBeLessThan(17)
+  })
+
   it('leans toward a pointer over the vessel, and not when tilt is off', () => {
     const clock = frames()
     const { rerender } = mount(<LiquidLevel label="Water" size={100} value={50} />, true)

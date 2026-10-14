@@ -207,10 +207,11 @@ export const labDoc: DocEntry = {
           false the moment the menu closes — assistive technology hears the close when it happens, not
           when the animation ends.
         </p>
-        <Callout title="Lab reads prefers-reduced-motion">
-          The components in <code>@liquefy-ui/react</code> leave that preference to you. A menu that flies
-          its items across the screen is a different case, so with <code>prefers-reduced-motion: reduce</code>,
-          or <code>motion={'{false}'}</code> on the provider, the droplets appear and disappear in place.{' '}
+        <Callout title="prefers-reduced-motion is your call here too">
+          Lab follows <code>@liquefy-ui/react</code>: it does not read the system&rsquo;s reduced-motion
+          setting on its own. With <code>motion={'{false}'}</code> on the provider the droplets appear and
+          disappear in place, and mapping <code>prefers-reduced-motion</code> to that prop takes a few
+          lines.{' '}
           <a className="text-link" href="#/docs/motion">Motion<ArrowRightIcon size={14} /></a>
         </Callout>
       </Section>

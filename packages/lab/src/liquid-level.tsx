@@ -14,7 +14,6 @@ import {
   type ReactNode,
 } from 'react'
 import { LiquidLevelSimulation } from './liquid-level-motion'
-import { usePrefersReducedMotion } from './use-reduced-motion'
 
 export type LiquidLevelShape = 'capsule' | 'circle' | 'rounded'
 
@@ -200,8 +199,9 @@ const submergedPath = (simulation: LiquidLevelSimulation, width: number, height:
  * The vessel is a `LiquidSurface`, so the backdrop still refracts through
  * the glass; the liquid is drawn on a canvas inside it, under the lit rim. It
  * is a meter in the WAI-ARIA sense, like `LiquidGauge`: a level, not progress.
- * With `motion={false}` on the provider, or `prefers-reduced-motion: reduce`,
- * the level moves straight to its mark with a still surface.
+ * With `motion={false}` on the provider the level moves straight to its mark
+ * with a still surface. Like `@liquefy-ui/react`, it does not read
+ * prefers-reduced-motion itself; map that to `motion` if the app wants to.
  */
 export const LiquidLevel = forwardRef<HTMLDivElement, LiquidLevelProps>(({
   children,
@@ -220,8 +220,7 @@ export const LiquidLevel = forwardRef<HTMLDivElement, LiquidLevelProps>(({
   ...props
 }, forwardedRef) => {
   const config = useLiquefyConfig()
-  const prefersReducedMotion = usePrefersReducedMotion()
-  const animated = config.motion && !prefersReducedMotion
+  const animated = config.motion
   const ratio = max > 0 && Number.isFinite(value) ? clamp(value / max, 0, 1) : 0
   const percent = Math.round(ratio * 100)
   const box = vesselBox(shape, size)
