@@ -25,6 +25,7 @@ import {
 } from './droplet-motion'
 import { GlassMerge, type GlassMergeHandle } from './glass-merge'
 import { useBeforePaint } from './use-before-paint'
+import { usePrefersReducedMotion } from './use-reduced-motion'
 
 export type DropletMenuItem = {
   disabled?: boolean
@@ -159,19 +160,6 @@ const BUTTON: CSSProperties = {
   font: 'inherit',
   justifyContent: 'center',
   padding: 0,
-}
-
-const usePrefersReducedMotion = (): boolean => {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => setReduced(query.matches)
-    update()
-    query.addEventListener('change', update)
-    return () => query.removeEventListener('change', update)
-  }, [])
-  return reduced
 }
 
 /**
