@@ -181,14 +181,14 @@ with the token system itself at `#/docs/theming`.
 
 ## Components
 
-35 components and 50 icons, each with live demos and a full prop table at
+36 components and 50 icons, each with live demos and a full prop table at
 [liquefy-ui.com/#/components](https://liquefy-ui.com/#/components).
 
 | Category | Components |
 | --- | --- |
 | Inputs | `LiquidButton`, `LiquidIconButton`, `LiquidCheckbox`, `LiquidRadioGroup` / `LiquidRadio`, `LiquidSwitch`, `LiquidSlider`, `LiquidTextField`, `LiquidTextArea`, `LiquidSelect`, `LiquidDatePicker`, `LiquidSegmented`, `LiquidRating` |
 | Data display | `LiquidAvatar` / `LiquidAvatarGroup`, `LiquidBadge`, `LiquidChip`, `LiquidTooltip`, `LiquidTable` family, `LiquidList` family, `LiquidDivider` |
-| Feedback | `LiquidAlert`, `LiquidProgress`, `LiquidSpinner`, `LiquidSkeleton`, `LiquidToastProvider` / `useLiquidToast`, `LiquidDialog` |
+| Feedback | `LiquidAlert`, `LiquidProgress`, `LiquidSpinner`, `LiquidGauge`, `LiquidSkeleton`, `LiquidToastProvider` / `useLiquidToast`, `LiquidDialog` |
 | Surfaces | `LiquidSurface`, `LiquidGlass`, `GlassCard`, `LiquidAccordion` / `LiquidAccordionItem` |
 | Navigation | `LiquidTabs` family, `LiquidBreadcrumbs`, `LiquidPagination`, `LiquidMenu`, `LiquidDrawer`, `GlassDock` / `DockItem` |
 | Foundation | `LiquefyProvider`, `useLiquefyConfig`, `useLiquidGlass`, `useLiquidStyles`, `getLiquefyStyleSheet`, `defaultBreakpoints` |

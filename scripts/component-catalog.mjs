@@ -66,6 +66,7 @@ const descriptions = {
   'liquid-dialog': 'A modal on Base UI: trapped focus, inert background and wired-up title and description.',
   'liquid-divider': 'A hairline rule, horizontal or vertical, with optional inline content.',
   'liquid-drawer': 'A side panel that slides from the left, right or bottom edge, on Base UI Dialog.',
+  'liquid-gauge': 'A ring meter with the reading in its middle, for levels like memory or disk in use.',
   'liquid-glass': 'The bare material with its optics as props: refraction, frost, veil and bezel.',
   'liquid-icon-button': 'A square icon-only button that takes its accessible name from a label prop.',
   'liquid-list': 'A glass list with items, descriptions, leading icons, trailing slots and subheaders.',
