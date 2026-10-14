@@ -282,11 +282,18 @@ export const readCoreApi = async () => readReExports(await readFile(coreEntry, '
  */
 export const readLabApi = async () => {
   const { types, values } = readReExports(await readFile(new URL('index.ts', labDir), 'utf8'))
-  const files = (await readdir(labDir)).filter((file) => /\.tsx?$/.test(file) && file !== 'index.ts').sort()
-  const sources = await Promise.all(files.map((file) => readFile(new URL(file, labDir), 'utf8')))
-  const declarations = sources
+  // Lab passes some of core's types straight through (`GlassMergeShape`), so
+  // their declarations are looked for in core's source as well as lab's own.
+  const sourcesIn = async (dir) => {
+    const files = (await readdir(dir)).filter((file) => /\.tsx?$/.test(file) && file !== 'index.ts').sort()
+    return Promise.all(files.map((file) => readFile(new URL(file, dir), 'utf8')))
+  }
+  const [own, core] = await Promise.all([sourcesIn(labDir), sourcesIn(new URL('./', coreEntry))])
+  const seen = new Set()
+  const declarations = [...own, ...core]
     .flatMap(readTypeDeclarations)
     .filter((declaration) => types.includes(declaration.name))
+    .filter((declaration) => !seen.has(declaration.name) && seen.add(declaration.name))
   return { declarations, types, values }
 }
 
