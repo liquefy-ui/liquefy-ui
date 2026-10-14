@@ -1,5 +1,11 @@
 # @liquefy-ui/icons
 
+## 1.1.0
+
+### Minor Changes
+
+- f3272e2: Add `FileTextIcon` (a page with a folded corner and two text lines), `GridIcon` (four rounded squares in a 2×2 grid) and `TrendingUpIcon` (a rising line with an arrowhead).
+
 ## 1.0.0
 
 ### Minor Changes
