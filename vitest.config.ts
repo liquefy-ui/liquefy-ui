@@ -13,6 +13,7 @@ export default defineConfig({
       { find: '@liquefy-ui/react', replacement: new URL('packages/react/src/index.ts', import.meta.url).pathname },
       { find: '@liquefy-ui/core', replacement: new URL('packages/core/src/index.ts', import.meta.url).pathname },
       { find: '@liquefy-ui/icons', replacement: new URL('packages/icons/src/index.tsx', import.meta.url).pathname },
+      { find: '@liquefy-ui/lab', replacement: new URL('packages/lab/src/index.ts', import.meta.url).pathname },
     ],
   },
 })

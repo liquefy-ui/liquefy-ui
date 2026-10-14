@@ -68,10 +68,12 @@ import { createElement as h } from 'react'
 import { LiquidButton, LiquefyProvider, useLiquefyConfig } from '@liquefy-ui/react'
 import { SparklesIcon } from '@liquefy-ui/icons'
 import { SpringValue, defaultTokens } from '@liquefy-ui/core'
+import { DropletMenu } from '@liquefy-ui/lab'
 
 const markup = renderToStaticMarkup(
   h(LiquefyProvider, { theme: 'dark', tint: '#8f8f8f' },
-    h(LiquidButton, { iconBefore: h(SparklesIcon, { size: 16 }) }, 'Create magic')),
+    h(LiquidButton, { iconBefore: h(SparklesIcon, { size: 16 }) }, 'Create magic'),
+    h(DropletMenu, { icon: h(SparklesIcon, { size: 22 }), items: [{ icon: h(SparklesIcon), label: 'Sparkle' }], label: 'Open lab menu' })),
 )
 
 const expectations = [
@@ -83,6 +85,9 @@ const expectations = [
   ['exports the spring engine', typeof SpringValue === 'function'],
   ['exports the tokens', typeof defaultTokens === 'object'],
   ['exports the config hook', typeof useLiquefyConfig === 'function'],
+  // lab resolves @liquefy-ui/react as a peer, so this also proves the two
+  // share one provider rather than lab carrying a copy of its own.
+  ['renders the lab trigger inside the provider', markup.includes('aria-label="Open lab menu"')],
 ]
 
 for (const [what, ok] of expectations) {
@@ -101,6 +106,8 @@ run('node', ['smoke.mjs'])
 // The CJS build is published too, and Node resolves it for a `require`.
 writeFileSync(join(project, 'smoke.cjs'), `const liquefy = require('@liquefy-ui/react')
 const core = require('@liquefy-ui/core')
+const lab = require('@liquefy-ui/lab')
+if (typeof lab.DropletMenu !== 'function') throw new Error('CJS lab build is missing DropletMenu')
 const missing = ['LiquidButton', 'LiquefyProvider'].filter((name) => !liquefy[name])
 if (missing.length > 0) throw new Error('CJS build is missing: ' + missing.join(', '))
 if (typeof core.SpringValue !== 'function') throw new Error('CJS core build is missing SpringValue')

@@ -14,7 +14,7 @@ const REPO_URL = `https://github.com/${OWNER}/liquefy-ui`
 const SITE = 'https://liquefy-ui.com'
 const NPM_SCOPE = '@liquefy-ui'
 
-const PUBLISHED = ['core', 'icons', 'react', 'mcp']
+const PUBLISHED = ['core', 'icons', 'react', 'lab', 'mcp']
 
 const manifest = (name) => JSON.parse(readFileSync(new URL(`../packages/${name}/package.json`, import.meta.url), 'utf8'))
 

@@ -162,19 +162,19 @@ jobs:
 
       - name: publint
         run: |
-          for package in core icons react mcp; do
+          for package in core icons react lab mcp; do
             echo "::group::@liquefy-ui/$package"
             pnpm --filter "@liquefy-ui/$package" exec npx -y publint --strict
             echo "::endgroup::"
           done
 
       # Three shapes, three assertions:
-      #   core, icons — dual ESM/CJS, so every resolution mode must work
+      #   core, icons, lab — dual ESM/CJS, so every resolution mode must work
       #   react       — the same, minus the two CSS subpaths, which have no types
       #   mcp         — a CLI that is ESM-only on purpose, so only ESM is asserted
       - name: Are the types wrong?
         run: |
-          for package in core icons; do
+          for package in core icons lab; do
             echo "::group::@liquefy-ui/$package"
             pnpm --filter "@liquefy-ui/$package" exec npx -y @arethetypeswrong/cli --pack .
             echo "::endgroup::"

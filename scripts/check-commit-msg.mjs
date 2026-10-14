@@ -23,7 +23,7 @@ export const TYPES = [
 
 // The scopes in use. Free-form scopes are allowed — a new package should not
 // need a commit to this file first — but they must look like the ones here.
-export const CONVENTIONAL_SCOPES = ['core', 'icons', 'react', 'mcp', 'docs', 'registry', 'deps', 'release']
+export const CONVENTIONAL_SCOPES = ['core', 'icons', 'react', 'lab', 'mcp', 'docs', 'registry', 'deps', 'release']
 
 export const MAX_HEADER_LENGTH = 72
 

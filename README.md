@@ -22,6 +22,7 @@ component reference and the shadcn registry.
 | `@liquefy-ui/react` | React components, themes, and provider |
 | `@liquefy-ui/core` | Dependency-free WebGL, springs, and motion |
 | `@liquefy-ui/icons` | Tree-shakeable React SVG icons |
+| `@liquefy-ui/lab` | Experimental, motion-heavy components on top of `@liquefy-ui/react` — APIs may change between minor versions |
 | `@liquefy-ui/mcp` | MCP server that answers component questions from the real API |
 
 ## Quick start

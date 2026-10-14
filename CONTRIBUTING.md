@@ -31,7 +31,7 @@ component is exercised.
 | `pnpm check` | Build, type-check, test, and verify the RSC directive — what CI runs |
 | `pnpm generate` | Regenerate the MCP catalog, the shadcn registry and the `llms` files from source |
 | `pnpm verify:rsc` | Assert the built bundles carry `'use client'` |
-| `pnpm pack:packages` | Pack the three consumer-facing packages into `.tarballs/` |
+| `pnpm pack:packages` | Pack the four consumer-facing packages into `.tarballs/` |
 | `pnpm smoke` | Pack, install the tarballs into an empty npm project, and render from them |
 | `pnpm changeset` | Describe a change for the next release |
 | `pnpm prepare` | Point `core.hooksPath` at `.githooks/` — run for you by `pnpm install` |
@@ -130,7 +130,7 @@ where it stays readable and can be answered.
 | Rule | Detail |
 | --- | --- |
 | Type | `feat` `fix` `docs` `refactor` `perf` `test` `build` `ci` `chore` `revert` |
-| Scope | Optional, lowercase, in parentheses. In use: `core` `icons` `react` `mcp` `docs` `registry` `deps` `release`. Several: `fix(core,react): …` |
+| Scope | Optional, lowercase, in parentheses. In use: `core` `icons` `react` `lab` `mcp` `docs` `registry` `deps` `release`. Several: `fix(core,react): …` |
 | Breaking | A `!` before the colon: `feat(react)!: rename LiquidGlass to LiquidSurface` |
 | Summary | Imperative, no full stop at the end |
 | Length | The authored subject line, 72 characters or fewer. GitHub's generated trailing ` (#123)` on a squash commit does not count. |
@@ -204,5 +204,5 @@ body would land regardless of how well the title reads.
 pnpm check   # build, typecheck, test, and the 'use client' directive check
 ```
 
-`pnpm smoke` additionally packs the three consumer-facing packages and installs
+`pnpm smoke` additionally packs the four consumer-facing packages and installs
 them into an empty project with npm, the way a consumer would.
