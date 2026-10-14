@@ -22,6 +22,7 @@ import {
   type DropletFrame,
   type DropletPlacement,
 } from './droplet-motion'
+import { usePrefersReducedMotion } from './use-reduced-motion'
 
 export type DropletMenuItem = {
   disabled?: boolean
@@ -69,19 +70,6 @@ const dropletTransform = ({ angle, scale, stretch, x, y }: DropletFrame): string
   ? AT_HOME
   : `translate(-50%, -50%) translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) rotate(${angle.toFixed(2)}deg) `
     + `scale(${(scale * stretch).toFixed(4)}, ${(scale / stretch).toFixed(4)}) rotate(${(-angle).toFixed(2)}deg)`
-
-const usePrefersReducedMotion = (): boolean => {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => setReduced(query.matches)
-    update()
-    query.addEventListener('change', update)
-    return () => query.removeEventListener('change', update)
-  }, [])
-  return reduced
-}
 
 /**
  * A round glass trigger that buds its items off one at a time. Each droplet
