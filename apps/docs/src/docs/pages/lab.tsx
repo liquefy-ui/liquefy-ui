@@ -137,9 +137,9 @@ export const labDoc: DocEntry = {
       <Section id="what" title="What lab is">
         <p>
           <code>@liquefy-ui/lab</code> holds components whose motion is the point: surfaces that split
-          off, travel and settle, rather than only wobble in place. The material is the same — every
-          droplet below is an ordinary glass icon button — so the provider&rsquo;s theme, tint and optics
-          apply to it as they do to everything else.
+          off, travel and settle, rather than only wobble in place. The material is the same — the
+          trigger and the droplets below are one body of the library&rsquo;s glass — so the
+          provider&rsquo;s theme, tint and optics apply to it as they do to everything else.
         </p>
         <p>
           It is versioned <code>0.x</code>, and while it is, a component&rsquo;s API can change shape
@@ -153,8 +153,8 @@ export const labDoc: DocEntry = {
         <CodeBlock code={`pnpm add @liquefy-ui/lab @liquefy-ui/react @liquefy-ui/core`} />
         <p>
           <code>@liquefy-ui/react</code> is a peer dependency, not a bundled one. Lab&rsquo;s components
-          sit inside your existing <code>LiquefyProvider</code> and render their overlays into its portal,
-          so there is one theme, one tint and one <code>motion</code> switch for both packages. There is
+          sit inside your existing <code>LiquefyProvider</code> and take their settings from it, so there
+          is one theme, one tint and one <code>motion</code> switch for both packages. There is
           no lab stylesheet: <code>@liquefy-ui/react/styles.css</code> already covers it.
         </p>
         <CodeBlock code={labUsage} />

@@ -238,13 +238,17 @@ pnpm add @liquefy-ui/lab @liquefy-ui/react @liquefy-ui/core
 
 const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled copy. Render lab
   components inside the same \`LiquefyProvider\` as everything else: they read its
-  theme, tint, \`motion\` and \`wobbliness\`, and portal into it. There is no lab
-  stylesheet; \`@liquefy-ui/react/styles.css\` covers it.
+  theme, tint, \`motion\` and \`wobbliness\`. There is no lab stylesheet;
+  \`@liquefy-ui/react/styles.css\` covers it.
 - Lab is on npm only. The shadcn registry carries \`@liquefy-ui/react\`'s components.
 - \`DropletMenu\` needs \`icon\`, \`label\` and \`items\`; each item needs \`icon\` and
   \`label\`, which is its accessible name, tooltip and typeahead text.
-- Unlike \`@liquefy-ui/react\`, \`DropletMenu\` reads \`prefers-reduced-motion\` itself:
-  with it, or \`motion={false}\` on the provider, droplets appear in place.`
+- Unlike \`@liquefy-ui/react\`, lab components read \`prefers-reduced-motion\` themselves:
+  with it, or \`motion={false}\` on the provider, droplets appear in place and a level
+  goes straight to its mark with a still surface.
+- \`GlassMerge\` (and \`DropletMenu\`, which is drawn with it) must not sit under an
+  element with \`opacity\`, \`filter\`, \`clip-path\`, \`mask\` or \`will-change: opacity\`:
+  each one leaves the glass nothing behind it to bend.`
 
 const labDeclarations = `\`\`\`ts
 ${lab.declarations.map((declaration) => declaration.text).join('\n\n')}

@@ -163,11 +163,13 @@ describe('what the generated files claim', () => {
   // for the same reason the components' are.
   it('names every lab export and carries its declarations', () => {
     const labPage = readFileSync(new URL('lab.md', pagesDir), 'utf8')
-    expect(lab.values).toContain('DropletMenu')
+    // A component is an export with a Props type of its own; the import line names all of them.
+    const components = lab.values.filter((name) => lab.types.includes(`${name}Props`))
+    expect(components).toContain('DropletMenu')
     for (const file of [labPage, full]) {
       for (const name of [...lab.values, ...lab.types]) expect(file, name).toContain(name)
       for (const declaration of lab.declarations) expect(file, declaration.name).toContain(declaration.text)
-      expect(file).toContain("import { DropletMenu } from '@liquefy-ui/lab'")
+      expect(file).toContain(`import { ${components.join(', ')} } from '@liquefy-ui/lab'`)
     }
     expect(lab.declarations.map((declaration) => declaration.name).sort()).toEqual(lab.types)
   })
