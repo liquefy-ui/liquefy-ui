@@ -117,7 +117,7 @@ describe('mcp server', () => {
 
     const internals = catalog.components.flatMap((component) => component.internalExports)
     expect(internals).toContain('compileLiquidStyles')
-    expect(internals).toContain('useLiquefyPortalContainer')
+    expect(internals).toContain('XGlyph')
   })
 
   it('keeps multi-line type declarations whole', () => {

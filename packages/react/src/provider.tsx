@@ -176,4 +176,9 @@ export const LiquefyProvider = ({
 
 export const useLiquefyConfig = (): LiquefyConfig => useContext(LiquefyContext)
 
+/**
+ * The node inside the provider that popups portal into. Pass it as a Base UI
+ * `Portal`'s `container` so a popup you compose yourself keeps the theme's
+ * custom properties; `null` outside a provider, or before it has mounted.
+ */
 export const useLiquefyPortalContainer = (): HTMLElement | null => useContext(LiquefyPortalContext)
