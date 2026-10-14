@@ -1,0 +1,77 @@
+{
+  "name": "@liquefy-ui/lab",
+  "version": "0.0.0",
+  "description": "Experimental, motion-heavy components for liquefy-ui: glass droplets that bud off, fly out and settle with a wobble, and liquid that sloshes in a glass vessel.",
+  "license": "MIT",
+  "homepage": "https://liquefy-ui.com",
+  "repository": {
+    "directory": "packages/lab",
+    "type": "git",
+    "url": "git+https://github.com/liquefy-ui/liquefy-ui.git"
+  },
+  "bugs": "https://github.com/liquefy-ui/liquefy-ui/issues",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "1.8.0",
+    "@liquefy-ui/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "@liquefy-ui/react": "workspace:^",
+    "react": ">=18.2",
+    "react-dom": ">=18.2"
+  },
+  "devDependencies": {
+    "@liquefy-ui/react": "workspace:^",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tsdown": "0.23.0",
+    "typescript": "7.0.2",
+    "unrun": "0.3.1"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "keywords": [
+    "react",
+    "react-components",
+    "liquid-glass",
+    "animation",
+    "spring-physics",
+    "radial-menu",
+    "fab",
+    "gauge",
+    "liquefy-ui"
+  ]
+}

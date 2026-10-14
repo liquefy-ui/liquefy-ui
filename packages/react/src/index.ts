@@ -114,4 +114,5 @@ export {
   type LiquefyProviderProps,
   type LiquefyTheme,
   useLiquefyConfig,
+  useLiquefyPortalContainer,
 } from './provider'

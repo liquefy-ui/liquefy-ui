@@ -6,6 +6,7 @@ import {
   readCoreApi,
   readDocsSlugs,
   readIcons,
+  readLabApi,
   readTokens,
 } from './component-catalog.mjs'
 
@@ -28,11 +29,12 @@ const outDir = new URL('../apps/docs/public/', import.meta.url)
 const pagesDir = new URL('../apps/docs/public/llms/', import.meta.url)
 
 const { entries } = await readCatalog()
-const [docsSlugs, tokens, icons, core] = await Promise.all([
+const [docsSlugs, tokens, icons, core, lab] = await Promise.all([
   readDocsSlugs(),
   readTokens(),
   readIcons(),
   readCoreApi(),
+  readLabApi(),
 ])
 
 /** The docs site page for a file — a hash route, so for humans and browsers. */
@@ -101,8 +103,8 @@ const RULES = `Rules an agent should not have to guess:
   \`_hover\`, \`_focusVisible\`, \`_disabled\`, \`_dark\`. There is no \`styled()\` and no
   \`sx\` prop.
 - Everything is imported from the package root. There are no deep entry points,
-  and names not listed below — \`compileLiquidStyles\`, \`useLiquefyPortalContainer\`,
-  the internal glyphs — are not exported from it.
+  and names not listed below — \`compileLiquidStyles\`, the internal glyphs such as
+  \`CheckGlyph\` — are not exported from it.
 - Overlays (Dialog, Drawer, Menu, Select, Tooltip) are built on Base UI and render
   into a portal inside the provider. Focus handling, Escape and collision-aware
   placement are already done; do not re-implement them.
@@ -111,6 +113,10 @@ const RULES = `Rules an agent should not have to guess:
 - The library does not read \`prefers-reduced-motion\` or
   \`prefers-reduced-transparency\` itself. Map them to the \`motion\` and
   \`transparency\` props if the product wants that.`
+
+/** Lab's components: the values that come with a props type of their own. */
+const labComponents = lab.values.filter((name) => lab.types.includes(`${name}Props`))
+const labImport = `import { ${labComponents.join(', ')} } from '@liquefy-ui/lab'`
 
 const componentLine = (entry) => `- [${nameOf(entry)}](${textUrl(entry)}): ${entry.description}`
 
@@ -141,6 +147,10 @@ ${plumbing.map(componentLine).join('\n')}
 
 - [@liquefy-ui/core](${HOMEPAGE}/llms/core.md): the dependency-free renderer, lens filter and spring engine
 
+## Lab
+
+- [@liquefy-ui/lab](${HOMEPAGE}/llms/lab.md): experimental, motion-heavy components (${labComponents.join(', ')}) on top of @liquefy-ui/react; 0.x, so APIs may change between minor versions
+
 ## Reference
 
 - [llms-full.txt](${HOMEPAGE}/llms-full.txt): every exported type declaration and design token in one file
@@ -150,7 +160,8 @@ ${plumbing.map(componentLine).join('\n')}
 ## Optional
 
 - [Component docs](${HOMEPAGE}/#/components): live demos and prop tables (JavaScript required)
-- [Documentation](${HOMEPAGE}/#/docs): provider, theming, the styles prop, motion, frameworks, Tailwind, AI tooling, accessibility, performance, troubleshooting
+- [Documentation](${HOMEPAGE}/#/docs): provider, theming, the styles prop, motion, frameworks, Tailwind, AI tooling, accessibility, performance, troubleshooting, lab
+- [Lab](${HOMEPAGE}/#/docs/lab): DropletMenu live over a photograph, with placement and stagger as controls
 - [Playground](${HOMEPAGE}/#/playground): every provider prop as a live control
 `
 
@@ -219,6 +230,52 @@ ${core.values.map((name) => `- \`${name}\``).join('\n')}
 ## Types
 
 ${core.types.map((name) => `- \`${name}\``).join('\n')}
+`
+
+const LAB_INSTALL = `\`\`\`bash
+pnpm add @liquefy-ui/lab @liquefy-ui/react @liquefy-ui/core
+\`\`\``
+
+const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled copy. Render lab
+  components inside the same \`LiquefyProvider\` as everything else: they read its
+  theme, tint, \`motion\` and \`wobbliness\`. There is no lab stylesheet;
+  \`@liquefy-ui/react/styles.css\` covers it.
+- Lab is on npm only. The shadcn registry carries \`@liquefy-ui/react\`'s components.
+- \`DropletMenu\` needs \`icon\`, \`label\` and \`items\`; each item needs \`icon\` and
+  \`label\`, which is its accessible name, tooltip and typeahead text.
+- Unlike \`@liquefy-ui/react\`, lab components read \`prefers-reduced-motion\` themselves:
+  with it, or \`motion={false}\` on the provider, droplets appear in place and a level
+  goes straight to its mark with a still surface.
+- \`GlassMerge\` (and \`DropletMenu\`, which is drawn with it) must not sit under an
+  element with \`opacity\`, \`filter\`, \`clip-path\`, \`mask\` or \`will-change: opacity\`:
+  each one leaves the glass nothing behind it to bend.`
+
+const labDeclarations = `\`\`\`ts
+${lab.declarations.map((declaration) => declaration.text).join('\n\n')}
+\`\`\``
+
+const labPage = `# @liquefy-ui/lab
+
+> Experimental, motion-heavy components built on @liquefy-ui/react. Versioned 0.x:
+> an API here can change between minor versions until it graduates into
+> @liquefy-ui/react.
+
+${LAB_INSTALL}
+
+Import: \`${labImport}\`
+Docs: ${HOMEPAGE}/#/docs/lab
+
+${LAB_RULES}
+
+## Values
+
+${lab.values.map((name) => `- \`${name}\``).join('\n')}
+
+## Types
+
+Verbatim from source.
+
+${labDeclarations}
 `
 
 const mcpPage = `# @liquefy-ui/mcp
@@ -302,6 +359,23 @@ Values: ${core.values.map((name) => `\`${name}\``).join(', ')}
 
 Types: ${core.types.map((name) => `\`${name}\``).join(', ')}
 
+## Lab: @liquefy-ui/lab
+
+Experimental, motion-heavy components. Versioned 0.x, so an API can change between
+minor versions.
+
+${LAB_INSTALL}
+
+Import: \`${labImport}\`
+
+${LAB_RULES}
+
+Values: ${lab.values.map((name) => `\`${name}\``).join(', ')}
+
+Types: ${lab.types.map((name) => `\`${name}\``).join(', ')}
+
+${labDeclarations}
+
 ## Design tokens
 
 ${tokens.map(tokenSection).join('\n')}
@@ -326,11 +400,12 @@ await Promise.all([
   writeFile(new URL('llms-full.txt', outDir), full),
   writeFile(new URL('icons.md', pagesDir), iconsPage),
   writeFile(new URL('core.md', pagesDir), corePage),
+  writeFile(new URL('lab.md', pagesDir), labPage),
   writeFile(new URL('mcp.md', pagesDir), mcpPage),
   ...entries.map((entry) => writeFile(new URL(`${entry.slug}.md`, pagesDir), componentPage(entry))),
 ])
 
 console.log(
-  `llms.txt (${short.length} B), llms-full.txt (${full.length} B) and ${entries.length + 3} pages `
+  `llms.txt (${short.length} B), llms-full.txt (${full.length} B) and ${entries.length + 4} pages `
   + 'written → apps/docs/public/',
 )

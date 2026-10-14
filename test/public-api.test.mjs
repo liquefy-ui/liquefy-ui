@@ -68,6 +68,7 @@ const RUNTIME_EXPORTS = [
   'useLiquidStyles',
   'useLiquidToast',
   'useLiquefyConfig',
+  'useLiquefyPortalContainer',
 ]
 
 /** Type-only exports, which do not exist at runtime and so are read from source. */

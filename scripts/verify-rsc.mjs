@@ -1,14 +1,14 @@
 import { readFile } from 'node:fs/promises'
 
-// Every component in @liquefy-ui/react needs state, refs or the WebGL lens, so the
-// built bundles must carry the 'use client' directive. Without it, importing the
-// package from a Next.js server component fails the build instead of the render,
-// and the docs site (a Vite SPA) would never catch it.
-const bundles = ['index.mjs', 'index.cjs']
+// Every component in @liquefy-ui/react and @liquefy-ui/lab needs state, refs or the
+// WebGL lens, so the built bundles must carry the 'use client' directive. Without
+// it, importing the package from a Next.js server component fails the build
+// instead of the render, and the docs site (a Vite SPA) would never catch it.
+const bundles = ['react', 'lab'].flatMap((name) => ['index.mjs', 'index.cjs'].map((file) => `${name}/dist/${file}`))
 const failures = []
 
 for (const bundle of bundles) {
-  const url = new URL(`../packages/react/dist/${bundle}`, import.meta.url)
+  const url = new URL(`../packages/${bundle}`, import.meta.url)
   let source
   try {
     source = await readFile(url, 'utf8')
