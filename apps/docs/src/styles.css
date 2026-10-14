@@ -2158,7 +2158,9 @@ pre {
   padding-left: 22px;
 }
 
-.docs-prose code,
+/* The inline-code chip. A doc page's code blocks live inside .docs-prose too,
+   and the chip's nowrap on their `pre > code` folds every line into one. */
+.docs-prose :not(pre) > code,
 .docs-props td code,
 .mapping code {
   background: var(--code-bg);
