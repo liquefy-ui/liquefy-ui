@@ -8,6 +8,7 @@ import { LiquidChip } from '../src/liquid-chip'
 import { LiquidDatePicker } from '../src/liquid-date-picker'
 import { LiquidIconButton } from '../src/liquid-icon-button'
 import { LiquidPagination } from '../src/liquid-pagination'
+import { LiquidGauge } from '../src/liquid-gauge'
 import { LiquidProgress, LiquidSpinner } from '../src/liquid-progress'
 import { LiquidRadio, LiquidRadioGroup } from '../src/liquid-radio'
 import { LiquidRating } from '../src/liquid-rating'
@@ -269,6 +270,34 @@ describe('progress', () => {
   it('names the spinner so it is not a mystery to a screen reader', () => {
     ui(<LiquidSpinner label="Loading" />)
     expect(screen.getByRole('progressbar', { name: 'Loading' })).toBeTruthy()
+  })
+})
+
+describe('gauge', () => {
+  it('is a named meter that reads out a percentage', () => {
+    ui(<LiquidGauge label="Memory" max={16} value={4} />)
+    const meter = screen.getByRole('meter', { name: 'Memory' })
+    expect(meter.getAttribute('aria-valuenow')).toBe('4')
+    expect(meter.getAttribute('aria-valuemax')).toBe('16')
+    expect(meter.getAttribute('aria-valuetext')).toBe('25%')
+    expect(meter.textContent).toBe('25%')
+  })
+
+  it('clamps a reading past either end', () => {
+    ui(<LiquidGauge label="Disk" value={140} />)
+    const meter = screen.getByRole('meter', { name: 'Disk' })
+    expect(meter.getAttribute('aria-valuenow')).toBe('100')
+    expect(meter.getAttribute('aria-valuetext')).toBe('100%')
+  })
+
+  it('draws no arc at zero, where a round cap would leave a dot', () => {
+    const { container } = ui(<LiquidGauge label="Swap" value={0} />)
+    expect(container.querySelector('.lq-gauge__arc')).toBeNull()
+  })
+
+  it('lets the middle say something other than the percentage', () => {
+    ui(<LiquidGauge label="CPU" value={50}>4 cores</LiquidGauge>)
+    expect(screen.getByRole('meter', { name: 'CPU' }).textContent).toBe('4 cores')
   })
 })
 

@@ -22,6 +22,7 @@ const {
   LiquidDialog,
   LiquidDivider,
   LiquidDrawer,
+  LiquidGauge,
   LiquidIconButton,
   LiquidList,
   LiquidListItem,
@@ -92,6 +93,7 @@ const cases: Array<[string, ReactElement]> = [
   ['LiquidDivider', <LiquidDivider>or</LiquidDivider>],
   ['LiquidDrawer (closed)', <LiquidDrawer onOpenChange={() => {}} open={false} title="Menu">body</LiquidDrawer>],
   ['LiquidDrawer (open)', <LiquidDrawer onOpenChange={() => {}} open side="left" title="Menu">body</LiquidDrawer>],
+  ['LiquidGauge', <LiquidGauge label="Memory" value={62} />],
   ['LiquidIconButton', <LiquidIconButton label="Close"><span /></LiquidIconButton>],
   [
     'LiquidList',
@@ -145,7 +147,7 @@ const cases: Array<[string, ReactElement]> = [
 const covered = new Set([
   'DockItem', 'GlassCard', 'GlassDock', 'LiquidAccordion', 'LiquidAccordionItem',
   'LiquidAlert', 'LiquidAvatar', 'LiquidAvatarGroup', 'LiquidBadge', 'LiquidBreadcrumbs',
-  'LiquidButton', 'LiquidCheckbox', 'LiquidChip', 'LiquidDatePicker', 'LiquidDialog', 'LiquidDivider', 'LiquidDrawer', 'LiquidGlass',
+  'LiquidButton', 'LiquidCheckbox', 'LiquidChip', 'LiquidDatePicker', 'LiquidDialog', 'LiquidDivider', 'LiquidDrawer', 'LiquidGauge', 'LiquidGlass',
   'LiquidIconButton', 'LiquidList', 'LiquidListItem', 'LiquidListSubheader', 'LiquidMenu',
   'LiquidPagination', 'LiquidProgress', 'LiquidRadio', 'LiquidRadioGroup', 'LiquidRating',
   'LiquidSegmented', 'LiquidSelect', 'LiquidSkeleton', 'LiquidSlider', 'LiquidSpinner',
