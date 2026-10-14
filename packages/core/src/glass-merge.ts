@@ -300,21 +300,11 @@ const attachOutline = (element: HTMLElement, settings: Settings, opaque: boolean
   }))
   element.appendChild(rim)
 
-  let width = 0
-  let height = 0
-  const resize = (): void => {
-    width = element.offsetWidth
-    height = element.offsetHeight
-  }
-  const resizeObserver = observeSize(element, resize)
-  resize()
-
   let destroyed = false
   return {
     destroy: () => {
       if (destroyed) return
       destroyed = true
-      resizeObserver?.disconnect()
       rim.remove()
       restoreStyles()
       delete element.dataset.glassMerge
@@ -323,15 +313,9 @@ const attachOutline = (element: HTMLElement, settings: Settings, opaque: boolean
     setShapes: (shapes: readonly GlassMergeShape[]) => {
       if (destroyed) return
       const visible = shapes.map(prepareShape).filter(isVisible)
-      let box = shapeBounds(visible, settings.spacing + GRID_STEP)
-      // Nothing outside the element can show, so a laid-out element bounds the trace.
-      if (box && width > 0 && height > 0) {
-        const left = Math.max(0, box.x)
-        const top = Math.max(0, box.y)
-        const right = Math.min(width, box.x + box.width)
-        const bottom = Math.min(height, box.y + box.height)
-        box = right > left && bottom > top ? { height: bottom - top, width: right - left, x: left, y: top } : null
-      }
+      // Traced around the shapes rather than over the element: the element may
+      // be resizing in the same frame, and its size is only known after layout.
+      const box = shapeBounds(visible, settings.spacing + GRID_STEP)
       const path = box ? contourPath(traceContours(box, GRID_STEP, mergedField(visible, settings.spacing))) : ''
       element.style.setProperty('clip-path', path ? `path(evenodd, '${path}')` : 'inset(50%)')
       outline.setAttribute('d', path)
