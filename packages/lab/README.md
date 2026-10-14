@@ -66,8 +66,9 @@ the trigger. A disabled item stays reachable with `aria-disabled`, as the WAI-AR
 menu pattern asks, and does nothing when chosen. The popup stays mounted until the
 last droplet is home, while `aria-expanded` turns false the moment it closes.
 
-With `motion={false}` on the provider, or `prefers-reduced-motion: reduce`, the
-droplets appear and disappear in place.
+With `motion={false}` on the provider the droplets appear and disappear in place.
+Like every `@liquefy-ui/react` component, lab does not read `prefers-reduced-motion`
+itself; map it to `motion` if your app wants to (see Motion on the docs site).
 
 The droplets are laid out beside the trigger, not portalled out to the provider,
 so that a droplet and its glass are always clipped and stacked alike: an ancestor
@@ -178,8 +179,8 @@ liquid is a canvas inside it, under the rim and the shader's glints. Like
 visible reading hidden from assistive technology. On the server, and anywhere
 without a 2D canvas, a flat band of the tint stands in for the liquid.
 
-With `motion={false}` on the provider, or `prefers-reduced-motion: reduce`, the
-level moves straight to its mark with a still surface and no lean. The animation
+With `motion={false}` on the provider the level moves straight to its mark with a
+still surface and no lean. The animation
 loop stops once the liquid is still, and while the vessel is scrolled out of view.
 
 ### The simulation on its own

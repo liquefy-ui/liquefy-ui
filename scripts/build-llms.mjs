@@ -243,9 +243,9 @@ const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled c
 - Lab is on npm only. The shadcn registry carries \`@liquefy-ui/react\`'s components.
 - \`DropletMenu\` needs \`icon\`, \`label\` and \`items\`; each item needs \`icon\` and
   \`label\`, which is its accessible name, tooltip and typeahead text.
-- Unlike \`@liquefy-ui/react\`, lab components read \`prefers-reduced-motion\` themselves:
-  with it, or \`motion={false}\` on the provider, droplets appear in place and a level
-  goes straight to its mark with a still surface.
+- Like \`@liquefy-ui/react\`, lab does not read \`prefers-reduced-motion\`. With
+  \`motion={false}\` on the provider, droplets appear in place and a level goes straight
+  to its mark with a still surface; map the media query to \`motion\` if the app wants to.
 - \`GlassMerge\` (and \`DropletMenu\`, which is drawn with it) must not sit under an
   element with \`opacity\`, \`filter\`, \`clip-path\`, \`mask\` or \`will-change: opacity\`:
   each one leaves the glass nothing behind it to bend.`
