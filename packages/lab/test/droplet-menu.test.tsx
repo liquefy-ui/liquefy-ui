@@ -43,6 +43,12 @@ const mount = (node: Parameters<typeof render>[0], motion = false) =>
 
 const focused = () => document.activeElement
 
+// The tests that wait for droplets to come home wait for real frames. The
+// timeline counts at most 1/30 s per frame however long the frame took, so on
+// a loaded machine the return takes longer in wall-clock time than it
+// animates — they get a budget sized for a busy CI runner, not an idle laptop.
+const RETURN_BUDGET = 15_000
+
 afterEach(() => {
   document.body.innerHTML = ''
   glass.frames = []
@@ -134,8 +140,8 @@ describe('DropletMenu', () => {
     expect(trigger.getAttribute('aria-expanded')).toBe('false')
     expect(screen.queryByRole('menu', { hidden: true })).not.toBeNull()
 
-    await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: 4000 })
-  })
+    await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: RETURN_BUDGET })
+  }, RETURN_BUDGET + 5_000)
 
   // Two synchronous renders leave no frame in between, so no droplet has left
   // when the close arrives — everything reads as home, and the popup Base UI
@@ -150,8 +156,8 @@ describe('DropletMenu', () => {
     rerender(menu(true))
     expect(screen.queryByRole('menu')).not.toBeNull()
     rerender(menu(false))
-    await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: 4000 })
-  })
+    await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: RETURN_BUDGET })
+  }, RETURN_BUDGET + 5_000)
 
   it('lays the droplets over the trigger, next to their glass', async () => {
     const user = userEvent.setup()
