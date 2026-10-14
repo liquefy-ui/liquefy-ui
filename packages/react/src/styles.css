@@ -168,6 +168,25 @@
     }
   }
 
+  /* With a fine pointer the tilt stays, until the field takes focus. A field
+     rotated toward the pointer foreshortens its focus outline along one edge, so
+     the ring reads as cut off while you type, and the motion is no help once the
+     caret is in it. So a focused field lies flat, and so does a surface holding
+     one — a card tilting under a flat field drags the ring with it. The dialog
+     surface is left out: it lifts on open, and flattening it on focus makes the
+     whole dialog jump, while the field inside it lying flat is already enough. */
+  .lq-text-field__control:focus-within {
+    transform: none;
+    transform-style: flat;
+  }
+
+  /* Its own rule for the same reason as above: `:has()` must not take the
+     field's selector down with it. */
+  .lq-surface:not(.lq-dialog__surface):has(.lq-text-field__control:focus-within) {
+    transform: none;
+    transform-style: flat;
+  }
+
   /* `-webkit-backdrop-filter` is written before the standard property, here and
      everywhere else in this file, and the order is load-bearing. Lightning CSS —
      what Vite hands a stylesheet to — reads the two as one property declared
