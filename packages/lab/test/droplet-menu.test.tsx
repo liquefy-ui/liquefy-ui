@@ -143,6 +143,31 @@ describe('DropletMenu', () => {
     await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: RETURN_BUDGET })
   }, RETURN_BUDGET + 5_000)
 
+  // The library leaves prefers-reduced-motion to the app, which maps it to the
+  // provider's `motion`. With motion on, the OS setting alone changes nothing:
+  // the popup is still held open while the droplets travel home.
+  it('still animates when the system asks for reduced motion', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      addEventListener: () => {},
+      addListener: () => {},
+      matches: query.includes('prefers-reduced-motion'),
+      media: query,
+      removeEventListener: () => {},
+      removeListener: () => {},
+    }))
+    try {
+      const user = userEvent.setup()
+      mount(<DropletMenu icon={<Glyph />} items={items()} label="Create" stagger={0} />, true)
+      await user.click(screen.getByRole('button', { name: 'Create' }))
+      await screen.findByRole('menu')
+      await user.keyboard('{Escape}')
+      expect(screen.queryByRole('menu', { hidden: true })).not.toBeNull()
+      await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: RETURN_BUDGET })
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  }, RETURN_BUDGET + 5_000)
+
   // Two synchronous renders leave no frame in between, so no droplet has left
   // when the close arrives — everything reads as home, and the popup Base UI
   // was asked to hold still has to be let go.

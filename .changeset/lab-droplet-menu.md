@@ -14,4 +14,5 @@ It is Base UI's menu underneath — roving focus, typeahead, Escape, focus retur
 to the trigger — and it keeps the popup mounted until the last droplet is home.
 `placement` lands the droplets around the trigger, on one side, or on a quarter arc
 for a corner button; `radius` defaults to the closest that keeps them apart. The
-provider's `motion` and `wobbliness`, and `prefers-reduced-motion`, are honoured.
+provider's `motion` and `wobbliness` are honoured; like `@liquefy-ui/react`, it does
+not read `prefers-reduced-motion` itself.

@@ -25,7 +25,6 @@ import {
 } from './droplet-motion'
 import { GlassMerge, type GlassMergeHandle } from './glass-merge'
 import { useBeforePaint } from './use-before-paint'
-import { usePrefersReducedMotion } from './use-reduced-motion'
 
 export type DropletMenuItem = {
   disabled?: boolean
@@ -193,8 +192,10 @@ export const DropletMenu = ({
   tint,
 }: DropletMenuProps) => {
   const config = useLiquefyConfig()
-  const prefersReducedMotion = usePrefersReducedMotion()
-  const animated = config.motion && !prefersReducedMotion
+  // Like every @liquefy-ui/react component, this answers to the provider's
+  // `motion` switch only, not to prefers-reduced-motion: mapping the OS setting
+  // to `motion` is the app's call.
+  const animated = config.motion
   const root = useLiquidStyles('lq-droplet-menu', { className, style, styles })
   const button = useLiquidStyles('lq-droplet-menu__button', {
     styles: {
