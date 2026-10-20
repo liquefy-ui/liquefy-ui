@@ -2497,6 +2497,182 @@ kbd {
   margin: 0;
 }
 
+/* LiquidMorph and LiquidIsland: content laid on glass that changes shape.
+   Each block is laid out at its final size and the glass opens around it, so
+   nothing here animates; it only has to read on thick glass over a photo. */
+
+.lab-morph-search {
+  display: grid;
+}
+
+.lab-morph-search__field {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  height: 52px;
+  padding: 0 8px 0 18px;
+}
+
+.lab-morph-search__field input {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  flex: 1;
+  font: inherit;
+  font-size: 0.95rem;
+  min-width: 0;
+  outline: none;
+}
+
+.lab-morph-search__field input::placeholder,
+.lab-morph-search__placeholder {
+  color: var(--lq-muted);
+  font-size: 0.95rem;
+}
+
+.lab-morph-search__results {
+  padding: 0 6px 8px;
+}
+
+.lab-morph-search__empty {
+  color: var(--lq-muted);
+  font-size: 0.86rem;
+  padding: 12px 14px 16px;
+}
+
+.lab-morph-player {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.lab-morph-player__track,
+.lab-island-message,
+.lab-island-track,
+.lab-island-download {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.lab-morph-player__track img {
+  border-radius: 12px;
+  height: 56px;
+  object-fit: cover;
+  width: 56px;
+}
+
+.lab-morph-player__track span,
+.lab-morph-profile span,
+.lab-island-message span {
+  display: grid;
+  gap: 2px;
+}
+
+.lab-morph-player__track strong,
+.lab-morph-profile strong,
+.lab-morph-list > strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.lab-morph-player__track em,
+.lab-morph-profile em,
+.lab-island-message em {
+  color: var(--lq-muted);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+.lab-morph-player__controls {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.lab-morph-list {
+  display: grid;
+  gap: 4px;
+  padding: 16px 6px 6px;
+}
+
+.lab-morph-list > strong {
+  padding: 0 13px 4px;
+}
+
+.lab-morph-profile {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 20px 16px 16px;
+  text-align: center;
+}
+
+.lab-morph-profile__actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+}
+
+.lab-morph-gallery {
+  gap: 112px;
+}
+
+.lab-island-track {
+  gap: 10px;
+  height: 44px;
+  padding: 0 4px 0 8px;
+}
+
+.lab-island-track img {
+  border-radius: 8px;
+  height: 28px;
+  object-fit: cover;
+  width: 28px;
+}
+
+.lab-island-track > span {
+  font-size: 0.86rem;
+  font-weight: 650;
+  padding-right: 4px;
+}
+
+.lab-island-download {
+  height: 44px;
+  padding: 0 16px;
+}
+
+.lab-island-download .lq-progress {
+  min-width: 132px;
+}
+
+.lab-island-download > span {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  min-width: 36px;
+  text-align: right;
+}
+
+.lab-island-done {
+  align-items: center;
+  display: flex;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.lab-island-message {
+  padding: 8px 20px 8px 8px;
+}
+
+.lab-island-message strong {
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
 /* Prop tables */
 
 .docs-props {
