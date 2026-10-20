@@ -94,7 +94,11 @@ const Playground = () => {
           container={room}
           dismissible={dismissible}
           modal={modal}
-          onOpenChange={setOpen}
+          onOpenChange={(next) => {
+            setOpen(next)
+            // Put away, it comes back at its peek, as a presented sheet does.
+            if (!next) setSnap('25%')
+          }}
           onSnapChange={setSnap}
           open={open}
           snap={snap}
