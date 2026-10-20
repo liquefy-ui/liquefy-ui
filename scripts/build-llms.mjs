@@ -243,12 +243,17 @@ const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled c
 - Lab is on npm only. The shadcn registry carries \`@liquefy-ui/react\`'s components.
 - \`DropletMenu\` needs \`icon\`, \`label\` and \`items\`; each item needs \`icon\` and
   \`label\`, which is its accessible name, tooltip and typeahead text.
+- \`LiquidMorph\` needs \`trigger\`, \`label\` and \`stages\`. Its stage is \`'closed'\` or a
+  key of \`stages\`; moving between open stages is the caller's, through \`setStage\`.
+- \`LiquidIsland\` needs \`label\` and \`view\`. Put what a screen reader should hear in
+  each view's \`announce\` rather than in a live region of your own.
 - Like \`@liquefy-ui/react\`, lab does not read \`prefers-reduced-motion\`. With
-  \`motion={false}\` on the provider, droplets appear in place and a level goes straight
-  to its mark with a still surface; map the media query to \`motion\` if the app wants to.
-- \`GlassMerge\` (and \`DropletMenu\`, which is drawn with it) must not sit under an
-  element with \`opacity\`, \`filter\`, \`clip-path\`, \`mask\` or \`will-change: opacity\`:
-  each one leaves the glass nothing behind it to bend.`
+  \`motion={false}\` on the provider, droplets appear in place, a level goes straight
+  to its mark with a still surface and a morph lands in its new shape; map the media
+  query to \`motion\` if the app wants to.
+- \`GlassMerge\` (and \`DropletMenu\`, \`LiquidMorph\` and \`LiquidIsland\`, which are drawn
+  with it) must not sit under an element with \`opacity\`, \`filter\`, \`clip-path\`,
+  \`mask\` or \`will-change: opacity\`: each one leaves the glass nothing behind it to bend.`
 
 const labDeclarations = `\`\`\`ts
 ${lab.declarations.map((declaration) => declaration.text).join('\n\n')}

@@ -15,3 +15,27 @@ export {
 } from './droplet-motion'
 export { LiquidLevel, type LiquidLevelProps, type LiquidLevelShape } from './liquid-level'
 export { LiquidLevelSimulation, type LiquidLevelOptions } from './liquid-level-motion'
+export {
+  LiquidMorph,
+  MORPH_CLOSED,
+  type LiquidMorphContent,
+  type LiquidMorphControls,
+  type LiquidMorphProps,
+  type LiquidMorphStage,
+} from './liquid-morph'
+export {
+  GlassMorph,
+  type GlassMorphOptions,
+  type MorphBox,
+  type MorphFrame,
+  type MorphOrigin,
+  type MorphToOptions,
+} from './morph-motion'
+export type { MorphSize } from './use-glass-morph'
+export {
+  LiquidIsland,
+  type LiquidIslandControls,
+  type LiquidIslandPanel,
+  type LiquidIslandProps,
+  type LiquidIslandView,
+} from './liquid-island'
