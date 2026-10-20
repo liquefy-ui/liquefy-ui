@@ -57,9 +57,17 @@ export type DocEntry = {
   name: string
   render: () => ReactNode
   slug: string
+  /**
+   * Where the page's links go, when it is not `#/docs/<slug>` — an entry that only
+   * points at another section of the site, such as the Lab.
+   */
+  href?: string
   /** One-line summary for the index cards, when it should differ from `description`. */
   summary?: string
 }
+
+/** The link to a doc entry, honouring an entry that points elsewhere. */
+export const docHref = (entry: Pick<DocEntry, 'href' | 'slug'>): string => entry.href ?? `#/docs/${entry.slug}`
 
 export type DocCategory = {
   icon: ReactNode

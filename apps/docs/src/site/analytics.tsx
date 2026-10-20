@@ -17,6 +17,7 @@ const ROUTES: [RegExp, string][] = [
   [/^\/components\/icons$/, '/components/icons'],
   [/^\/components\/[^/]+$/, '/components/[component]'],
   [/^\/docs\/[^/]+$/, '/docs/[page]'],
+  [/^\/lab\/[^/]+$/, '/lab/[experiment]'],
 ]
 
 export const analyticsRoute = (hash: string): { path: string; route: string } => {
