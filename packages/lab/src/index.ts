@@ -8,6 +8,7 @@ export {
   dropletRadius,
   type DropletChoreographyOptions,
   type DropletFrame,
+  type DropletLayout,
   type DropletPlacement,
   type DropletPoint,
   type TriggerFrame,

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { LiquefyProvider } from '@liquefy-ui/react'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -42,6 +42,21 @@ const mount = (node: Parameters<typeof render>[0], motion = false) =>
   render(<LiquefyProvider motion={motion} theme="dark" webgl={false}>{node}</LiquefyProvider>)
 
 const focused = () => document.activeElement
+
+// jsdom lays nothing out, so the trigger's centre is the page's origin and a
+// droplet sits at its offset from there: with three items around a large
+// trigger, Camera is 65px straight up.
+const CAMERA = { clientX: 0, clientY: -65 }
+const touch = (point: { clientX: number, clientY: number }) => ({ ...point, isPrimary: true, pointerId: 7, pointerType: 'touch' })
+const mouse = (point: { clientX: number, clientY: number }) => ({ ...point, isPrimary: true, pointerId: 1, pointerType: 'mouse' })
+
+/** Where a droplet's button is drawn, from its translate. */
+const drawnAt = (menuitem: HTMLElement) => {
+  const [, x, y] = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(menuitem.parentElement?.style.transform ?? '') ?? []
+  return { x: Number(x), y: Number(y) }
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // The tests that wait for droplets to come home wait for real frames. The
 // timeline counts at most 1/30 s per frame however long the frame took, so on
@@ -293,5 +308,230 @@ describe('DropletMenu', () => {
     mount(<DropletMenu icon={<Glyph />} items={items()} label="Create" open={false} />)
     await user.click(screen.getByRole('button', { name: 'Create' }))
     expect(screen.queryByRole('menu')).toBeNull()
+  })
+
+  describe('laid out in a line', () => {
+    it('stacks a column above the trigger that reads, and is walked, top to bottom', async () => {
+      const user = userEvent.setup()
+      mount(<DropletMenu icon={<Glyph />} items={items()} label="Create" layout="line" placement="top" />)
+      await user.tab()
+      await user.keyboard('{ArrowDown}')
+      const menu = await screen.findByRole('menu')
+      const [camera, photo, voiceMemo] = within(menu).getAllByRole('menuitem')
+      expect(drawnAt(camera!)).toEqual({ x: 0, y: -195 })
+      expect(drawnAt(photo!)).toEqual({ x: 0, y: -130 })
+      expect(drawnAt(voiceMemo!)).toEqual({ x: 0, y: -65 })
+
+      expect(focused()).toBe(camera)
+      await user.keyboard('{ArrowDown}')
+      expect(focused()).toBe(photo)
+    })
+
+    it('walks a row with the left and right arrows', async () => {
+      const user = userEvent.setup()
+      const chosen: string[] = []
+      mount(<DropletMenu icon={<Glyph />} items={items(chosen)} label="Create" layout="line" placement="right" />)
+      await user.tab()
+      await user.keyboard('{Enter}')
+      const menu = await screen.findByRole('menu')
+      expect(menu.getAttribute('aria-orientation')).toBe('horizontal')
+      const [camera, photo] = within(menu).getAllByRole('menuitem')
+      expect(drawnAt(camera!)).toEqual({ x: 65, y: 0 })
+      expect(drawnAt(photo!)).toEqual({ x: 130, y: 0 })
+
+      await waitFor(() => expect(focused()).toBe(camera))
+      await user.keyboard('{ArrowRight}{Enter}')
+      expect(chosen).toEqual(['Photo'])
+    })
+  })
+
+  describe('a press that slides', () => {
+    it('chooses the droplet it lets go on, opening on the press for touch', async () => {
+      const chosen: string[] = []
+      mount(<DropletMenu icon={<Glyph />} items={items(chosen)} label="Create" />)
+      const trigger = screen.getByRole('button', { name: 'Create' })
+
+      fireEvent.pointerDown(trigger, touch({ clientX: 0, clientY: 0 }))
+      // Open while the finger is still down, not on the tap that never comes.
+      await screen.findByRole('menu')
+      fireEvent.pointerMove(trigger, touch({ clientX: 0, clientY: -30 }))
+      fireEvent.pointerMove(trigger, touch(CAMERA))
+      fireEvent.pointerUp(trigger, touch(CAMERA))
+
+      expect(chosen).toEqual(['Camera'])
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+    })
+
+    it('closes without choosing when let go off the droplets', async () => {
+      const chosen: string[] = []
+      const changes: boolean[] = []
+      mount(<DropletMenu icon={<Glyph />} items={items(chosen)} label="Create" onOpenChange={(open) => changes.push(open)} />)
+      const trigger = screen.getByRole('button', { name: 'Create' })
+
+      fireEvent.pointerDown(trigger, touch({ clientX: 0, clientY: 0 }))
+      await screen.findByRole('menu')
+      fireEvent.pointerMove(trigger, touch({ clientX: 140, clientY: -140 }))
+      fireEvent.pointerUp(trigger, touch({ clientX: 140, clientY: -140 }))
+
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+      expect(chosen).toEqual([])
+      expect(changes).toEqual([true, false])
+    })
+
+    it('does nothing when let go on a disabled droplet, as a click does', async () => {
+      mount(<DropletMenu icon={<Glyph />} items={items()} label="Create" />)
+      const trigger = screen.getByRole('button', { name: 'Create' })
+      fireEvent.pointerDown(trigger, touch({ clientX: 0, clientY: 0 }))
+      await screen.findByRole('menu')
+      // Voice memo, the disabled one, is down and to the left.
+      const voiceMemo = { clientX: -56.29, clientY: 32.5 }
+      fireEvent.pointerMove(trigger, touch(voiceMemo))
+      fireEvent.pointerUp(trigger, touch(voiceMemo))
+      await sleep(50)
+      expect(screen.queryByRole('menu')).not.toBeNull()
+    })
+
+    it('leaves the menu open after a tap, as a click does', async () => {
+      const chosen: string[] = []
+      mount(<DropletMenu icon={<Glyph />} items={items(chosen)} label="Create" />)
+      const trigger = screen.getByRole('button', { name: 'Create' })
+      fireEvent.pointerDown(trigger, touch({ clientX: 0, clientY: 0 }))
+      fireEvent.pointerUp(trigger, touch({ clientX: 3, clientY: -2 }))
+      await screen.findByRole('menu')
+      await sleep(50)
+      expect(screen.queryByRole('menu')).not.toBeNull()
+      expect(chosen).toEqual([])
+    })
+
+    it('chooses with a mouse the same way, once', async () => {
+      const user = userEvent.setup()
+      const chosen: string[] = []
+      mount(<DropletMenu icon={<Glyph />} items={items(chosen)} label="Create" />)
+      const trigger = screen.getByRole('button', { name: 'Create' })
+      await user.pointer({ coords: { clientX: 0, clientY: 0 }, keys: '[MouseLeft>]', target: trigger })
+      const menu = await screen.findByRole('menu')
+      const camera = within(menu).getByRole('menuitem', { name: 'Camera' })
+      // Held past the 200ms after which Base UI would click an item the mouse is released over itself.
+      await sleep(250)
+      await user.pointer({ coords: CAMERA, target: camera })
+      await user.pointer({ coords: CAMERA, keys: '[/MouseLeft]', target: camera })
+      expect(chosen).toEqual(['Camera'])
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+    })
+
+    // Droplets fly out under a cursor still resting on the trigger. One that
+    // happens to be under it when the button comes up has not been chosen.
+    it('does not choose a droplet that passes under a press that never slid', async () => {
+      const chosen: string[] = []
+      mount(<DropletMenu icon={<Glyph />} items={items(chosen)} label="Create" />)
+      const trigger = screen.getByRole('button', { name: 'Create' })
+      fireEvent.pointerDown(trigger, mouse({ clientX: 0, clientY: 0 }))
+      fireEvent.mouseDown(trigger)
+      const menu = await screen.findByRole('menu')
+      const camera = within(menu).getByRole('menuitem', { name: 'Camera' })
+      await sleep(250)
+      fireEvent.pointerUp(camera, mouse({ clientX: 0, clientY: 0 }))
+      fireEvent.mouseUp(camera)
+      await sleep(50)
+      expect(chosen).toEqual([])
+      expect(screen.queryByRole('menu')).not.toBeNull()
+    })
+  })
+
+  describe('with motion', () => {
+    /** Opens a menu with motion on and waits for its droplets to land. */
+    const openAnimated = async (node: Parameters<typeof render>[0]) => {
+      const user = userEvent.setup()
+      mount(node, true)
+      await user.click(screen.getByRole('button', { name: 'Create' }))
+      const menu = await screen.findByRole('menu')
+      const camera = within(menu).getByRole('menuitem', { name: 'Camera' })
+      await waitFor(() => expect(drawnAt(camera).y).toBeCloseTo(-65, 0), { timeout: RETURN_BUDGET })
+      return { camera, menu, user }
+    }
+
+    it('draws a droplet and its glass toward a pointer near it, together', async () => {
+      const { camera } = await openAnimated(<DropletMenu icon={<Glyph />} items={items()} label="Create" stagger={0} />)
+      const atRest = drawnAt(camera)
+
+      // Just past Camera's top rim.
+      fireEvent.pointerMove(window, mouse({ clientX: 0, clientY: -65 - 30 }))
+      await waitFor(() => expect(drawnAt(camera).y).toBeLessThan(atRest.y - 5), { timeout: RETURN_BUDGET })
+
+      const [trigger, glassCamera] = lastFrame()
+      expect(glassCamera!.y - trigger!.y).toBeCloseTo(drawnAt(camera).y, 1)
+      expect(glassCamera!.x - trigger!.x).toBeCloseTo(drawnAt(camera).x, 1)
+    }, RETURN_BUDGET + 5_000)
+
+    it('bounces the chosen droplet, then acts on it once and closes', async () => {
+      const camera = vi.fn()
+      const photo = vi.fn()
+      const { menu, user } = await openAnimated(
+        <DropletMenu
+          icon={<Glyph />}
+          items={[
+            { icon: <Glyph />, label: 'Camera', onSelect: camera },
+            { icon: <Glyph />, label: 'Photo', onSelect: photo },
+          ]}
+          label="Create"
+          stagger={0}
+        />,
+      )
+      const trigger = screen.getByRole('button', { name: 'Create' })
+      const cameraItem = within(menu).getByRole('menuitem', { name: 'Camera' })
+      const before = glass.frames.length
+
+      fireEvent.click(cameraItem)
+      expect(camera).not.toHaveBeenCalled()
+      // While it bounces, another press, a second choice and Escape all wait.
+      fireEvent.click(cameraItem)
+      fireEvent.click(within(menu).getByRole('menuitem', { name: 'Photo' }))
+      await user.keyboard('{Escape}')
+      expect(trigger.getAttribute('aria-expanded')).toBe('true')
+
+      await waitFor(() => expect(camera).toHaveBeenCalledTimes(1), { timeout: RETURN_BUDGET })
+      expect(photo).not.toHaveBeenCalled()
+      // The glass bounced with the button: a third bigger at its height.
+      const widest = Math.max(...glass.frames.slice(before).map((frame) => frame[1]?.width ?? 0))
+      expect(widest).toBeGreaterThan(46 * 1.2)
+      await waitFor(() => expect(trigger.getAttribute('aria-expanded')).toBe('false'))
+      await sleep(400)
+      expect(camera).toHaveBeenCalledTimes(1)
+    }, RETURN_BUDGET + 5_000)
+
+    it('acts on a droplet chosen from the keyboard after its bounce and hands focus back', async () => {
+      const user = userEvent.setup()
+      const chosen: string[] = []
+      mount(<DropletMenu icon={<Glyph />} items={items(chosen)} label="Create" stagger={0} />, true)
+      const trigger = screen.getByRole('button', { name: 'Create' })
+      await user.tab()
+      await user.keyboard('{ArrowDown}')
+      await screen.findByRole('menu')
+      await user.keyboard('{ArrowDown}{Enter}')
+      expect(chosen).toEqual([])
+
+      await waitFor(() => expect(chosen).toEqual(['Photo']), { timeout: RETURN_BUDGET })
+      await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: RETURN_BUDGET })
+      expect(focused()).toBe(trigger)
+    }, RETURN_BUDGET * 2 + 5_000)
+  })
+
+  it('neither pulls nor bounces with motion off, and acts at once', async () => {
+    const user = userEvent.setup()
+    const chosen: string[] = []
+    mount(<DropletMenu icon={<Glyph />} items={items(chosen)} label="Create" />)
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+    const menu = await screen.findByRole('menu')
+    const camera = within(menu).getByRole('menuitem', { name: 'Camera' })
+    const atRest = lastFrame()
+
+    fireEvent.pointerMove(window, mouse({ clientX: 0, clientY: -95 }))
+    await sleep(100)
+    expect(lastFrame()).toEqual(atRest)
+    expect(drawnAt(camera)).toEqual({ x: 0, y: -65 })
+
+    fireEvent.click(camera)
+    expect(chosen).toEqual(['Camera'])
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
   })
 })

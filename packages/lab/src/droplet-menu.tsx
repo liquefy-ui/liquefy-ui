@@ -1,5 +1,5 @@
 import { Menu } from '@base-ui/react/menu'
-import type { GlassMergeShape } from '@liquefy-ui/core'
+import { observeElasticPointer, type GlassMergeShape } from '@liquefy-ui/core'
 import {
   useLiquefyConfig,
   useLiquidStyles,
@@ -12,6 +12,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react'
 import {
@@ -19,6 +20,7 @@ import {
   dropletOffsets,
   dropletRadius,
   type DropletFrame,
+  type DropletLayout,
   type DropletPlacement,
   type DropletPoint,
   type TriggerFrame,
@@ -31,6 +33,7 @@ export type DropletMenuItem = {
   icon: ReactNode
   /** Names the droplet: its accessible name, its tooltip, and what typeahead matches. */
   label: string
+  /** Runs once the chosen droplet has bounced, just before the menu closes. */
   onSelect?: () => void
 }
 
@@ -44,11 +47,21 @@ export type DropletMenuProps = LiquidStyleProps & {
   items: DropletMenuItem[]
   /** The trigger's accessible name and tooltip. */
   label: string
+  /**
+   * `arc` spreads the droplets over the side `placement` names; `line` stacks
+   * them in a straight line out of it — a column for `top` or `bottom`, a row for
+   * `left` or `right`. A line reads top to bottom, then left to right.
+   */
+  layout?: DropletLayout
   onOpenChange?: (open: boolean) => void
   open?: boolean
-  /** Which side of the trigger the droplets land on. `around` rings it. */
+  /** Which side of the trigger the droplets land on. `around` rings it (and, for a line, counts as `top`). */
   placement?: DropletPlacement
-  /** Distance from the trigger's centre to each droplet's, in pixels. Defaults to the closest that keeps them apart. */
+  /**
+   * Distance from the trigger's centre to each droplet's, in pixels — on a
+   * line, to the nearest one and between neighbours. Defaults to the closest
+   * that keeps them apart.
+   */
   radius?: number
   /** The trigger's size; the droplets are one size down. */
   size?: 'sm' | 'md' | 'lg'
@@ -82,6 +95,25 @@ const TRIGGER_SWELL = 1.25
 const SHADOW_ROOM = { above: 22, below: 40, side: 30 }
 
 const AT_HOME = 'translate(-50%, -50%) scale(0)'
+
+/**
+ * How far a press on the trigger may wander and still be a tap rather than a
+ * slide: about what a finger drifts by on glass.
+ */
+const DRAG_SLOP = 10
+
+/** A press on the trigger that may become a slide onto a droplet. Positions are in client pixels. */
+type Drag = {
+  centreX: number
+  centreY: number
+  /** Past the slop: letting go now chooses the droplet under the pointer, or closes the menu. */
+  moved: boolean
+  /** The droplet under the pointer, or -1. */
+  over: number
+  pointerId: number
+  startX: number
+  startY: number
+}
 
 /**
  * Rotating into the direction of travel, stretching, and rotating back lays
@@ -170,9 +202,14 @@ const BUTTON: CSSProperties = {
  * `GlassMerge` surface: a droplet leaving pulls a neck of glass out of the
  * trigger that thins and lets go. The buttons themselves are clear.
  *
+ * Out, the droplet nearest a pointer leans toward it, and the highlighted one
+ * swells a little; a chosen one bounces before its `onSelect` runs and the
+ * menu closes. A press on the trigger can slide straight onto a droplet and
+ * let go there to choose it.
+ *
  * Behaviour is Base UI's menu — roving focus with the arrow keys, typeahead,
- * Escape, focus returned to the trigger — so the motion is the only thing this
- * adds. The popup stays mounted until the last droplet is home.
+ * Escape, focus returned to the trigger — so the motion and the slide are the
+ * only things this adds. The popup stays mounted until the last droplet is home.
  */
 export const DropletMenu = ({
   className,
@@ -181,6 +218,7 @@ export const DropletMenu = ({
   iconTurn = 0,
   items,
   label,
+  layout = 'arc',
   onOpenChange,
   open: openProp,
   placement = 'around',
@@ -196,6 +234,8 @@ export const DropletMenu = ({
   // `motion` switch only, not to prefers-reduced-motion: mapping the OS setting
   // to `motion` is the app's call.
   const animated = config.motion
+  const animatedRef = useRef(animated)
+  animatedRef.current = animated
   const root = useLiquidStyles('lq-droplet-menu', { className, style, styles })
   const button = useLiquidStyles('lq-droplet-menu__button', {
     styles: {
@@ -219,10 +259,19 @@ export const DropletMenu = ({
 
   const actionsRef = useRef<Menu.Root.Actions | null>(null)
   const triggerRef = useRef<HTMLSpanElement | null>(null)
+  const triggerButtonRef = useRef<HTMLButtonElement | null>(null)
   const dropletRefs = useRef<(HTMLSpanElement | null)[]>([])
   const glassRef = useRef<GlassMergeHandle | null>(null)
   const portalRef = useRef<HTMLSpanElement | null>(null)
   const frameRef = useRef(0)
+  const itemsRef = useRef(items)
+  itemsRef.current = items
+  // One choice per opening: set by the first droplet chosen, cleared when the menu opens again.
+  const choiceRef = useRef(false)
+  const dragRef = useRef<Drag | null>(null)
+  const endDragRef = useRef<(() => void) | null>(null)
+  // The droplet with focus, which Base UI moves with the arrow keys and the cursor alike.
+  const focusedRef = useRef(-1)
 
   const dropletSize = DROPLET_SIZE[size]
   const triggerPixels = PIXELS[size]
@@ -233,13 +282,15 @@ export const DropletMenu = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [stagger, config.wobbliness],
   )
-  const resolvedRadius = radius ?? dropletRadius(items.length, placement, dropletPixels, triggerPixels)
+  const resolvedRadius = radius ?? dropletRadius(items.length, placement, dropletPixels, triggerPixels, layout)
   const offsets = useMemo(
-    () => dropletOffsets(items.length, placement, resolvedRadius),
-    [items.length, placement, resolvedRadius],
+    () => dropletOffsets(items.length, placement, resolvedRadius, layout),
+    [items.length, layout, placement, resolvedRadius],
   )
   const offsetsRef = useRef(offsets)
   offsetsRef.current = offsets
+  const layoutRef = useRef(layout)
+  layoutRef.current = layout
 
   const box = useMemo(
     () => glassBox(offsets, triggerPixels, dropletPixels, out),
@@ -273,6 +324,16 @@ export const DropletMenu = ({
     setReturning(false)
   }, [choreography])
 
+  // Acting on a choice: the item's own action first, then the menu closes as
+  // if it had been clicked — through Base UI, so focus goes back to the trigger.
+  const commit = useCallback((index: number) => {
+    try {
+      itemsRef.current[index]?.onSelect?.()
+    } finally {
+      actionsRef.current?.close()
+    }
+  }, [])
+
   const run = useCallback(() => {
     cancelAnimationFrame(frameRef.current)
     let last = performance.now()
@@ -280,13 +341,40 @@ export const DropletMenu = ({
       const busy = choreography.step((now - last) / 1000)
       last = now
       paint()
-      if (busy) frameRef.current = requestAnimationFrame(tick)
-      else finishClosing()
+      const chosen = choreography.takeChoice()
+      if (chosen >= 0) commit(chosen)
+      if (busy) {
+        frameRef.current = requestAnimationFrame(tick)
+      } else {
+        frameRef.current = 0
+        finishClosing()
+      }
     }
     frameRef.current = requestAnimationFrame(tick)
-  }, [choreography, finishClosing, paint])
+  }, [choreography, commit, finishClosing, paint])
 
-  useEffect(() => () => cancelAnimationFrame(frameRef.current), [])
+  // For a change that does not restart the timeline — the pointer moving, a
+  // highlight — that should not cancel the frame already on its way either:
+  // the pointer can move every frame, and restarting each time would starve it.
+  const wake = useCallback(() => {
+    if (!frameRef.current) run()
+  }, [run])
+
+  // With motion off a choice is never left bouncing, but one could be caught
+  // mid-bounce when motion is switched off.
+  const settle = useCallback(() => {
+    choreography.settle()
+    paint()
+    const chosen = choreography.takeChoice()
+    if (chosen >= 0) commit(chosen)
+  }, [choreography, commit, paint])
+
+  useEffect(() => () => {
+    cancelAnimationFrame(frameRef.current)
+    frameRef.current = 0
+  }, [choreography])
+
+  useEffect(() => () => endDragRef.current?.(), [])
 
   // The glass shows the trigger from the first frame, and is redrawn in place
   // whenever its surface grows for the droplets or shrinks back to the trigger.
@@ -301,14 +389,13 @@ export const DropletMenu = ({
 
   // A new placement or radius moves droplets already out without replaying the launch.
   useEffect(() => {
-    choreography.retarget(offsets)
+    choreography.retarget(offsets, layout)
     if (!animated) {
-      choreography.settle()
-      paint()
+      settle()
       return
     }
     run()
-  }, [animated, choreography, offsets, paint, run])
+  }, [animated, choreography, layout, offsets, run, settle])
 
   useEffect(() => {
     const wasOpen = openRef.current
@@ -317,17 +404,20 @@ export const DropletMenu = ({
     // before its first droplet left still has a popup held mounted to release.
     closingRef.current = !open && wasOpen
     if (closingRef.current) setReturning(true)
-    if (open) choreography.open(offsetsRef.current)
-    else choreography.close()
+    if (open) {
+      choiceRef.current = false
+      choreography.open(offsetsRef.current, layoutRef.current)
+    } else {
+      choreography.close()
+    }
 
     if (!animated) {
-      choreography.settle()
-      paint()
+      settle()
       finishClosing()
       return
     }
     run()
-  }, [animated, choreography, finishClosing, open, paint, run])
+  }, [animated, choreography, finishClosing, open, run, settle])
 
   // A controlled caller that closes the menu goes through Base UI's own close,
   // so the droplets still come home rather than the popup vanishing.
@@ -341,7 +431,142 @@ export const DropletMenu = ({
     }
   }, [controlled, openProp])
 
+  // The magnet. One page-wide pointer listener (shared with every liquefy-ui
+  // surface) reports where the pointer is against the trigger, and the nearest
+  // droplet leans from its resting place — measured from where it rests rather
+  // than from where it is drawn, so a droplet leaning closer is not drawn closer
+  // still.
+  useEffect(() => {
+    const trigger = triggerButtonRef.current
+    if (!animated || !out || !trigger) return
+    const pullable = (index: number) => !itemsRef.current[index]?.disabled
+    const stop = observeElasticPointer(trigger, (bounds, x, y) => {
+      choreography.attract(
+        { x: x - bounds.left - bounds.width / 2, y: y - bounds.top - bounds.height / 2 },
+        dropletPixels,
+        pullable,
+      )
+      wake()
+    })
+    // Nothing is near any more once a finger lifts or the cursor leaves the window.
+    const release = (event: PointerEvent) => {
+      if (event.type === 'pointerout' ? event.relatedTarget !== null : event.pointerType === 'mouse') return
+      choreography.attract(null)
+      wake()
+    }
+    window.addEventListener('pointerup', release)
+    window.addEventListener('pointercancel', release)
+    window.addEventListener('pointerout', release)
+    return () => {
+      stop()
+      window.removeEventListener('pointerup', release)
+      window.removeEventListener('pointercancel', release)
+      window.removeEventListener('pointerout', release)
+      choreography.attract(null)
+    }
+    // `offsets` re-measures the trigger, which a new placement can move.
+  }, [animated, choreography, dropletPixels, offsets, out, wake])
+
+  /** Swells the droplet under a sliding press, or else the one with focus. */
+  const refreshHighlight = useCallback(() => {
+    if (!animatedRef.current) return
+    const index = dragRef.current ? dragRef.current.over : focusedRef.current
+    const item = itemsRef.current[index]
+    choreography.highlight(item && !item.disabled ? index : -1)
+    wake()
+  }, [choreography, wake])
+
+  const choose = useCallback((index: number) => {
+    const item = itemsRef.current[index]
+    // Once per opening: a second droplet pressed while the first is still
+    // bouncing, or one pressed on its way home, does nothing.
+    if (!item || item.disabled || !openRef.current || choiceRef.current) return
+    choiceRef.current = true
+    if (animatedRef.current && choreography.choose(index)) wake()
+    else commit(index)
+  }, [choreography, commit, wake])
+
+  const requestOpen = () => {
+    if (!controlled) setOpen(true)
+    onOpenChange?.(true)
+  }
+
+  // A press on the closed trigger opens the menu (Base UI does that for a
+  // mouse on its own) and follows the pointer until it lets go. Let go on a
+  // droplet chooses it; let go anywhere else after sliding closes the menu, as
+  // a native menu does when you drag off it; let go without sliding was a tap,
+  // and leaves the menu open as a click does.
+  const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!event.isPrimary || event.button !== 0 || openRef.current || dragRef.current) return
+    const trigger = event.currentTarget
+    const bounds = trigger.getBoundingClientRect()
+    const drag: Drag = {
+      centreX: bounds.left + bounds.width / 2,
+      centreY: bounds.top + bounds.height / 2,
+      moved: false,
+      over: -1,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+    }
+    dragRef.current = drag
+    // Everything the pointer does until it lets go comes back to the trigger,
+    // which also keeps Base UI's own release-over-an-item handling for a mouse
+    // from firing alongside this one.
+    try {
+      trigger.setPointerCapture(event.pointerId)
+    } catch {
+      // Not supported, or the pointer is already gone; the window still hears it.
+    }
+    if (event.pointerType === 'touch') {
+      // Base UI opens for touch on the tap's emulated mousedown, which only
+      // comes once the finger lifts — too late to slide. Open now, and keep that
+      // mousedown from arriving and toggling the menu shut again.
+      event.preventDefault()
+      requestOpen()
+    }
+
+    const pointAt = (moving: PointerEvent) => ({ x: moving.clientX - drag.centreX, y: moving.clientY - drag.centreY })
+    const move = (moving: PointerEvent) => {
+      if (moving.pointerId !== drag.pointerId) return
+      if (Math.hypot(moving.clientX - drag.startX, moving.clientY - drag.startY) > DRAG_SLOP) drag.moved = true
+      const over = choreography.dropletAt(pointAt(moving), dropletPixels)
+      if (over === drag.over) return
+      drag.over = over
+      refreshHighlight()
+    }
+    const up = (lifted: PointerEvent) => {
+      if (lifted.pointerId !== drag.pointerId) return
+      end()
+      if (!drag.moved) return
+      const over = choreography.dropletAt(pointAt(lifted), dropletPixels)
+      // A disabled droplet does nothing when let go on, as it does when clicked.
+      if (over >= 0) choose(over)
+      else actionsRef.current?.close()
+    }
+    const cancel = (cancelled: PointerEvent) => {
+      if (cancelled.pointerId === drag.pointerId) end()
+    }
+    const end = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', cancel)
+      dragRef.current = null
+      endDragRef.current = null
+      refreshHighlight()
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', cancel)
+    endDragRef.current = end
+  }
+
   const handleOpenChange = (next: boolean, details: Menu.Root.ChangeEventDetails) => {
+    // A chosen droplet is still bouncing: the menu closes when it is done, not before.
+    if (!next && choreography.choosing) {
+      details.cancel()
+      return
+    }
     if (!next && animated) details.preventUnmountOnClose()
     if (!next || !controlled) setOpen(next)
     if (!silentRef.current) onOpenChange?.(next)
@@ -369,7 +594,14 @@ export const DropletMenu = ({
         style={{ ...box, pointerEvents: 'none', position: 'absolute' }}
         tint={tint}
       />
-      <Menu.Root actionsRef={actionsRef} modal={false} onOpenChange={handleOpenChange} open={open}>
+      <Menu.Root
+        actionsRef={actionsRef}
+        modal={false}
+        onOpenChange={handleOpenChange}
+        open={open}
+        // A row is walked with the left and right arrows, the way it reads.
+        orientation={layout === 'line' && (placement === 'left' || placement === 'right') ? 'horizontal' : 'vertical'}
+      >
         <span
           ref={triggerRef}
           style={{
@@ -383,7 +615,22 @@ export const DropletMenu = ({
           <Menu.Trigger
             aria-label={label}
             className={button.className}
-            style={{ ...BUTTON, height: triggerPixels, width: triggerPixels }}
+            onContextMenu={(event) => {
+              // A long press that is about to slide is not asking for the browser's menu.
+              if (dragRef.current) event.preventDefault()
+            }}
+            onPointerDown={handlePointerDown}
+            ref={triggerButtonRef}
+            style={{
+              ...BUTTON,
+              height: triggerPixels,
+              // A finger that slides off the trigger is choosing a droplet, not scrolling the page.
+              touchAction: 'none',
+              userSelect: 'none',
+              WebkitTouchCallout: 'none',
+              WebkitUserSelect: 'none',
+              width: triggerPixels,
+            }}
             title={label}
           >
             <span
@@ -437,10 +684,24 @@ export const DropletMenu = ({
                   }}
                 >
                   <Menu.Item
+                    // Closed here, once the chosen droplet has bounced.
+                    closeOnClick={false}
                     disabled={item.disabled}
                     label={item.label}
                     nativeButton
-                    onClick={() => item.onSelect?.()}
+                    onBlur={() => {
+                      if (focusedRef.current === index) focusedRef.current = -1
+                      refreshHighlight()
+                    }}
+                    onClick={() => choose(index)}
+                    onFocus={() => {
+                      focusedRef.current = index
+                      refreshHighlight()
+                    }}
+                    // Base UI clicks an item a mouse is released over after
+                    // pressing the trigger; a slide onto a droplet is already
+                    // decided by the trigger's own pointer handling.
+                    onMouseUp={(event) => event.preventBaseUIHandler()}
                     render={(
                       <button
                         aria-label={item.label}
