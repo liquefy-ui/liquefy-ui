@@ -15,8 +15,8 @@
     "@liquefy-ui/icons": "workspace:*",
     "@liquefy-ui/react": "workspace:*",
     "@vercel/analytics": "2.0.1",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",

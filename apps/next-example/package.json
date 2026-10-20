@@ -14,8 +14,8 @@
     "@liquefy-ui/icons": "workspace:*",
     "@liquefy-ui/react": "workspace:*",
     "next": "16.4.2",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",
