@@ -39,3 +39,16 @@ export {
   type LiquidIslandProps,
   type LiquidIslandView,
 } from './liquid-island'
+export { ElasticSheet, type ElasticSheetProps } from './elastic-sheet'
+export {
+  chooseStop,
+  rubberBand,
+  SheetMotion,
+  sheetStops,
+  VelocityTracker,
+  type ElasticSheetSnapPoint,
+  type SheetFrame,
+  type SheetLimits,
+  type SheetMotionOptions,
+  type SheetStop,
+} from './sheet-motion'
