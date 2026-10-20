@@ -250,6 +250,9 @@ const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled c
 - \`ElasticSheet\` takes \`snapPoints\` as \`'50%'\`, \`0.5\`, \`'320px'\` or \`320\`, and \`snap\`
   is one of those values, not an index. Give it a \`title\` (or a \`label\`); \`modal={false}\`
   is the map-style sheet with the page live behind it.
+- \`LiquidContextMenu\` wraps what is pressed as \`children\` and needs \`items\`, each with a
+  \`label\`. It opens on a long press, a right click, Shift+F10 or the context-menu key;
+  what lifts is a copy of \`children\` unless \`preview\` is given.
 - Like \`@liquefy-ui/react\`, lab does not read \`prefers-reduced-motion\`. With
   \`motion={false}\` on the provider, droplets appear in place, a level goes straight
   to its mark with a still surface, a morph lands in its new shape and a sheet lands on
