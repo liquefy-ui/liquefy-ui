@@ -165,12 +165,13 @@ export const CommandRow = ({ command, label }: { command: string; label?: string
   )
 }
 
-export type SiteSection = 'components' | 'docs' | 'home' | 'playground'
+export type SiteSection = 'components' | 'docs' | 'home' | 'lab' | 'playground'
 
 const NAV = [
   { href: '#/docs', label: 'Docs', match: 'docs' },
   { href: '#/components', label: 'Components', match: 'components' },
   { href: '#/playground', label: 'Playground', match: 'playground' },
+  { href: '#/lab', label: 'Lab', match: 'lab' },
 ] as const satisfies readonly { href: string; label: string; match: SiteSection }[]
 
 type SiteHeaderProps = {
@@ -307,6 +308,7 @@ export const SiteFooter = () => (
         <a href="#/components">Components</a>
         <a href="#/components/icons">Icons</a>
         <a href="#/playground">Playground</a>
+        <a href="#/lab">Lab</a>
       </div>
       <div>
         <strong>Elsewhere</strong>

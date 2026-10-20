@@ -161,7 +161,7 @@ ${plumbing.map(componentLine).join('\n')}
 
 - [Component docs](${HOMEPAGE}/#/components): live demos and prop tables (JavaScript required)
 - [Documentation](${HOMEPAGE}/#/docs): provider, theming, the styles prop, motion, frameworks, Tailwind, AI tooling, accessibility, performance, troubleshooting, lab
-- [Lab](${HOMEPAGE}/#/docs/lab): DropletMenu live over a photograph, with placement and stagger as controls
+- [Lab](${HOMEPAGE}/#/lab): every lab component live over a photograph, with a page each
 - [Playground](${HOMEPAGE}/#/playground): every provider prop as a live control
 `
 
@@ -263,7 +263,7 @@ const labPage = `# @liquefy-ui/lab
 ${LAB_INSTALL}
 
 Import: \`${labImport}\`
-Docs: ${HOMEPAGE}/#/docs/lab
+Docs: ${HOMEPAGE}/#/lab
 
 ${LAB_RULES}
 

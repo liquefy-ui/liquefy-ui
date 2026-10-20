@@ -83,6 +83,14 @@ categories. The 36 component pages come from `apps/docs/src/docs/catalog-*.tsx`,
 and the shadcn registry publishes 40 items built from the same source. Old
 `#/guides/*` links redirect to their `#/docs/*` equivalents.
 
+The Lab (`#/lab`) is the screen for `@liquefy-ui/lab` (and the motion parts of
+`@liquefy-ui/icons`). Each experiment is one file in
+`apps/docs/src/lab/experiments/` exporting `experiment: LabExperiment` — a component
+page plus the shelf it sits on and the package it ships in. `registry.tsx` finds the
+files with `import.meta.glob`, so adding one edits no shared list. Glass demos sit
+on a `LabStage`, a photograph to bend; controls go in `LabControls`. The docs
+sidebar's Lab entry links straight to `#/lab`, and `#/docs/lab` redirects there.
+
 The site routes on the hash while the analytics script reads `location.pathname` —
 `/` on every page of it — so `apps/docs/src/site/analytics.tsx` reports the page
 itself: the `path` a visitor opened, and the `route` pattern it matched. A new

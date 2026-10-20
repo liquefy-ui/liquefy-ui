@@ -2322,63 +2322,85 @@ kbd {
   padding: 28px 24px;
 }
 
-/* The lab page's demo. The droplets are the same glass as everything else, so
-   they are held over a photograph: the stage's own wash is too flat to show
-   what they bend. Each placement puts the trigger where it is meant to live. */
+/* The Lab. Every experiment is the same glass as the rest of the library, so it
+   is held over a photograph: a flat wash leaves the glass nothing to bend. The
+   stage must not get opacity, filter, clip-path or mask — any of them would make
+   the glass inside see only the stage's own layer. */
 
-.lab-demo {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-}
-
-.lab-demo__scene {
+.lab-stage {
   align-items: center;
   background: url('/scenes/fjord.jpg') center / cover;
   border-radius: 12px;
   display: flex;
-  height: 340px;
   justify-content: center;
   padding: 32px;
   position: relative;
+  width: 100%;
 }
 
-.lab-demo__scene[data-placement='top'] {
+.lab-stage[data-scene='coast'] {
+  background-image: url('/scenes/coast.jpg');
+}
+
+.lab-stage[data-scene='summit'] {
+  background-image: url('/scenes/summit.jpg');
+}
+
+.lab-stage[data-align='top'] {
+  align-items: flex-start;
+}
+
+.lab-stage[data-align='bottom'] {
   align-items: flex-end;
 }
 
-.lab-demo__scene[data-placement='top-left'] {
+.lab-stage[data-align='bottom-end'] {
   align-items: flex-end;
   justify-content: flex-end;
 }
 
-.lab-demo__credit {
+.lab-stage__credit {
   color: rgba(255, 255, 255, 0.88);
   font-size: 0.72rem;
   font-weight: 550;
   left: 16px;
+  pointer-events: none;
   position: absolute;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
   top: 14px;
 }
 
-/* The labels share a top line and the controls share a centre line, although
-   the segmented control is taller than the slider. */
-.lab-demo__controls {
-  display: grid;
-  gap: 16px 28px;
-  grid-template-columns: auto minmax(0, 1fr);
+.lab-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
 }
 
-.lab-demo__control {
+.lab-row--tight {
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+/* The labels share a top line and the controls share a centre line, although
+   a segmented control is taller than a slider. */
+.lab-controls {
+  display: grid;
+  gap: 16px 28px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-top: 20px;
+  width: 100%;
+}
+
+.lab-control {
   align-items: center;
   display: grid;
   gap: 8px;
   grid-template-rows: auto 1fr;
 }
 
-.lab-demo__label {
+.lab-control__label {
   align-items: baseline;
   color: var(--fg-muted);
   display: flex;
@@ -2388,11 +2410,91 @@ kbd {
   justify-content: space-between;
 }
 
-.lab-demo__label em {
+.lab-control__label em {
   color: var(--fg);
   font-family: 'DM Mono', monospace;
   font-size: 0.76rem;
   font-style: normal;
+}
+
+.lab-credit {
+  color: var(--fg-muted);
+  font-size: 0.86rem;
+  margin: -6px 0 18px;
+}
+
+.lab-intro {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 8px;
+  max-width: 720px;
+}
+
+.lab-intro p {
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* The index: fewer, larger cards than the component gallery, because each
+   preview is a scene rather than a control. */
+.lab-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.lab-card {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  transition: border-color 220ms ease, background 220ms ease;
+}
+
+.lab-card:hover {
+  background: var(--glass-strong);
+  border-color: var(--line-strong);
+}
+
+.lab-card__stage {
+  border-radius: 13px;
+  display: flex;
+  height: 178px;
+  overflow: hidden;
+}
+
+.lab-card__stage > .lab-stage {
+  border-radius: 0;
+  padding: 16px;
+}
+
+.lab-card > a {
+  align-items: center;
+  color: var(--fg);
+  display: flex;
+  gap: 6px;
+  transition: gap 200ms ease;
+}
+
+.lab-card > a:hover {
+  gap: 9px;
+}
+
+.lab-card > a strong {
+  font-size: 0.95rem;
+  font-weight: 720;
+}
+
+.lab-card > p {
+  color: var(--fg-muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  margin: 0;
 }
 
 /* Prop tables */
@@ -3017,7 +3119,7 @@ kbd {
     display: none;
   }
 
-  .lab-demo__controls {
+  .lab-controls {
     grid-template-columns: minmax(0, 1fr);
   }
 }

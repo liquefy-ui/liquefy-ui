@@ -223,6 +223,7 @@ export const DocsShell = ({
             <a href="#/docs">Docs</a>
             <a href="#/components">Components</a>
             <a href="#/playground">Playground</a>
+            <a href="#/lab">Lab</a>
           </nav>
           <nav aria-label={sidebarLabel}>{sidebar}</nav>
         </aside>
