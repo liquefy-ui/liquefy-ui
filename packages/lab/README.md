@@ -18,9 +18,9 @@ bringing a copy of their own.
 
 ## DropletMenu
 
-A round glass trigger that buds its items off one at a time. Each droplet stretches
-along the way it is travelling, swings past its place and jiggles to rest; closing
-calls them home in reverse.
+A round glass trigger that buds its items off one at a time, onto an arc or in a
+line. Each droplet stretches along the way it is travelling, swings past its place
+and jiggles to rest; closing calls them home in reverse.
 
 The trigger and the droplets are one body of glass, drawn by a single
 [`GlassMerge`](#glassmerge) surface: a droplet leaving pulls a neck of glass out of
@@ -50,23 +50,49 @@ import '@liquefy-ui/react/styles.css'
 
 | Prop | Default | |
 | --- | --- | --- |
-| `items` | — | `{ icon, label, onSelect?, disabled? }[]`. `label` is the droplet's accessible name, tooltip and typeahead text |
+| `items` | — | `{ icon, label, onSelect?, disabled? }[]`. `label` is the droplet's accessible name, tooltip and typeahead text; `onSelect` runs once the chosen droplet has bounced, just before the menu closes |
 | `icon`, `label` | — | The trigger's icon and accessible name |
 | `iconTurn` | `0` | Degrees the trigger's icon turns while open — `45` turns a plus into a close mark |
-| `placement` | `'around'` | Where the droplets land: `around`, `top`, `bottom`, `left`, `right`, or a quarter arc such as `top-left` for a trigger in the bottom-right corner |
-| `radius` | fitted | Distance from the trigger's centre to each droplet's. Defaults to the closest that keeps neighbours apart |
+| `placement` | `'around'` | Which side the droplets land on: `around`, `top`, `bottom`, `left`, `right`, or a corner such as `top-left` for a trigger in the bottom-right corner |
+| `layout` | `'arc'` | `arc` spreads the droplets over their side; `line` stacks them out of it — a column for `top` or `bottom`, a row for `left` or `right`, a diagonal from a corner (`around` counts as `top`) |
+| `radius` | fitted | Distance from the trigger's centre to each droplet's — on a line, to the nearest one and between neighbours. Defaults to the closest that keeps neighbours apart |
 | `stagger` | `120` | Milliseconds between one droplet leaving and the next |
 | `size` | `'lg'` | The trigger's size; droplets are one size down |
 | `open`, `defaultOpen`, `onOpenChange` | | Controlled or uncontrolled. A controlled close still plays the return |
 | `tint`, `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component |
 
-Behaviour is Base UI's menu: arrow keys move through the droplets in the order they
-land (clockwise), typeahead matches labels, Escape closes and focus goes back to
-the trigger. A disabled item stays reachable with `aria-disabled`, as the WAI-ARIA
-menu pattern asks, and does nothing when chosen. The popup stays mounted until the
-last droplet is home, while `aria-expanded` turns false the moment it closes.
+A line reads like any list, top to bottom and then left to right, so `items[0]` is
+the top of a column above the trigger and the left end of a row to its left. Its
+droplets queue out like beads: the far end leaves first and each one after pushes
+the others along, so none flies through another, and coming home the nearest goes
+in first and the rest close up behind it.
 
-With `motion={false}` on the provider the droplets appear and disappear in place.
+Out, the droplet nearest a pointer that comes near leans toward it — `elasticPull`,
+the same lean every liquefy-ui surface has, drawn from where the droplet rests —
+and springs back past its place when the pointer goes. Only the nearest leans, so
+two neighbours never reach for the pointer at once and melt together. The droplet with focus (from the arrow
+keys or the cursor) swells a little. A chosen droplet bounces to about a third
+bigger first; only then does its `onSelect` run and the menu close. Until then a
+second press, a second choice or Escape waits.
+
+A press on the trigger can slide: hold, move onto a droplet (it swells under the
+pointer), and let go to choose it, with a mouse, a pen or a finger. Letting go
+anywhere else after sliding closes the menu without choosing, as dragging off a
+native pull-down menu does; letting go without having moved more than a few pixels
+was a tap and leaves the menu open, as a click does. Touch opens on the press
+rather than on the tap, and the trigger has `touch-action: none`, so a slide that
+starts on it never scrolls the page.
+
+Behaviour is Base UI's menu: on an arc the arrow keys move through the droplets in
+the order they land (clockwise); a line is walked the way it reads, with up and down
+for a column and left and right for a row. Typeahead matches labels, Escape closes
+and focus goes back to the trigger. A disabled item stays reachable with
+`aria-disabled`, as the WAI-ARIA menu pattern asks, and does nothing when chosen or
+let go on. The popup stays mounted until the last droplet is home, while
+`aria-expanded` turns false the moment it closes.
+
+With `motion={false}` on the provider the droplets appear and disappear in place,
+nothing leans or bounces, and a choice acts at once.
 Like every `@liquefy-ui/react` component, lab does not read `prefers-reduced-motion`
 itself; map it to `motion` if your app wants to (see Motion on the docs site).
 

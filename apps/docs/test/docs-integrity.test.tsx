@@ -217,9 +217,10 @@ describe('the lab', () => {
   )
 
   it('leaves props at their default out of the DropletMenu demo source', () => {
-    expect(dropletMenuCode('around', 120)).not.toMatch(/placement=|stagger=/)
+    expect(dropletMenuCode('around', 120)).not.toMatch(/layout=|placement=|stagger=/)
     expect(dropletMenuCode('top-left', 60)).toContain('placement="top-left"')
     expect(dropletMenuCode('top-left', 60)).toContain('stagger={60}')
+    expect(dropletMenuCode('top', 120, 'line')).toContain('layout="line"')
   })
 
   // The docs sidebar keeps a Lab entry, but it is a doorway: its link goes to
