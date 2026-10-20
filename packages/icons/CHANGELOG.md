@@ -1,5 +1,11 @@
 # @liquefy-ui/icons
 
+## 1.2.0
+
+### Minor Changes
+
+- 2f7da29: Add `FlaskIcon` (a conical laboratory flask with a liquid line), for marking experimental or lab features.
+
 ## 1.1.0
 
 ### Minor Changes
