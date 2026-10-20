@@ -236,7 +236,9 @@ export const ElasticSheet = ({
   const activeSnap = snapProp ?? snapState
 
   const [containerElement, setContainerElement] = useState<HTMLElement | null>(() => resolveContainer(container))
-  // A ref's element is only there after the render that attaches it.
+  // A ref's element is only there once the whole tree has committed — after
+  // this component's own layout effects, when the ref is on an ancestor. The
+  // sheet starts out of view, so the frame it spends elsewhere shows nothing.
   useEffect(() => {
     setContainerElement(resolveContainer(container))
   }, [container])
@@ -325,7 +327,8 @@ export const ElasticSheet = ({
     const surface = surfaceRef.current
     if (surface) {
       // Never out through the top of the room, where it would only be cut off.
-      const reach = Math.min(frame.tongue, box.top - 2) > 0.5 ? Math.min(frame.tongue, box.top - 2) : 0
+      const clear = Math.min(frame.tongue, box.top - 2)
+      const reach = clear > 0.5 ? clear : 0
       const left = Math.floor(box.left - SHADOW_ROOM.side)
       const surfaceTop = Math.floor(box.top - reach - SHADOW_ROOM.above)
       surface.style.left = `${left}px`
