@@ -192,3 +192,78 @@ slowed by damping, so a kick travels across, reflects off the walls and fades.
 Heights are fractions of the vessel's height, which keeps the waves in proportion
 at any size. Like `DropletChoreography`, it keeps a clock that only moves when a
 frame is stepped, and a long frame counts as a short one.
+
+## ElasticSheet
+
+A sheet pulled up from the bottom, as in a maps app, where the drag is the point.
+It follows the finger, stretches against a rubber band past its tallest and lowest
+heights, and when let go coasts to the snap point the flick carries it to, swinging
+past and settling with a quiver. A slow release settles on the nearest height, a hard
+flick up runs to the top, and a hard flick down puts it away.
+
+Short, it floats in from the sides and the bottom with all four corners round;
+reaching its tallest height it anchors to them. Pulled past the top its sides draw
+in and a tongue of glass reaches up toward the finger, and its sides quiver as it
+settles. It is drawn by one [`GlassMerge`](#glassmerge) surface that follows it
+frame by frame, over a layer of thick frost that keeps the content legible.
+
+```tsx
+import { SearchIcon } from '@liquefy-ui/icons'
+import { ElasticSheet } from '@liquefy-ui/lab'
+import { LiquidButton } from '@liquefy-ui/react'
+
+<ElasticSheet
+  defaultOpen
+  modal={false}
+  snapPoints={['25%', '50%', '100%']}
+  title="Explore"
+  trigger={<LiquidButton iconBefore={<SearchIcon size={16} />}>Explore</LiquidButton>}
+>
+  <Places />
+</ElasticSheet>
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `snapPoints` | `['50%', '100%']` | The heights it rests at. `'50%'` or `0.5` is half the room; `'320px'` or `320` is exact. The room is the container's height less `topInset` |
+| `snap`, `defaultSnap`, `onSnapChange` | first point | The snap point it rests at. A drag lands wherever the flick carries it and reports it; a controlled `snap` moves it whenever it changes |
+| `open`, `defaultOpen`, `onOpenChange` | | Controlled or uncontrolled. A controlled close still slides it away |
+| `modal` | `true` | Dims what is behind, keeps focus inside and locks the page's scroll. `false` leaves the page live around it, as under a map's sheet |
+| `dismissible` | `true` | Whether a flick down, Escape, the close button and a press outside a modal sheet put it away. `false` holds the lowest height against a rubber band; only `open` closes it |
+| `container` | viewport | An element (or a ref to one) to move in instead of the viewport. Give it a position and clip its overflow |
+| `trigger` | — | An element that opens it, rendered in place. Focus goes back to it on close |
+| `title`, `label` | — | The heading, which names the dialog; `label` names it when there is no title |
+| `topInset` | `48` | Space kept clear above it at its tallest — room for the stretch and the tongue to show |
+| `maxWidth` | `640` | The widest it gets; it is centred in anything wider |
+| `grabberLabel`, `closeLabel` | `'Sheet height'`, `'Close'` | Accessible names |
+| `tint`, `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component, applied to the sheet |
+
+Behaviour is Base UI's dialog: focus moves in and is given back, Escape closes it,
+and a modal sheet adds the backdrop, the focus trap and the scroll lock. A non-modal
+sheet moves focus in only when someone opens it from its trigger, so one that is
+simply there from the start does not grab focus or scroll the page to itself. The
+grabber is a vertical slider: the arrow keys step between snap points, Home and End
+go to the ends, and a press steps up through them and round again.
+
+The sheet and its content share one gesture. A touch anywhere on it drags it; pulled
+up, a sheet below its tallest height grows before its content scrolls, and pulled
+down, content scrolled down goes back to its top before the sheet moves. A sideways
+move is left to whatever scrolls sideways. A mouse drags it by the grabber and the
+header, since dragging across content selects text, and a press that starts in a
+field never drags. The content stays laid out at the sheet's tallest height and is
+clipped as the sheet moves, so nothing reflows while it quivers.
+
+With `motion={false}` on the provider the sheet still follows the finger and still
+gives against the bands — that is the hand moving it — but lands, opens and closes
+in place, with no quiver and no tongue. The sheet stays mounted until it is out of
+view. Nothing above it may have `opacity`, `filter`, `clip-path`, `mask` or
+`will-change: opacity` — see [GlassMerge](#glassmerge).
+
+### The motion on its own
+
+`SheetMotion` is the sheet with no DOM attached: a spring for the top edge that a
+finger can hold and let go of with its speed, rubber bands past the ends, and the
+jelly and tongue springs. `chooseStop` picks where a release comes to rest from the
+distance a flick would coast (UIKit's normal deceleration), `rubberBand` is the curve
+an edge gives along, `VelocityTracker` reads a finger's speed as it lifts, and
+`sheetStops` turns snap points into heights.

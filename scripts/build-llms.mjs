@@ -243,6 +243,9 @@ const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled c
 - Lab is on npm only. The shadcn registry carries \`@liquefy-ui/react\`'s components.
 - \`DropletMenu\` needs \`icon\`, \`label\` and \`items\`; each item needs \`icon\` and
   \`label\`, which is its accessible name, tooltip and typeahead text.
+- \`ElasticSheet\` takes \`snapPoints\` as \`'50%'\`, \`0.5\`, \`'320px'\` or \`320\`, and \`snap\`
+  is one of those values, not an index. Give it a \`title\` (or a \`label\`); \`modal={false}\`
+  is the map-style sheet with the page live behind it.
 - Like \`@liquefy-ui/react\`, lab does not read \`prefers-reduced-motion\`. With
   \`motion={false}\` on the provider, droplets appear in place and a level goes straight
   to its mark with a still surface; map the media query to \`motion\` if the app wants to.
