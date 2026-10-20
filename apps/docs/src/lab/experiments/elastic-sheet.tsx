@@ -166,7 +166,7 @@ import { LiquidButton } from '@liquefy-ui/react'
   importLine: "import { ElasticSheet } from '@liquefy-ui/lab'",
   inspiredBy: 'the sheets in Apple Maps',
   name: 'ElasticSheet',
-  order: 3,
+  order: 4,
   package: '@liquefy-ui/lab',
   props: [
     { description: 'The heights it rests at. A percentage or a number up to 1 is a share of the room; pixels or a number above 1 are exact.', name: 'snapPoints', defaultValue: "['50%', '100%']", type: "Array<number | `${number}%` | `${number}px`>" },

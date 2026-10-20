@@ -193,6 +193,123 @@ Heights are fractions of the vessel's height, which keeps the waves in proportio
 at any size. Like `DropletChoreography`, it keeps a clock that only moves when a
 frame is stepped, and a long frame counts as a short one.
 
+## LiquidMorph
+
+A button that grows into what it opens, instead of opening something beside it. A
+search button spreads into a field and drops into a panel of results; a play button
+spreads into a player; an avatar into a profile card. The glass leads — sideways
+first, then down — swings past its new shape and settles, rounding off into a blob
+while it moves and thickening into a dialog's frosted glass as the content arrives.
+Closing pulls the panel back into the button, which lands with a small pop.
+
+```tsx
+import { SearchIcon } from '@liquefy-ui/icons'
+import { LiquidMorph } from '@liquefy-ui/lab'
+
+const [stage, setStage] = useState('closed')
+
+<LiquidMorph
+  label="Search"
+  stage={stage}
+  onStageChange={setStage}
+  stages={{
+    field: { width: 320, height: 52 },
+    results: { width: 320 }, // the height follows the list
+  }}
+  trigger={<SearchIcon size={20} />}
+>
+  {({ stage, setStage, close }) => (
+    <SearchPanel
+      onQuery={(query) => setStage(query ? 'results' : 'field')}
+      onClose={close}
+      showResults={stage === 'results'}
+    />
+  )}
+</LiquidMorph>
+```
+
+A morph is `'closed'` — only its trigger — or in one of its `stages`. Moving between
+open stages is the caller's: the content is handed `setStage`. Stages without
+content of their own show `children`, which stay mounted from stage to stage, so a
+field keeps its focus and its text while the glass grows around it. A stage that
+brings its own `content` crosses over to it instead, and focus follows into it.
+
+| Prop | Default | |
+| --- | --- | --- |
+| `trigger`, `label` | — | What the closed glass shows (an icon, an avatar, a thumbnail) and the trigger's accessible name |
+| `stages` | — | `{ [name]: { width?, height?, radius?, content?, label? } }`. A side left out is measured from the content, and followed as the content changes size |
+| `children` | | What the stages show unless they bring their own. A function is handed `{ stage, setStage, close }` |
+| `stage`, `defaultStage`, `onStageChange` | `'closed'` | Controlled or uncontrolled. A controlled close still plays the return |
+| `openTo` | first stage | The stage the trigger opens to |
+| `origin` | `'top-left'` | The point of the trigger that stays put: a corner, the middle of an edge, or `center` |
+| `size` | `'md'` | A round icon trigger at the library's sizes, or `{ width, height, radius }` for an avatar or a thumbnail |
+| `tint`, `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component |
+
+Behaviour is Base UI's popover: the trigger carries `aria-expanded`, focus moves to
+the first thing in the panel that takes it, and Escape or a press outside closes it
+and hands focus back to the trigger. The panel stays mounted until the glass is back
+in the trigger. With `motion={false}` on the provider every change of stage lands at
+once.
+
+## LiquidIsland
+
+A glass capsule in the manner of the Dynamic Island. At rest it is a small round
+bubble; given a view it stretches into it — a track and a play button, a progress
+bar, a message — and between views the glass is what moves: it gathers in before it
+spreads out, overshoots and settles, and a view that asks to `bounce` lands with a
+pop, like a finished download shrinking into a tick. With a `panel`, pressing it
+opens it into that, in place.
+
+```tsx
+import { CheckIcon } from '@liquefy-ui/icons'
+import { LiquidIsland } from '@liquefy-ui/lab'
+import { LiquidProgress } from '@liquefy-ui/react'
+
+<LiquidIsland
+  label="Now playing"
+  size={44}
+  view={done ? 'done' : 'download'}
+  views={{
+    music: { content: <Track /> },
+    download: {
+      announce: 'Downloading Fjord route.pdf',
+      content: <LiquidProgress aria-label="Fjord route.pdf" value={progress} />,
+    },
+    done: { announce: 'Download complete', bounce: true, content: <CheckIcon size={18} />, width: 44, height: 44 },
+  }}
+  panel={{ content: <Player />, label: 'Player', width: 300 }}
+/>
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `view`, `views` | — | Which view is showing, and each view's `content`, size (a side left out is measured), `announce` and `bounce`. A key with no view is the resting bubble |
+| `label` | — | The island's accessible name, which its button carries when there is a panel |
+| `panel` | | `{ content, width?, height?, radius?, label? }`: what the island opens into when pressed. A function is handed `{ close }`. Without one the island is not a button |
+| `open`, `defaultOpen`, `onOpenChange` | | Controlled or uncontrolled panel |
+| `size` | `36` | The resting bubble's diameter, which is also the room the island takes in the layout. Views larger than it float over what is around it |
+| `origin` | `'top'` | The point that stays put while the island changes shape |
+| `tint`, `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component |
+
+Each view's `announce` is read out through a polite live region as the view arrives,
+rather than its content, which may tick over every second. Anything in a view that
+can be pressed stays pressable; the rest of the island is one button that opens the
+panel, which behaves as Base UI's popover does in `LiquidMorph`. A view replaced
+while focus is inside it hands focus to the new view, or to the island's button.
+
+### The morph on its own
+
+Both are drawn by one `GlassMerge` surface following `GlassMorph`, the motion with
+no DOM attached: springs for width, height and corner radius, one axis a lag behind
+the other (growing, width first; shrinking in height, height first), a jelly wobble
+and a pop for landing, and the timing of the content fading out and in. Like
+`DropletChoreography`, it keeps a clock that only moves when a frame is stepped, so a
+main-thread stall slows a morph down rather than collapsing its two halves into one.
+The content sits on a frosted layer under the glass — clear for a closed trigger,
+the thick glass of `LiquidDialog` for anything holding text — and is clipped to the
+glass's shape every frame. Nothing above it may have `opacity`, `filter`,
+`clip-path`, `mask` or `will-change: opacity`; see [GlassMerge](#glassmerge).
+
 ## ElasticSheet
 
 A sheet pulled up from the bottom, as in a maps app, where the drag is the point.
