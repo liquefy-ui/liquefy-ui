@@ -71,3 +71,20 @@ export {
   type ContextMenuRowFrame,
   type ContextMenuSide,
 } from './context-menu-motion'
+export {
+  MagneticActions,
+  type MagneticAction,
+  type MagneticActionsProps,
+} from './magnetic-actions'
+export {
+  MAGNETIC_DEFAULTS,
+  magneticLayout,
+  MagneticMotion,
+  magneticPull,
+  type MagneticFrame,
+  type MagneticMotionOptions,
+  type MagneticOrientation,
+  type MagneticPoint,
+  type MagneticPullOptions,
+  type MagneticRest,
+} from './magnetic-motion'

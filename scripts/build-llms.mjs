@@ -253,14 +253,18 @@ const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled c
 - \`LiquidContextMenu\` wraps what is pressed as \`children\` and needs \`items\`, each with a
   \`label\`. It opens on a long press, a right click, Shift+F10 or the context-menu key;
   what lifts is a copy of \`children\` unless \`preview\` is given.
+- \`MagneticActions\` needs \`label\` (the toolbar's name) and \`actions\`, each with \`icon\`
+  and \`label\`; \`onClick\` is a plain click handler. It is a Base UI toolbar, so the
+  arrow keys already move between the buttons; do not add a key handler of your own.
 - Like \`@liquefy-ui/react\`, lab does not read \`prefers-reduced-motion\`. With
   \`motion={false}\` on the provider, droplets appear in place, a level goes straight
-  to its mark with a still surface, a morph lands in its new shape and a sheet lands on
-  its snap point; map the media query to \`motion\` if the app wants to.
-- \`GlassMerge\` (and \`DropletMenu\`, \`LiquidMorph\`, \`LiquidIsland\` and \`ElasticSheet\`,
-  which are drawn with it) must not sit under an element with \`opacity\`, \`filter\`,
-  \`clip-path\`, \`mask\` or \`will-change: opacity\`: each one leaves the glass nothing
-  behind it to bend.`
+  to its mark with a still surface, a morph lands in its new shape, a sheet lands on
+  its snap point and magnetic buttons stay where they rest; map the media query to
+  \`motion\` if the app wants to.
+- \`GlassMerge\` (and \`DropletMenu\`, \`LiquidMorph\`, \`LiquidIsland\`, \`ElasticSheet\` and
+  \`MagneticActions\`, which are drawn with it) must not sit under an element with
+  \`opacity\`, \`filter\`, \`clip-path\`, \`mask\` or \`will-change: opacity\`: each one leaves
+  the glass nothing behind it to bend.`
 
 const labDeclarations = `\`\`\`ts
 ${lab.declarations.map((declaration) => declaration.text).join('\n\n')}
