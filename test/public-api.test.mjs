@@ -226,6 +226,17 @@ describe('icons public API', () => {
     expect(Object.keys(manifest.exports).sort()).toEqual(['.', './effects'])
   })
 
+  // TypeScript's node10 resolution and older bundlers never read \`exports\`, so
+  // \`@liquefy-ui/icons/effects\` is also a folder whose manifest points into dist.
+  it('lets resolvers that ignore exports find icons/effects too', () => {
+    const stub = JSON.parse(readFileSync(new URL('../packages/icons/effects/package.json', import.meta.url), 'utf8'))
+    const entry = manifest.exports['./effects']
+    expect(manifest.files).toContain('effects')
+    expect(`./${stub.main.replace('../', '')}`).toBe(entry.require.default)
+    expect(`./${stub.module.replace('../', '')}`).toBe(entry.import.default)
+    expect(`./${stub.types.replace('../', '')}`).toBe(entry.require.types)
+  })
+
   it('depends on nothing but React, as a peer', () => {
     expect(manifest.dependencies).toBeUndefined()
     expect(Object.keys(manifest.peerDependencies)).toEqual(['react'])
