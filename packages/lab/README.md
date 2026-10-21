@@ -471,3 +471,69 @@ the provider it opens and closes at once, and a held press does not sink.
 the menu's `GlassMorph` and the piece of glass under the preview's edge it pulls its
 neck from, the rows' arrival and the highlight. `contextMenuLayout` works out where
 the lifted preview and the menu go in a viewport.
+
+## MagneticActions
+
+A row of round glass action buttons that reach for the pointer. Bring a cursor up
+to the row and the button nearest it is drawn toward it, its neighbours a little;
+buttons drawn close enough melt together like drops of liquid — a neck of glass
+grows between them and lets go as they part. Take the cursor away and they spring
+back past their places and settle. A press squashes a button and lets it go with
+the same jelly as `LiquidIconButton`.
+
+```tsx
+import { DownloadIcon, HeartIcon, ShareIcon } from '@liquefy-ui/icons'
+import { MagneticActions } from '@liquefy-ui/lab'
+
+<MagneticActions
+  label="Photo"
+  actions={[
+    { icon: <HeartIcon size={22} />, label: 'Favourite', onClick: favourite },
+    { icon: <ShareIcon size={22} />, label: 'Share', onClick: share },
+    { icon: <DownloadIcon size={22} />, label: 'Save', onClick: save },
+  ]}
+/>
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `actions` | — | `{ icon, label, onClick?, disabled? }[]`. `label` is the button's accessible name and tooltip |
+| `label` | — | The toolbar's accessible name |
+| `orientation` | `'horizontal'` | Which way the row runs, and which arrow keys walk it |
+| `strength` | `0.6` | 0 to 1: how hard the buttons are drawn toward the pointer. `0` holds them still |
+| `reach` | `120` | Pixels beyond a button's edge at which the pointer is first felt |
+| `spacing` | `12` | Largest gap, in pixels, that two buttons' glass still bridges. Kept under `gap`, they rest apart and melt only when drawn together |
+| `gap` | `14` | Clear space between neighbouring buttons at rest, in pixels |
+| `size` | `'md'` | Each button's side: 36, 46 or 56px, as `LiquidIconButton` |
+| `tint`, `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component, applied to the element that wraps the row |
+
+The pull is `elasticPull`, the lean every liquefy-ui surface has toward a nearing
+pointer, doubled into a magnet for the nearest button and measured from where each
+button rests rather than from where it is drawn. Every other button is drawn toward
+the pointer too, by a share that falls off with how much further from it it is than
+the nearest: the neighbours close in, the far end barely stirs, and a pointer between
+two buttons draws both nearly as hard and pulls them into one. A button travels at
+most about a third of its size, and the pull eases into that rather than stopping at
+it. It is held in underdamped springs at the provider's `wobbliness`, which is what
+makes a button trail a moving cursor a little and swing past its place when let go.
+
+Behaviour is Base UI's toolbar: the row is one stop in the tab order, the arrow keys
+move along it (left and right for a row, up and down for a column) and loop at the
+ends. Focus moves nothing — only a pointer pulls — so a keyboard user sees a still row
+and the focus ring. A disabled action stays reachable with `aria-disabled`, as a
+toolbar's items do, and neither acts nor moves. With `motion={false}` on the provider
+the buttons stay where they rest, a press does not squash, and the glass keeps them
+apart whatever `spacing` says.
+
+All of the glass is one [`GlassMerge`](#glassmerge) surface under clear buttons.
+Nothing above it may have `opacity`, `filter`, `clip-path`, `mask` or
+`will-change: opacity`, or the glass has nothing behind it to bend.
+
+### The motion on its own
+
+`MagneticMotion` is the row with no DOM attached: `attract` aims each button from a
+pointer, `press` and `release` squash one and let it go, `step` runs the springs,
+and `frame(i)` and `shape(i)` read back where a button is drawn and the
+`GlassMergeShape` that draws it. `magneticPull` is the pull by itself, and
+`magneticLayout` the resting places of a row. Buttons are described by their centre
+and size, so a row of different-sized things — a dock — can be driven the same way.
