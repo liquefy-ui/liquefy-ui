@@ -319,6 +319,13 @@ export const LockIcon = (props: IconProps): ReactElement => (
   </IconBase>
 )
 
+export const LockOpenIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <rect height="9.5" rx="2.5" width="14" x="5" y="10.5" />
+    <path d="M8.2 10.5V6.5a3.8 3.8 0 0 1 7.6 0v1" />
+  </IconBase>
+)
+
 export const MailIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <rect height="14" rx="3" width="18" x="3" y="5" />
