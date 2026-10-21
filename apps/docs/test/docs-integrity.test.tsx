@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { renderToStaticMarkup } from 'react-dom/server'
 import * as icons from '@liquefy-ui/icons'
+import * as iconEffects from '@liquefy-ui/icons/effects'
 import * as lab from '@liquefy-ui/lab'
 import { LiquefyProvider } from '@liquefy-ui/react'
 import * as liquefy from '@liquefy-ui/react'
@@ -163,6 +164,7 @@ describe('documentation pages', () => {
 describe('the lab', () => {
   const packages: Record<string, object> = {
     '@liquefy-ui/icons': icons,
+    '@liquefy-ui/icons/effects': iconEffects,
     '@liquefy-ui/lab': lab,
     '@liquefy-ui/react': liquefy,
   }
@@ -191,9 +193,13 @@ describe('the lab', () => {
     }
   })
 
+  // A subpath of the package counts: icon motion comes from @liquefy-ui/icons/effects.
   it('imports each experiment from the package it says it ships in', () => {
     const wrong = labExperiments
-      .filter((experiment) => !experiment.importLine.includes(`from '${experiment.package}'`))
+      .filter((experiment) => {
+        const source = /from '([^']+)'/.exec(experiment.importLine)?.[1] ?? ''
+        return source !== experiment.package && !source.startsWith(`${experiment.package}/`)
+      })
       .map((experiment) => experiment.slug)
     expect(wrong).toEqual([])
   })

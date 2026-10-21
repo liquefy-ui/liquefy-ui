@@ -207,6 +207,19 @@ ${icons.propsDeclaration ?? 'export type IconProps = SVGProps<SVGSVGElement>'}
 An icon with no \`aria-label\` is marked \`aria-hidden\`, which is what you want inside
 an already-labelled control.
 
+## Effects
+
+Import: \`import { IconEffect, MagicReplace } from '@liquefy-ui/icons/effects'\` — a
+client entry of its own; the icons above stay server-safe.
+Demos: ${HOMEPAGE}/#/lab/icon-effects
+
+- \`<IconEffect effect="bounce" trigger={count}><BellIcon /></IconEffect>\` plays once
+  each time \`trigger\` changes; \`active\` plays it over and over while true. Effects:
+  \`bounce\`, \`wiggle\`, \`breathe\`, \`rotate\`, and \`draw\` with \`drawn\` for Draw On / Off.
+- \`<MagicReplace>{locked ? <LockIcon /> : <LockOpenIcon />}</MagicReplace>\` keeps the
+  strokes two icons share and morphs or redraws the rest.
+- \`motion={false}\` stills either; inside a \`LiquefyProvider\` they follow its \`motion\`.
+
 ## Every export
 
 ${icons.names.map((name) => `- \`${name}\``).join('\n')}
