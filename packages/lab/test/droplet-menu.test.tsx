@@ -445,6 +445,10 @@ describe('DropletMenu', () => {
       mount(node, true)
       await user.click(screen.getByRole('button', { name: 'Create' }))
       const menu = await screen.findByRole('menu')
+      // The click leaves the cursor on the trigger, which jsdom puts at the
+      // origin: within reach of Camera's rim, so Camera would land leaning
+      // toward it and only pass -65 on its swing. Take the cursor out of reach.
+      fireEvent.pointerMove(window, mouse({ clientX: 0, clientY: 400 }))
       const camera = within(menu).getByRole('menuitem', { name: 'Camera' })
       await waitFor(() => expect(drawnAt(camera).y).toBeCloseTo(-65, 0), { timeout: RETURN_BUDGET })
       return { camera, menu, user }
