@@ -410,3 +410,64 @@ jelly and tongue springs. `chooseStop` picks where a release comes to rest from 
 distance a flick would coast (UIKit's normal deceleration), `rubberBand` is the curve
 an edge gives along, `VelocityTracker` reads a finger's speed as it lifts, and
 `sheetStops` turns snap points into heights.
+
+## LiquidContextMenu
+
+A context menu in the manner of iOS, made of liquid glass. A long press — or a right
+click, or the context-menu key — lifts what was pressed off the page over a darkening
+scrim, and the menu buds out from under its edge: a drop of glass that pulls a neck
+out of the preview, spreads along the edge, drops into a panel and swings past its
+shape before it settles, its rows arriving one at a time. While the finger is held
+the preview sinks a little, so the lift reads as the press letting go.
+
+```tsx
+import { CopyIcon, HeartIcon, ShareIcon, TrashIcon } from '@liquefy-ui/icons'
+import { LiquidContextMenu } from '@liquefy-ui/lab'
+
+<LiquidContextMenu
+  label="Photo"
+  items={[
+    { icon: <ShareIcon size={18} />, label: 'Share', onSelect: share },
+    { icon: <CopyIcon size={18} />, label: 'Copy', onSelect: copy },
+    { icon: <HeartIcon size={18} />, label: 'Favourite', onSelect: favourite },
+    { icon: <TrashIcon size={18} />, label: 'Delete', onSelect: remove, danger: true },
+  ]}
+>
+  <img alt="The coast at dusk" src="/coast.jpg" draggable={false} />
+</LiquidContextMenu>
+```
+
+The press that opened it can keep going. Sliding over the rows highlights them — the
+highlight slides after the finger, stretching as it goes and leaning toward it — and
+letting go on a row chooses it, which pops before its `onSelect` runs. Let go off the
+menu and it closes. Let go without moving and it stays open for a tap, as it does on
+iOS: the press only asked to see what is there.
+
+| Prop | Default | |
+| --- | --- | --- |
+| `children` | — | What is pressed. It lifts off the page while the menu is open |
+| `items` | — | `{ label, icon?, onSelect?, danger?, disabled? }[]`. The label is the row's accessible name and what typeahead matches |
+| `label` | | The menu's accessible name |
+| `delay` | `450` | Milliseconds a finger or pen rests on it before the menu opens. A mouse opens it with a right click |
+| `side` | `'auto'` | Where the menu comes out: below, else above, else beside — whichever fits without moving the preview, or the one that moves it least. Or `'top'`, `'bottom'`, `'left'`, `'right'` |
+| `width` | `240` | The menu's width. Rows are 44px tall |
+| `preview` | a copy of `children` | What lifts off the page while the menu is open |
+| `radius` | `18` | Corner radius of the lifted preview, which is cut to it |
+| `stagger` | `45` | Milliseconds between one row arriving and the next |
+| `onOpenChange`, `disabled` | | |
+| `tint`, `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component, applied to the element that wraps `children` |
+
+Behaviour is Base UI's context menu: roving focus with the arrow keys, typeahead,
+Escape, focus handed back. The wrapper takes focus, and Shift+F10 or the context-menu
+key opens the menu from it with the first row focused. What lifts is a copy laid over
+the scrim, since the original has to stay where it is in the page; the original is
+hidden until the copy is set back down on it. Give it `preview` when a second copy of
+`children` would not do — one with state of its own, say. With `motion={false}` on
+the provider it opens and closes at once, and a held press does not sink.
+
+### The motion on its own
+
+`ContextMenuMotion` is the menu with no DOM attached: the press, the lift, the scrim,
+the menu's `GlassMorph` and the piece of glass under the preview's edge it pulls its
+neck from, the rows' arrival and the highlight. `contextMenuLayout` works out where
+the lifted preview and the menu go in a viewport.
