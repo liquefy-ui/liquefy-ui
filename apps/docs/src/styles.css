@@ -2322,6 +2322,357 @@ kbd {
   padding: 28px 24px;
 }
 
+/* The Lab. Every experiment is the same glass as the rest of the library, so it
+   is held over a photograph: a flat wash leaves the glass nothing to bend. The
+   stage must not get opacity, filter, clip-path or mask — any of them would make
+   the glass inside see only the stage's own layer. */
+
+.lab-stage {
+  align-items: center;
+  background: url('/scenes/fjord.jpg') center / cover;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+  position: relative;
+  width: 100%;
+}
+
+.lab-stage[data-scene='coast'] {
+  background-image: url('/scenes/coast.jpg');
+}
+
+.lab-stage[data-scene='summit'] {
+  background-image: url('/scenes/summit.jpg');
+}
+
+.lab-stage[data-align='top'] {
+  align-items: flex-start;
+}
+
+.lab-stage[data-align='bottom'] {
+  align-items: flex-end;
+}
+
+.lab-stage[data-align='bottom-end'] {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.lab-stage__credit {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.72rem;
+  font-weight: 550;
+  left: 16px;
+  pointer-events: none;
+  position: absolute;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  top: 14px;
+}
+
+.lab-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+
+.lab-row--tight {
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+/* The labels share a top line and the controls share a centre line, although
+   a segmented control is taller than a slider. */
+.lab-controls {
+  display: grid;
+  gap: 16px 28px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-top: 20px;
+  width: 100%;
+}
+
+.lab-control {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-rows: auto 1fr;
+}
+
+.lab-control__label {
+  align-items: baseline;
+  color: var(--fg-muted);
+  display: flex;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.lab-control__label em {
+  color: var(--fg);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.76rem;
+  font-style: normal;
+}
+
+.lab-credit {
+  color: var(--fg-muted);
+  font-size: 0.86rem;
+  margin: -6px 0 18px;
+}
+
+.lab-intro {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 8px;
+  max-width: 720px;
+}
+
+.lab-intro p {
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* The index: fewer, larger cards than the component gallery, because each
+   preview is a scene rather than a control. */
+.lab-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.lab-card {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  transition: border-color 220ms ease, background 220ms ease;
+}
+
+.lab-card:hover {
+  background: var(--glass-strong);
+  border-color: var(--line-strong);
+}
+
+.lab-card__stage {
+  border-radius: 13px;
+  display: flex;
+  height: 178px;
+  overflow: hidden;
+}
+
+.lab-card__stage > .lab-stage {
+  border-radius: 0;
+  padding: 16px;
+}
+
+.lab-card > a {
+  align-items: center;
+  color: var(--fg);
+  display: flex;
+  gap: 6px;
+  transition: gap 200ms ease;
+}
+
+.lab-card > a:hover {
+  gap: 9px;
+}
+
+.lab-card > a strong {
+  font-size: 0.95rem;
+  font-weight: 720;
+}
+
+.lab-card > p {
+  color: var(--fg-muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* LiquidMorph and LiquidIsland: content laid on glass that changes shape.
+   Each block is laid out at its final size and the glass opens around it, so
+   nothing here animates; it only has to read on thick glass over a photo. */
+
+.lab-morph-search {
+  display: grid;
+}
+
+.lab-morph-search__field {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  height: 52px;
+  padding: 0 8px 0 18px;
+}
+
+.lab-morph-search__field input {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  flex: 1;
+  font: inherit;
+  font-size: 0.95rem;
+  min-width: 0;
+  outline: none;
+}
+
+.lab-morph-search__field input::placeholder,
+.lab-morph-search__placeholder {
+  color: var(--lq-muted);
+  font-size: 0.95rem;
+}
+
+.lab-morph-search__results {
+  padding: 0 6px 8px;
+}
+
+.lab-morph-search__empty {
+  color: var(--lq-muted);
+  font-size: 0.86rem;
+  padding: 12px 14px 16px;
+}
+
+.lab-morph-player {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.lab-morph-player__track,
+.lab-island-message,
+.lab-island-track,
+.lab-island-download {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.lab-morph-player__track img {
+  border-radius: 12px;
+  height: 56px;
+  object-fit: cover;
+  width: 56px;
+}
+
+.lab-morph-player__track span,
+.lab-morph-profile span,
+.lab-island-message span {
+  display: grid;
+  gap: 2px;
+}
+
+.lab-morph-player__track strong,
+.lab-morph-profile strong,
+.lab-morph-list > strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.lab-morph-player__track em,
+.lab-morph-profile em,
+.lab-island-message em {
+  color: var(--lq-muted);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+.lab-morph-player__controls {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.lab-morph-list {
+  display: grid;
+  gap: 4px;
+  padding: 16px 6px 6px;
+}
+
+.lab-morph-list > strong {
+  padding: 0 13px 4px;
+}
+
+.lab-morph-profile {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 20px 16px 16px;
+  text-align: center;
+}
+
+.lab-morph-profile__actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+}
+
+.lab-morph-gallery {
+  gap: 112px;
+}
+
+.lab-island-track {
+  gap: 10px;
+  height: 44px;
+  padding: 0 4px 0 8px;
+}
+
+.lab-island-track img {
+  border-radius: 8px;
+  height: 28px;
+  object-fit: cover;
+  width: 28px;
+}
+
+.lab-island-track > span {
+  font-size: 0.86rem;
+  font-weight: 650;
+  padding-right: 4px;
+}
+
+.lab-island-download {
+  height: 44px;
+  padding: 0 16px;
+}
+
+.lab-island-download .lq-progress {
+  min-width: 132px;
+}
+
+.lab-island-download > span {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  min-width: 36px;
+  text-align: right;
+}
+
+.lab-island-done {
+  align-items: center;
+  display: flex;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.lab-island-message {
+  padding: 8px 20px 8px 8px;
+}
+
+.lab-island-message strong {
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
 /* Prop tables */
 
 .docs-props {
@@ -2942,6 +3293,10 @@ kbd {
 @media (max-width: 560px) {
   .header-actions .jelly-toggle {
     display: none;
+  }
+
+  .lab-controls {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

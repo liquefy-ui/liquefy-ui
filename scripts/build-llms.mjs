@@ -6,6 +6,7 @@ import {
   readCoreApi,
   readDocsSlugs,
   readIcons,
+  readLabApi,
   readTokens,
 } from './component-catalog.mjs'
 
@@ -28,11 +29,12 @@ const outDir = new URL('../apps/docs/public/', import.meta.url)
 const pagesDir = new URL('../apps/docs/public/llms/', import.meta.url)
 
 const { entries } = await readCatalog()
-const [docsSlugs, tokens, icons, core] = await Promise.all([
+const [docsSlugs, tokens, icons, core, lab] = await Promise.all([
   readDocsSlugs(),
   readTokens(),
   readIcons(),
   readCoreApi(),
+  readLabApi(),
 ])
 
 /** The docs site page for a file — a hash route, so for humans and browsers. */
@@ -101,8 +103,8 @@ const RULES = `Rules an agent should not have to guess:
   \`_hover\`, \`_focusVisible\`, \`_disabled\`, \`_dark\`. There is no \`styled()\` and no
   \`sx\` prop.
 - Everything is imported from the package root. There are no deep entry points,
-  and names not listed below — \`compileLiquidStyles\`, \`useLiquefyPortalContainer\`,
-  the internal glyphs — are not exported from it.
+  and names not listed below — \`compileLiquidStyles\`, the internal glyphs such as
+  \`CheckGlyph\` — are not exported from it.
 - Overlays (Dialog, Drawer, Menu, Select, Tooltip) are built on Base UI and render
   into a portal inside the provider. Focus handling, Escape and collision-aware
   placement are already done; do not re-implement them.
@@ -111,6 +113,10 @@ const RULES = `Rules an agent should not have to guess:
 - The library does not read \`prefers-reduced-motion\` or
   \`prefers-reduced-transparency\` itself. Map them to the \`motion\` and
   \`transparency\` props if the product wants that.`
+
+/** Lab's components: the values that come with a props type of their own. */
+const labComponents = lab.values.filter((name) => lab.types.includes(`${name}Props`))
+const labImport = `import { ${labComponents.join(', ')} } from '@liquefy-ui/lab'`
 
 const componentLine = (entry) => `- [${nameOf(entry)}](${textUrl(entry)}): ${entry.description}`
 
@@ -141,6 +147,10 @@ ${plumbing.map(componentLine).join('\n')}
 
 - [@liquefy-ui/core](${HOMEPAGE}/llms/core.md): the dependency-free renderer, lens filter and spring engine
 
+## Lab
+
+- [@liquefy-ui/lab](${HOMEPAGE}/llms/lab.md): experimental, motion-heavy components (${labComponents.join(', ')}) on top of @liquefy-ui/react; 0.x, so APIs may change between minor versions
+
 ## Reference
 
 - [llms-full.txt](${HOMEPAGE}/llms-full.txt): every exported type declaration and design token in one file
@@ -150,7 +160,8 @@ ${plumbing.map(componentLine).join('\n')}
 ## Optional
 
 - [Component docs](${HOMEPAGE}/#/components): live demos and prop tables (JavaScript required)
-- [Documentation](${HOMEPAGE}/#/docs): provider, theming, the styles prop, motion, frameworks, Tailwind, AI tooling, accessibility, performance, troubleshooting
+- [Documentation](${HOMEPAGE}/#/docs): provider, theming, the styles prop, motion, frameworks, Tailwind, AI tooling, accessibility, performance, troubleshooting, lab
+- [Lab](${HOMEPAGE}/#/lab): every lab component live over a photograph, with a page each
 - [Playground](${HOMEPAGE}/#/playground): every provider prop as a live control
 `
 
@@ -196,6 +207,19 @@ ${icons.propsDeclaration ?? 'export type IconProps = SVGProps<SVGSVGElement>'}
 An icon with no \`aria-label\` is marked \`aria-hidden\`, which is what you want inside
 an already-labelled control.
 
+## Effects
+
+Import: \`import { IconEffect, MagicReplace } from '@liquefy-ui/icons/effects'\` — a
+client entry of its own; the icons above stay server-safe.
+Demos: ${HOMEPAGE}/#/lab/icon-effects
+
+- \`<IconEffect effect="bounce" trigger={count}><BellIcon /></IconEffect>\` plays once
+  each time \`trigger\` changes; \`active\` plays it over and over while true. Effects:
+  \`bounce\`, \`wiggle\`, \`breathe\`, \`rotate\`, and \`draw\` with \`drawn\` for Draw On / Off.
+- \`<MagicReplace>{locked ? <LockIcon /> : <LockOpenIcon />}</MagicReplace>\` keeps the
+  strokes two icons share and morphs or redraws the rest.
+- \`motion={false}\` stills either; inside a \`LiquefyProvider\` they follow its \`motion\`.
+
 ## Every export
 
 ${icons.names.map((name) => `- \`${name}\``).join('\n')}
@@ -219,6 +243,68 @@ ${core.values.map((name) => `- \`${name}\``).join('\n')}
 ## Types
 
 ${core.types.map((name) => `- \`${name}\``).join('\n')}
+`
+
+const LAB_INSTALL = `\`\`\`bash
+pnpm add @liquefy-ui/lab @liquefy-ui/react @liquefy-ui/core
+\`\`\``
+
+const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled copy. Render lab
+  components inside the same \`LiquefyProvider\` as everything else: they read its
+  theme, tint, \`motion\` and \`wobbliness\`. There is no lab stylesheet;
+  \`@liquefy-ui/react/styles.css\` covers it.
+- Lab is on npm only. The shadcn registry carries \`@liquefy-ui/react\`'s components.
+- \`DropletMenu\` needs \`icon\`, \`label\` and \`items\`; each item needs \`icon\` and
+  \`label\`, which is its accessible name, tooltip and typeahead text.
+- \`LiquidMorph\` needs \`trigger\`, \`label\` and \`stages\`. Its stage is \`'closed'\` or a
+  key of \`stages\`; moving between open stages is the caller's, through \`setStage\`.
+- \`LiquidIsland\` needs \`label\` and \`view\`. Put what a screen reader should hear in
+  each view's \`announce\` rather than in a live region of your own.
+- \`ElasticSheet\` takes \`snapPoints\` as \`'50%'\`, \`0.5\`, \`'320px'\` or \`320\`, and \`snap\`
+  is one of those values, not an index. Give it a \`title\` (or a \`label\`); \`modal={false}\`
+  is the map-style sheet with the page live behind it.
+- \`LiquidContextMenu\` wraps what is pressed as \`children\` and needs \`items\`, each with a
+  \`label\`. It opens on a long press, a right click, Shift+F10 or the context-menu key;
+  what lifts is a copy of \`children\` unless \`preview\` is given.
+- \`MagneticActions\` needs \`label\` (the toolbar's name) and \`actions\`, each with \`icon\`
+  and \`label\`; \`onClick\` is a plain click handler. It is a Base UI toolbar, so the
+  arrow keys already move between the buttons; do not add a key handler of your own.
+- Like \`@liquefy-ui/react\`, lab does not read \`prefers-reduced-motion\`. With
+  \`motion={false}\` on the provider, droplets appear in place, a level goes straight
+  to its mark with a still surface, a morph lands in its new shape, a sheet lands on
+  its snap point and magnetic buttons stay where they rest; map the media query to
+  \`motion\` if the app wants to.
+- \`GlassMerge\` (and \`DropletMenu\`, \`LiquidMorph\`, \`LiquidIsland\`, \`ElasticSheet\` and
+  \`MagneticActions\`, which are drawn with it) must not sit under an element with
+  \`opacity\`, \`filter\`, \`clip-path\`, \`mask\` or \`will-change: opacity\`: each one leaves
+  the glass nothing behind it to bend.`
+
+const labDeclarations = `\`\`\`ts
+${lab.declarations.map((declaration) => declaration.text).join('\n\n')}
+\`\`\``
+
+const labPage = `# @liquefy-ui/lab
+
+> Experimental, motion-heavy components built on @liquefy-ui/react. Versioned 0.x:
+> an API here can change between minor versions until it graduates into
+> @liquefy-ui/react.
+
+${LAB_INSTALL}
+
+Import: \`${labImport}\`
+Docs: ${HOMEPAGE}/#/lab
+
+${LAB_RULES}
+
+## Values
+
+${lab.values.map((name) => `- \`${name}\``).join('\n')}
+
+## Types
+
+Verbatim from source.
+
+${labDeclarations}
 `
 
 const mcpPage = `# @liquefy-ui/mcp
@@ -302,6 +388,23 @@ Values: ${core.values.map((name) => `\`${name}\``).join(', ')}
 
 Types: ${core.types.map((name) => `\`${name}\``).join(', ')}
 
+## Lab: @liquefy-ui/lab
+
+Experimental, motion-heavy components. Versioned 0.x, so an API can change between
+minor versions.
+
+${LAB_INSTALL}
+
+Import: \`${labImport}\`
+
+${LAB_RULES}
+
+Values: ${lab.values.map((name) => `\`${name}\``).join(', ')}
+
+Types: ${lab.types.map((name) => `\`${name}\``).join(', ')}
+
+${labDeclarations}
+
 ## Design tokens
 
 ${tokens.map(tokenSection).join('\n')}
@@ -326,11 +429,12 @@ await Promise.all([
   writeFile(new URL('llms-full.txt', outDir), full),
   writeFile(new URL('icons.md', pagesDir), iconsPage),
   writeFile(new URL('core.md', pagesDir), corePage),
+  writeFile(new URL('lab.md', pagesDir), labPage),
   writeFile(new URL('mcp.md', pagesDir), mcpPage),
   ...entries.map((entry) => writeFile(new URL(`${entry.slug}.md`, pagesDir), componentPage(entry))),
 ])
 
 console.log(
-  `llms.txt (${short.length} B), llms-full.txt (${full.length} B) and ${entries.length + 3} pages `
+  `llms.txt (${short.length} B), llms-full.txt (${full.length} B) and ${entries.length + 4} pages `
   + 'written → apps/docs/public/',
 )

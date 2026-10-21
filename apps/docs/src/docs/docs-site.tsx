@@ -3,7 +3,7 @@ import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from '@liquefy-ui/i
 import { componentCount } from './catalog'
 import { DocsShell } from './docs-chrome'
 import { docCategories, docCount, docOrder, findDocPage } from './docs-nav'
-import type { DocEntry } from './types'
+import { docHref, type DocEntry } from './types'
 
 const Breadcrumbs = ({ current }: { current?: string }) => (
   <nav aria-label="Breadcrumb" className="docs-page__breadcrumbs">
@@ -28,14 +28,14 @@ const Pagination = ({ doc }: { doc: DocEntry }) => {
     <nav aria-label="Pagination" className="docs-pagination">
       {previous
         ? (
-          <a data-direction="previous" href={`#/docs/${previous.slug}`}>
+          <a data-direction="previous" href={docHref(previous)}>
             <ChevronLeftIcon size={14} />
             <span><em>Previous</em><strong>{previous.name}</strong></span>
           </a>
         )
         : <span />}
       {next && (
-        <a data-direction="next" href={`#/docs/${next.slug}`}>
+        <a data-direction="next" href={docHref(next)}>
           <span><em>Next</em><strong>{next.name}</strong></span>
           <ChevronRightIcon size={14} />
         </a>
@@ -89,7 +89,7 @@ const IndexPage = () => (
         <h2>{category.title}</h2>
         <div className="docs-index-grid">
           {category.items.map((item) => (
-            <a className="docs-index-card" href={`#/docs/${item.slug}`} key={item.slug}>
+            <a className="docs-index-card" href={docHref(item)} key={item.slug}>
               <strong>{item.name}</strong>
               <span>{item.summary ?? item.description}</span>
             </a>
@@ -108,6 +108,10 @@ const IndexPage = () => (
         <a className="docs-index-card" href="#/playground">
           <strong>Playground<ArrowRightIcon size={14} /></strong>
           <span>Every provider prop as a control, applied to the whole site.</span>
+        </a>
+        <a className="docs-index-card" href="#/lab">
+          <strong>Lab<ArrowRightIcon size={14} /></strong>
+          <span>Experimental, motion-heavy components, each live over a photograph.</span>
         </a>
       </div>
     </section>
@@ -147,7 +151,7 @@ export const DocsSite = ({ route }: { route: string }) => {
             <a
               aria-current={slug === item.slug ? 'page' : undefined}
               data-active={slug === item.slug}
-              href={`#/docs/${item.slug}`}
+              href={docHref(item)}
             >
               {item.name}
             </a>

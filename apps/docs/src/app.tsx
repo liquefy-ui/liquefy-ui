@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { ComponentsSite } from './docs/components-site'
 import { DocsSite } from './docs/docs-site'
+import { LabSite } from './lab/lab-site'
 import { SiteAnalytics } from './site/analytics'
 import { Landing } from './site/landing'
 import { PlaygroundPage } from './site/playground-page'
@@ -8,6 +9,8 @@ import { SiteProvider } from './site/site-config'
 
 // Old links pointed at #/guides; everything there now lives under #/docs.
 const REDIRECTS: [RegExp, string][] = [
+  // The Lab outgrew its doc page and has a screen of its own.
+  [/^#\/docs\/lab(?:[#/]|$)/, '#/lab'],
   [/^#\/guides\/customization/, '#/docs/theming'],
   [/^#\/guides\/frameworks/, '#/docs/frameworks'],
   [/^#\/guides\/ai-tooling/, '#/docs/ai-tooling'],
@@ -21,6 +24,7 @@ const pageFor = (route: string): ReactNode => {
   if (route.startsWith('#/components')) return <ComponentsSite route={route} />
   if (route.startsWith('#/docs')) return <DocsSite route={route} />
   if (route.startsWith('#/playground')) return <PlaygroundPage route={route} />
+  if (route.startsWith('#/lab')) return <LabSite route={route} />
   return <Landing />
 }
 

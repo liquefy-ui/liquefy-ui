@@ -37,7 +37,7 @@ const getDefsRoot = (): SVGSVGElement => {
   return defsRoot
 }
 
-const createElement = <Tag extends keyof SVGElementTagNameMap>(
+export const createElement = <Tag extends keyof SVGElementTagNameMap>(
   tag: Tag,
   attributes: Record<string, string>,
 ): SVGElementTagNameMap[Tag] => {

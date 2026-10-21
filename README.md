@@ -21,7 +21,8 @@ component reference and the shadcn registry.
 | --- | --- |
 | `@liquefy-ui/react` | React components, themes, and provider |
 | `@liquefy-ui/core` | Dependency-free WebGL, springs, and motion |
-| `@liquefy-ui/icons` | Tree-shakeable React SVG icons |
+| `@liquefy-ui/icons` | Tree-shakeable React SVG icons, with SF Symbols–style effects in `@liquefy-ui/icons/effects` |
+| `@liquefy-ui/lab` | Experimental, motion-heavy components on top of `@liquefy-ui/react` — APIs may change between minor versions |
 | `@liquefy-ui/mcp` | MCP server that answers component questions from the real API |
 
 ## Quick start
@@ -54,6 +55,10 @@ directive, so importing them straight into a server component works — no wrapp
 file needed. Only event handlers have to move: a function cannot cross from a
 server component into a client one, so anything with `onClick` or local state
 belongs in its own `'use client'` component.
+
+`@liquefy-ui/icons` is the exception: its icons are stateless and stay on the
+server side, so a server component that renders one ships no JavaScript for it.
+Only the effects entry, `@liquefy-ui/icons/effects`, is marked `'use client'`.
 
 `apps/next-example` is a working Next.js 16 App Router app whose page is a server
 component, and its build runs in CI. If the client boundary ever regresses, that
@@ -181,7 +186,7 @@ with the token system itself at `#/docs/theming`.
 
 ## Components
 
-36 components and 54 icons, each with live demos and a full prop table at
+36 components and 55 icons, each with live demos and a full prop table at
 [liquefy-ui.com/#/components](https://liquefy-ui.com/#/components).
 
 | Category | Components |
@@ -200,6 +205,27 @@ turn `shimmer` on for colour. Use the provider props to tune them across
 a subtree.
 
 Use `theme="dark"`, `theme="light"`, or `theme="system"` on `LiquefyProvider` to control appearance.
+
+## Icon effects
+
+The icons move the way SF Symbols do — bounce, wiggle, breathe, rotate, Draw On
+and Draw Off, and Magic Replace — from their own entry point, so an app that never
+moves an icon pays nothing for it:
+
+```tsx
+import { BellIcon, LockIcon, LockOpenIcon } from '@liquefy-ui/icons'
+import { IconEffect, MagicReplace } from '@liquefy-ui/icons/effects'
+
+<IconEffect effect="bounce" trigger={unread}><BellIcon /></IconEffect>
+<MagicReplace>{locked ? <LockIcon /> : <LockOpenIcon />}</MagicReplace>
+```
+
+`trigger` plays an effect once each time it changes and `active` plays it for as
+long as it is true, SF Symbols' `value:` and `isActive:`. Every effect is a spring
+that overshoots and settles, played by the Web Animations API, and follows the
+nearest provider's `motion`. The props are in
+[`packages/icons/README.md`](./packages/icons/README.md); the demos are in the Lab at
+[liquefy-ui.com/#/lab/icon-effects](https://liquefy-ui.com/#/lab/icon-effects).
 
 ## Design notes
 

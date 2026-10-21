@@ -16,6 +16,8 @@ describe('the page a visit is filed under', () => {
     ['#/playground', '/playground'],
     ['#/docs/theming', '/docs/theming'],
     ['#/components/liquid-button', '/components/liquid-button'],
+    ['#/lab', '/lab'],
+    ['#/lab/droplet-menu', '/lab/droplet-menu'],
   ])('%j is the page %j', (hash, path) => {
     expect(analyticsRoute(hash).path).toBe(path)
   })
@@ -35,6 +37,8 @@ describe('the page a visit is filed under', () => {
     // A gallery of every icon, not a page about one component.
     ['#/components/icons', '/components/icons'],
     ['#/playground', '/playground'],
+    ['#/lab', '/lab'],
+    ['#/lab/droplet-menu', '/lab/[experiment]'],
   ])('%j is grouped under %j', (hash, route) => {
     expect(analyticsRoute(hash).route).toBe(route)
   })

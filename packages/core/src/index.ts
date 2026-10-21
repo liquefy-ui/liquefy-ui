@@ -1,3 +1,4 @@
+export { attachGlassMerge } from './glass-merge'
 export { attachLiquidLens, isLensSupported } from './lens-filter'
 export { elasticPull, observeElasticPointer } from './elastic'
 export { attachLiquidMotion } from './motion'
@@ -10,6 +11,9 @@ export type {
   ElasticOptions,
   ElasticPull,
   ElasticSubscriber,
+  GlassMergeController,
+  GlassMergeOptions,
+  GlassMergeShape,
   LensFilterController,
   LensFilterOptions,
   LensMap,

@@ -13,6 +13,8 @@
     "paths": {
       "@liquefy-ui/core": ["./packages/core/src/index.ts"],
       "@liquefy-ui/icons": ["./packages/icons/src/index.tsx"],
+      "@liquefy-ui/icons/effects": ["./packages/icons/src/effects.ts"],
+      "@liquefy-ui/lab": ["./packages/lab/src/index.ts"],
       "@liquefy-ui/react": ["./packages/react/src/index.ts"]
     },
     "resolveJsonModule": true,
