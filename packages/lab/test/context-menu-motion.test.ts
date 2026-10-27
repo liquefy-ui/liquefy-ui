@@ -292,6 +292,55 @@ describe('ContextMenuMotion', () => {
     expect(motion.closed).toBe(false)
   })
 
+  it('carries the preview along when the page scrolls while it is being set down', () => {
+    const motion = opened()
+    const scrolled = { ...rest, y: rest.y - 200 }
+    // Open, the page cannot scroll under it: there is nothing to follow.
+    const lifted = motion.previewRect()!
+    motion.follow(scrolled)
+    expect(motion.previewRect()).toEqual(lifted)
+
+    motion.close()
+    play(motion, 60)
+    const before = motion.previewRect()!
+    motion.follow(scrolled)
+    // It goes with the page at once, as part of it again...
+    expect(motion.previewRect()!.y).toBeCloseTo(before.y - 200)
+    let last = before
+    for (let frame = 0; frame < 600 && !motion.closed; frame += 1) {
+      last = motion.previewRect()!
+      motion.step(1 / 60)
+    }
+    // ...and lands in its place there, not where the page used to have it.
+    expect(motion.closed).toBe(true)
+    expect(last.x).toBeCloseTo(scrolled.x, 0)
+    expect(last.y).toBeCloseTo(scrolled.y, 0)
+  })
+
+  it('is set down once nothing is left to see, without waiting for the glass to stop ringing', () => {
+    const motion = opened()
+    motion.close()
+    let elapsed = 0
+    play(motion, 1500, (ms) => {
+      if (!elapsed && motion.closed) elapsed = ms
+    })
+    expect(elapsed).toBeGreaterThan(0)
+    // The preview is back in about 300ms; the glass would ring on for twice that again.
+    expect(elapsed).toBeLessThan(500)
+  })
+
+  it('asks for every frame until the preview is down, whatever the frames are', () => {
+    const motion = opened()
+    motion.close()
+    // A frame with no time in it, as the first of a run can be, must not end the run halfway.
+    const stopped: boolean[] = []
+    for (let frame = 0; frame < 600 && !motion.closed; frame += 1) {
+      if (!motion.step(frame % 3 === 0 ? 0 : 1 / 60)) stopped.push(motion.closed)
+    }
+    expect(motion.closed).toBe(true)
+    expect(stopped).toEqual([true])
+  })
+
   it('turns round mid-close when opened again', () => {
     const motion = opened()
     motion.close()

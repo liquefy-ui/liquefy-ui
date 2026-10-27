@@ -273,6 +273,31 @@ describe('LiquidContextMenu', () => {
       expect(screen.getByRole('img', { name: 'Fjord at dawn' }).parentElement?.style.visibility).toBe('')
     }, RETURN_BUDGET + 5_000)
 
+    it('sets the preview down where the page has scrolled it to while it closes', async () => {
+      mount(<LiquidContextMenu items={items()} stagger={0}><Photo /></LiquidContextMenu>, true)
+      const trigger = preview()
+      let top = 40
+      vi.spyOn(trigger, 'getBoundingClientRect').mockImplementation(() => DOMRect.fromRect({ height: 120, width: 180, x: 20, y: top }))
+      const original = screen.getByRole('img', { name: 'Fjord at dawn' })
+      fireEvent.contextMenu(trigger)
+      await screen.findByRole('menu')
+      const copy = [...document.querySelectorAll('img[alt="Fjord at dawn"]')].find((image) => image !== original)!.parentElement!
+      const drawn: { transform: string, visibility: string }[] = []
+      const watch = new MutationObserver(() => drawn.push({ transform: copy.style.transform, visibility: copy.style.visibility }))
+      watch.observe(copy, { attributeFilter: ['style'] })
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
+      // The page, no longer held still, scrolls 300px under it as it goes back down.
+      top = -260
+      await waitFor(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull(), { timeout: RETURN_BUDGET })
+      watch.disconnect()
+      // The copy was laid where the preview lifted from, so landing in its new place is 300px up from there.
+      const landing = drawn.filter((frame) => frame.visibility === '').at(-1)?.transform.match(/^translate\((.+)px, (.+)px\) scale\((.+)\)$/)
+      expect(landing?.slice(1).map(Number)).toEqual([0, -300, expect.closeTo(1, 2)])
+      // Once down it is not drawn again over the original, which is back.
+      expect(drawn.at(-1)?.visibility).toBe('hidden')
+      expect(original.parentElement?.style.visibility).toBe('')
+    }, RETURN_BUDGET + 5_000)
+
     // Acting on the choice closes the menu from inside a frame. The close must
     // not end up with two frame loops stepping the motion, which would play it
     // at double speed: no two of the component's frames may share a timestamp.

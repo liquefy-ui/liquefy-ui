@@ -260,8 +260,16 @@ export const LiquidContextMenu = ({
     }
     const { clip, clone, frost, list, pill, scrim, surface } = elements.current
     if (clone) {
-      clone.style.transform = `translate(${px(frame.x)}, ${px(frame.y)}) scale(${frame.scale.toFixed(4)})`
+      // The copy is laid where the preview was when it lifted, and moved to
+      // wherever the motion has it now, which follows the page as it scrolls.
+      const base = placementRef.current?.rest
+      const drawn = motion.previewRect()
+      const x = base && drawn ? drawn.x + drawn.width / 2 - (base.x + base.width / 2) : frame.x
+      const y = base && drawn ? drawn.y + drawn.height / 2 - (base.y + base.height / 2) : frame.y
+      clone.style.transform = `translate(${px(x)}, ${px(y)}) scale(${frame.scale.toFixed(4)})`
       clone.style.boxShadow = shadowOf(frame.shadow)
+      // Set down, the original is back: the copy is not left over it for the frame before it goes.
+      clone.style.visibility = motion.lifted ? '' : 'hidden'
     }
     if (scrim) scrim.style.opacity = motion.scrimOpacity().toFixed(3)
 
@@ -383,6 +391,9 @@ export const LiquidContextMenu = ({
     let last = performance.now()
     const tick = (now: number) => {
       const self = frameRef.current
+      // Closed, the page can scroll again: the preview is set down wherever its place has got to.
+      const trigger = triggerRef.current
+      if (closingRef.current && trigger) motion.follow(rectOf(trigger))
       const busy = motion.step((now - last) / 1000)
       last = now
       paint()
