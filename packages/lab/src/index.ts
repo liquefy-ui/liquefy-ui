@@ -116,3 +116,7 @@ export {
   type ParticleShape,
   type ParticleSystemOptions,
 } from './particle-system'
+export { FluidBackdrop, type FluidBackdropProps } from './fluid-backdrop'
+export { FLUID_DEFAULTS, type FluidOptions } from './fluid-motion'
+export { MeshGradient, type MeshGradientProps } from './mesh-gradient'
+export { MESH_DEFAULTS, MeshMotion, type MeshOptions } from './mesh-motion'
