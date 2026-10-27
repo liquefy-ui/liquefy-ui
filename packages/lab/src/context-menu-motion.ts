@@ -462,6 +462,16 @@ export class ContextMenuMotion {
     this.highlight(-1)
   }
 
+  /**
+   * Where the preview sits on the page now, while it is being set down. Once
+   * the menu has closed the page can scroll again: the preview goes with it,
+   * as part of the page, and lands in its place rather than where it was.
+   */
+  public follow(rest: ContextMenuRect): void {
+    if (this.phase !== 'closing' || !this.rest) return
+    this.rest = { ...rest }
+  }
+
   /** Puts everything where it is heading with no motion, for motion off and for tests. */
   public settle(): void {
     // A press held with motion off does not sink: that is motion too.
@@ -562,10 +572,18 @@ export class ContextMenuMotion {
     return clamp(Math.floor((y - this.padding) / this.rowHeight), 0, this.rows.length - 1)
   }
 
-  /** Advances the motion by one frame of `delta` seconds. Returns whether anything is still moving. */
+  /**
+   * Advances the motion by one frame of `delta` seconds. Returns whether it
+   * needs another frame: always while closing, until the preview is down.
+   */
   public step(delta: number): boolean {
     const seconds = Math.min(Math.max(delta, 0), MAX_FRAME)
-    if (seconds === 0) return !this.atRest() || this.choice !== null
+    if (seconds > 0) this.advance(seconds)
+    if (this.phase === 'closing' && this.setDown()) this.finish()
+    return this.phase === 'closing' || !this.atRest() || this.choice !== null
+  }
+
+  private advance(seconds: number): void {
     this.clock += seconds * 1000
     const now = this.clock
 
@@ -596,9 +614,6 @@ export class ContextMenuMotion {
       stepPixels(row.slide, seconds)
       row.scale.step(seconds)
     }
-
-    if (this.phase === 'closing' && this.atRest()) this.finish()
-    return !this.atRest() || this.choice !== null
   }
 
   public preview(): ContextMenuPreviewFrame {
@@ -803,6 +818,19 @@ export class ContextMenuMotion {
       && this.rows.every((row) => row.fade === row.fadeTarget && atRest(row.slide) && atRest(row.scale))
   }
 
+  /**
+   * The preview is back in its place and nothing of the menu is left to see,
+   * so the overlay can go. The glass may still be ringing on its way to
+   * nothing; waiting for it would keep the preview off the page for longer
+   * than anyone can see a reason for.
+   */
+  private setDown(): boolean {
+    return [this.sink, this.lift, this.shiftX, this.shiftY, this.pillOpacity].every(atRest)
+      && this.scrim === 0
+      && (this.gone || (this.morph?.settled ?? true))
+      && this.rows.every((row) => row.fade === 0)
+  }
+
   private finish(): void {
     this.phase = 'idle'
     this.layout = null
@@ -812,6 +840,8 @@ export class ContextMenuMotion {
     this.gone = false
     this.pillIndex = -1
     this.pillOpacity.set(0)
+    this.pillY.set(this.pillY.target)
+    this.pillSwell.set(1)
     this.leanX.set(0)
     this.leanY.set(0)
     this.detach.set(-START)
