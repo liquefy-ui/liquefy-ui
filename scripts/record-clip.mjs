@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 /**
- * Records a short silent clip for social posts: the playground scenes scrolling
+ * Records a short silent clip for social posts: the playground's water stirred
  * behind the glass, the showcase buttons pressed until the springs overshoot, a
  * slow scroll down the grid, and the tab indicator measuring the tab it lands on.
  *
@@ -125,41 +125,32 @@ const glideToTile = async (locator, gap, duration) => {
   }, [node, gap, duration])
 }
 
-// ── The glass, with the world moving behind it ──────────────────────────────────
+// ── The glass, with the water stirred behind it ─────────────────────────────────
 const stage = page.locator('.pg-stage')
-const scroller = '.pg-stage__scroll'
 await stage.scrollIntoViewIfNeeded()
 await page.waitForTimeout(900)
 
 const stageBox = await stage.boundingBox()
-const sceneHeight = await page.evaluate(
-  (selector) => document.querySelector(selector).clientHeight,
-  scroller,
-)
 
 const lead = LEAD_MS - (Date.now() - started)
 if (lead > 0) await page.waitForTimeout(lead)
 
-const glide = async (from, to, steps, frameMs) => {
-  for (let index = 1; index <= steps; index++) {
-    const t = easeInOut(index / steps)
-    await page.evaluate(
-      ([selector, y]) => { document.querySelector(selector).scrollTop = y },
-      [scroller, from + (to - from) * t],
-    )
+// Two passes across the card and one loop back, so the colour is dragged under
+// the rim from both sides before the clip moves on.
+const stir = async (path, frameMs) => {
+  for (const [x, y] of path) {
+    await page.mouse.move(stageBox.x + stageBox.width * x, stageBox.y + stageBox.height * y)
     if (frameMs > 0) await page.waitForTimeout(frameMs)
   }
 }
-
-let at = 0
-for (const [to, steps, frameMs] of [
-  [sceneHeight * 1, 20, 8], // out to the photograph
-  [sceneHeight * 2, 14, 4], // past the grid, where the bend reads
-  [0, 22, 0], // home, so the clip can loop
-]) {
-  await glide(at, to, steps, frameMs)
-  at = to
-}
+const pass = (fromX, toX, y, steps) =>
+  Array.from({ length: steps + 1 }, (_, index) => {
+    const t = easeInOut(index / steps)
+    return [fromX + (toX - fromX) * t, y + Math.sin(t * Math.PI) * 0.12]
+  })
+await stir(pass(0.12, 0.88, 0.32, 24), 8)
+await stir(pass(0.88, 0.12, 0.68, 24), 8)
+await stir(pass(0.12, 0.5, 0.5, 12), 4)
 await page.mouse.move(stageBox.x + 40, stageBox.y + stageBox.height - 24)
 await page.waitForTimeout(900)
 
