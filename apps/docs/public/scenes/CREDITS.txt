@@ -1,5 +1,5 @@
-The photographs the playground scrolls behind its glass. The Lab holds its
-experiments over them too, through `LabStage` in apps/docs/src/lab/stage.tsx.
+The photographs the Lab holds its experiments over, through `LabStage` in
+apps/docs/src/lab/stage.tsx.
 
 All three are from Unsplash, under the Unsplash License, which allows
 commercial and non-commercial use without permission. Attribution is not

@@ -19,7 +19,7 @@ import { join } from 'node:path'
  *   LENS_MODULES=/tmp/lens-tools node scripts/record-card.mjs
  *
  * The picture in the card is not a mock-up: it is a clipped screenshot of the
- * landing page's own glass stage on its first scene, so the refraction and the
+ * landing page's own glass stage over its water, so the refraction and the
  * lit rim are the ones a visitor gets. This card stays dark so those low-contrast
  * effects remain legible in a small still image.
  */
@@ -70,8 +70,6 @@ await stage.scrollIntoViewIfNeeded()
 await page.waitForTimeout(2500)
 
 const box = await stage.boundingBox()
-await page.locator('.pg-stage__scroll').evaluate((element) => { element.scrollTop = 0 })
-await page.waitForTimeout(500)
 
 const strip = await capture(page, {
   height: box.height - CAPTION_H,

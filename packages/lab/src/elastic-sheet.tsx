@@ -37,6 +37,12 @@ export type ElasticSheetProps = LiquidStyleProps & {
   /** The content, in a body that scrolls once the sheet is at its tallest. */
   children?: ReactNode
   className?: string
+  /**
+   * Whether a dismissible sheet shows a close button in its header. Off, it is
+   * put away as a maps app's sheet is: a flick down, Escape, or a press outside
+   * a modal one.
+   */
+  closeButton?: boolean
   /** The close button's accessible name and tooltip. */
   closeLabel?: string
   /**
@@ -50,8 +56,8 @@ export type ElasticSheetProps = LiquidStyleProps & {
   defaultSnap?: ElasticSheetSnapPoint
   /**
    * Whether the person can put the sheet away: a flick down, Escape, the close
-   * button, and a press outside a modal one. Off, the lowest snap point holds
-   * against a rubber band and only `open` closes it.
+   * button (unless `closeButton` is off), and a press outside a modal one. Off,
+   * the lowest snap point holds against a rubber band and only `open` closes it.
    */
   dismissible?: boolean
   /** The grabber's accessible name. */
@@ -190,6 +196,7 @@ const resolveContainer = (container: ElasticSheetProps['container']): HTMLElemen
 export const ElasticSheet = ({
   children,
   className,
+  closeButton = true,
   closeLabel = 'Close',
   container,
   defaultOpen = false,
@@ -527,6 +534,38 @@ export const ElasticSheet = ({
     run()
   }
 
+  /**
+   * Listens on the window for a mouse or pen drag that has not been decided
+   * yet, until it is decided or let go. A finger is held to what it pressed; a
+   * mouse is not. The grabber sits just under the sheet's top edge, so a quick
+   * drag up off it leaves the sheet with its first move, which the sheet's own
+   * handlers would never hear.
+   */
+  const listenOffSheet = (gesture: Gesture) => {
+    const offSheet = (event: globalThis.PointerEvent) =>
+      event.pointerId === gesture.id && !(event.target instanceof Node && popupRef.current?.contains(event.target))
+    const move = (event: globalThis.PointerEvent) => {
+      if (gestureRef.current === gesture && gesture.mode === 'pending' && offSheet(event)) {
+        decideRef.current(gesture, event.clientX, event.clientY, event.timeStamp)
+      }
+      if (gestureRef.current !== gesture || gesture.mode !== 'pending') stop()
+    }
+    const end = (event: globalThis.PointerEvent) => {
+      if (event.pointerId !== gesture.id) return
+      // Let go off the sheet before it was a drag: nothing is left pending for the next hover to pick up.
+      if (gestureRef.current === gesture && gesture.mode === 'pending') gestureRef.current = null
+      stop()
+    }
+    const stop = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', end)
+      window.removeEventListener('pointercancel', end)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', end)
+    window.addEventListener('pointercancel', end)
+  }
+
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     draggedRef.current = false
     gestureRef.current = null
@@ -551,6 +590,7 @@ export const ElasticSheet = ({
       type: event.pointerType,
     }
     fingerRef.current = event.clientX - gestureRef.current.roomLeft
+    if (event.pointerType !== 'touch') listenOffSheet(gestureRef.current)
   }
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -662,8 +702,16 @@ export const ElasticSheet = ({
             className={root.className}
             // Moved in only when someone opened it. A non-modal sheet that is
             // simply there, open from the start or opened by the page, leaves
-            // focus where it was — not scrolled to and grabbed.
-            initialFocus={modal ? undefined : (type) => (type ? true : false)}
+            // focus where it was — not scrolled to and grabbed. It goes to the
+            // sheet itself, which Base UI focuses without scrolling: the sheet
+            // starts below its room, and focusing a control in it there would
+            // scroll the page to it when the room is part of the page.
+            initialFocus={(type) => (modal || type ? popupRef.current : false)}
+            onDragStart={(event) => {
+              // Pressed on the grabber or the header, a mouse moves the sheet: it
+              // does not pick up a selection that happens to lie under it.
+              if (!(event.target instanceof Node && bodyRef.current?.contains(event.target))) event.preventDefault()
+            }}
             onClickCapture={(event) => {
               // The press that ends a drag is not a press on whatever it ended over.
               if (!draggedRef.current) return
@@ -690,7 +738,9 @@ export const ElasticSheet = ({
               ref={contentRef}
               style={{ display: 'flex', flexDirection: 'column', height: ceiling, position: 'absolute', top: 0, width: Math.min(size?.width ?? maxWidth, maxWidth) }}
             >
-              <div style={{ display: 'flex', flex: 'none', justifyContent: 'center', paddingTop: 6 }}>
+              {/* The grabber and the header are handles, not text: a mouse
+                  dragging the sheet by them does not select the content it passes. */}
+              <div style={{ display: 'flex', flex: 'none', justifyContent: 'center', paddingTop: 6, userSelect: 'none', WebkitUserSelect: 'none' }}>
                 <div
                   aria-label={grabberLabel}
                   aria-orientation="vertical"
@@ -711,12 +761,12 @@ export const ElasticSheet = ({
                   />
                 </div>
               </div>
-              {(title || dismissible) && (
-                <div style={{ alignItems: 'center', display: 'flex', flex: 'none', gap: 12, justifyContent: 'space-between', minHeight: 44, padding: '0 14px 6px 20px' }}>
+              {(title || (dismissible && closeButton)) && (
+                <div style={{ alignItems: 'center', display: 'flex', flex: 'none', gap: 12, justifyContent: 'space-between', minHeight: 44, padding: '0 14px 6px 20px', userSelect: 'none', WebkitUserSelect: 'none' }}>
                   {title
                     ? <Dialog.Title style={{ fontSize: '1.15rem', fontWeight: 680, letterSpacing: '-0.02em', margin: 0 }}>{title}</Dialog.Title>
                     : <span />}
-                  {dismissible && (
+                  {dismissible && closeButton && (
                     <Dialog.Close
                       render={(
                         <LiquidIconButton label={closeLabel} shape="circle" size="sm">

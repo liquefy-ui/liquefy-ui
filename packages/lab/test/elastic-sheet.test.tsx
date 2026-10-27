@@ -254,6 +254,51 @@ describe('ElasticSheet', () => {
       expect(seen).toEqual(['100%'])
     })
 
+    // A mouse is not held to what it pressed, as a finger is: until the sheet
+    // captures it, its moves go to whatever is under it.
+    it('catches a quick mouse drag up off the grabber that leaves the sheet with its first move', async () => {
+      const seen: ElasticSheetSnapPoint[] = []
+      let captured: Element | null = null
+      const original = Element.prototype.setPointerCapture
+      Element.prototype.setPointerCapture = function capture(this: Element) {
+        captured = this
+      }
+      try {
+        mount(<Sheet defaultOpen onSnapChange={(snap) => seen.push(snap)} />)
+        await screen.findByRole('dialog')
+        pointer(grabber(), 'pointerdown', 400, 0, 'mouse')
+        for (let step = 1; step <= 20; step += 1) pointer(captured ?? document.body, 'pointermove', 400 - step * 30, step * 8, 'mouse')
+        pointer(captured ?? document.body, 'pointerup', 400 - 20 * 30, 160, 'mouse')
+        expect(captured).toBe(sheet())
+        expect(seen).toEqual(['100%'])
+      } finally {
+        Element.prototype.setPointerCapture = original
+      }
+    })
+
+    // Text selected by an earlier drag would otherwise be picked up and dragged
+    // by the browser, which cancels the pointer halfway through the swipe.
+    it('does not let a press on the grabber pick up a selection, as the content can', async () => {
+      mount(<Sheet defaultOpen />)
+      const dialog = await screen.findByRole('dialog')
+      expect(fireEvent.dragStart(grabber())).toBe(false)
+      expect(fireEvent.dragStart(within(dialog).getByText('Ferry terminal'))).toBe(true)
+    })
+
+    it('leaves nothing pending when a mouse press is let go off the sheet', async () => {
+      const seen: ElasticSheetSnapPoint[] = []
+      mount(<Sheet defaultOpen onSnapChange={(snap) => seen.push(snap)} />)
+      await screen.findByRole('dialog')
+      const top = sheet().style.top
+      pointer(grabber(), 'pointerdown', 400, 0, 'mouse')
+      pointer(document.body, 'pointerup', 400, 8, 'mouse')
+      // Later, the mouse only passes over the grabber with no button down: the sheet stays put.
+      for (let step = 1; step <= 10; step += 1) pointer(grabber(), 'pointermove', 400 - step * 30, 100 + step * 8, 'mouse')
+      pointer(grabber(), 'pointerup', 100, 200, 'mouse')
+      expect(sheet().style.top).toBe(top)
+      expect(seen).toEqual([])
+    })
+
     it('grows from the content before the content scrolls', async () => {
       const seen: ElasticSheetSnapPoint[] = []
       mount(<Sheet defaultOpen onSnapChange={(snap) => seen.push(snap)} />)
@@ -304,6 +349,36 @@ describe('ElasticSheet', () => {
       fireEvent.click(button)
       expect(onPress).toHaveBeenCalledTimes(1)
     })
+  })
+
+  it('leaves the close button out when asked, and still goes on Escape', async () => {
+    const user = userEvent.setup()
+    const onOpenChange = vi.fn()
+    mount(<Sheet closeButton={false} label="Nearby" onOpenChange={onOpenChange} title={undefined} />)
+    await user.click(screen.getByRole('button', { name: 'Open sheet' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Nearby' })
+    expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull()
+    expect(within(dialog).queryByRole('heading')).toBeNull()
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(onOpenChange).toHaveBeenLastCalledWith(false)
+  })
+
+  // The sheet starts below its room. Focusing a control in it there would
+  // scroll the page down to it whenever the room is part of the page.
+  it('hands focus to the sheet itself as it opens, without scrolling to it', async () => {
+    const user = userEvent.setup()
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus')
+    try {
+      mount(<Sheet />)
+      await user.click(screen.getByRole('button', { name: 'Open sheet' }))
+      const dialog = await screen.findByRole('dialog')
+      await waitFor(() => expect(document.activeElement).toBe(dialog))
+      const call = focus.mock.contexts.indexOf(dialog)
+      expect(focus.mock.calls[call]?.[0]).toMatchObject({ preventScroll: true })
+    } finally {
+      focus.mockRestore()
+    }
   })
 
   it('leaves the page live and focus where it was when it is not modal', async () => {

@@ -12,7 +12,8 @@ past the top its sides draw in while a tongue of glass reaches for the finger â€
 all one `GlassMerge` surface over thick frost.
 
 Behaviour is Base UI's dialog, modal or not (`modal={false}` leaves the page live,
-as under a map's sheet), controlled or uncontrolled for both `open` and `snap`. The
+as under a map's sheet), controlled or uncontrolled for both `open` and `snap`;
+`closeButton={false}` leaves the close button out of a sheet put away by a flick. The
 grabber is a slider the arrow keys move between snap points, and a touch on the
 content grows the sheet before the content scrolls, and scrolls the content back to
 its top before the sheet comes down. `SheetMotion`, `chooseStop`, `rubberBand`,

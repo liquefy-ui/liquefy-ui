@@ -148,9 +148,13 @@ import { LiquidContextMenu } from '@liquefy-ui/lab'
   name: 'LiquidContextMenu',
   order: 2,
   package: '@liquefy-ui/lab',
+  // The real menu, so the card answers a long press or a right-click as the page
+  // does. Its preview and menu are portalled out, so the card does not clip them.
   preview: () => (
     <LabStage height={178}>
-      <img alt="" draggable={false} src="/scenes/coast.jpg" style={{ ...PHOTO, height: 104, width: 156 }} />
+      <LiquidContextMenu items={photoActions(() => {})} label="Photo">
+        <img alt="The coast at dusk" draggable={false} src="/scenes/coast.jpg" style={{ ...PHOTO, height: 104, width: 156 }} />
+      </LiquidContextMenu>
     </LabStage>
   ),
   props: [

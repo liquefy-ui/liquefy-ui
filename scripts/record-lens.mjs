@@ -6,8 +6,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 /**
- * Re-records `brand/liquefy-lens.gif`: the first playground scene slowly scrolling
- * into the second behind the fixed glass card. Not part of any build — a GIF in
+ * Re-records `brand/liquefy-lens.gif`: the playground's glass card held over the
+ * water while a pointer stirs it underneath. Not part of any build — a GIF in
  * git only needs rebuilding when the material itself changes.
  *
  *   pnpm build && pnpm preview          # in one terminal
@@ -29,17 +29,16 @@ import { join } from 'node:path'
  * Light theme: this is the README's first look at the material, so the capture
  * uses the same bright presentation a visitor gets from a light system theme.
  *
- * One way only: the GIF deliberately does not loop. It starts on the fjord, takes
- * five seconds to reach the wordmark, and rests there instead of snapping back to
- * the beginning.
+ * The pointer draws one slow figure of eight around the card, so the colour is
+ * pulled under the rim from every side; the water keeps turning by itself after.
  */
 
 const URL_ = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const VIEWPORT = { height: 800, width: 1280 }
-/** Page load and scrolling happen inside this, and ffmpeg trims it off. */
+/** Page load happens inside this, and ffmpeg trims it off. */
 const LEAD_MS = 4000
 const FPS = 10
-const SCROLL_MS = 5000
+const STIR_MS = 5000
 const WIDTH = 720
 
 // `createRequire` rather than `import`: a bare specifier in an ES module resolves
@@ -71,48 +70,28 @@ const page = await context.newPage()
 await page.goto(URL_, { waitUntil: 'networkidle' })
 
 const stage = page.locator('.pg-stage')
-const scroller = '.pg-stage__scroll'
 await stage.scrollIntoViewIfNeeded()
 await page.waitForTimeout(900)
 
 const box = await stage.boundingBox()
-const sceneHeight = await page.evaluate(
-  (selector) => document.querySelector(selector).clientHeight,
-  scroller,
-)
-await page.evaluate((selector) => { document.querySelector(selector).scrollTop = 0 }, scroller)
 
 const lead = LEAD_MS - (Date.now() - started)
 if (lead > 0) await page.waitForTimeout(lead)
 
-await page.evaluate(async ([selector, to, duration]) => {
-  const element = document.querySelector(selector)
-  const from = element.scrollTop
-  const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2)
-  await new Promise((resolve) => {
-    const start = performance.now()
-    const step = (now) => {
-      const t = Math.min(1, (now - start) / duration)
-      element.scrollTop = from + (to - from) * easeInOut(t)
-      if (t < 1) requestAnimationFrame(step)
-      else resolve()
-    }
-    requestAnimationFrame(step)
-  })
-}, [scroller, sceneHeight, SCROLL_MS])
+// A figure of eight around the middle of the stage, at a steady pace: the
+// water reads the pointer's speed, so the steps are even rather than eased.
+const steps = Math.round(STIR_MS / 40)
+for (let index = 0; index <= steps; index++) {
+  const t = (index / steps) * Math.PI * 2
+  await page.mouse.move(
+    box.x + box.width * (0.5 + 0.36 * Math.sin(t)),
+    box.y + box.height * (0.5 + 0.28 * Math.sin(t * 2)),
+  )
+  await page.waitForTimeout(40)
+}
 await page.waitForTimeout(1400)
-
-const end = await page.evaluate(
-  (selector) => document.querySelector(selector).scrollTop,
-  scroller,
-)
 await context.close()
 await browser.close()
-
-if (Math.abs(end - sceneHeight) > 5) {
-  console.error(`The scenes ended ${Math.round(Math.abs(end - sceneHeight))}px from scene two.`)
-  process.exit(1)
-}
 
 const video = readdirSync(dir).find((file) => file.endsWith('.webm'))
 const out = new URL('../brand/liquefy-lens.gif', import.meta.url).pathname
@@ -126,4 +105,4 @@ execFileSync(ffmpeg, [
 ], { stdio: 'inherit' })
 
 rmSync(dir, { force: true, recursive: true })
-console.log('brand/liquefy-lens.gif written — scene one to scene two')
+console.log('brand/liquefy-lens.gif written — the water stirred under the card')
