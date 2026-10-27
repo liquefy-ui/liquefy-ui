@@ -79,6 +79,38 @@ const ROOM = {
   zIndex: 1,
 } as const
 
+/**
+ * The two heights the index card offers, in pixels because the card is only
+ * 178px tall: a quarter of that would show the grabber and nothing else. The
+ * peek shows the title; half shows the search field and the first places.
+ */
+const PREVIEW_SNAPS = ['64px', '150px'] as const satisfies readonly ElasticSheetSnapPoint[]
+
+/**
+ * The index card: one sheet that stays up, moved between its peek and half by
+ * dragging it or pressing its grabber — no controls around it.
+ */
+const Preview = () => {
+  const room = useRef<HTMLDivElement>(null)
+
+  return (
+    <LabStage align="bottom" height={178} scene="fjord">
+      <div ref={room} style={ROOM} />
+      <ElasticSheet
+        container={room}
+        defaultOpen
+        defaultSnap="64px"
+        dismissible={false}
+        modal={false}
+        snapPoints={PREVIEW_SNAPS}
+        title="Explore"
+      >
+        <Places />
+      </ElasticSheet>
+    </LabStage>
+  )
+}
+
 const Playground = () => {
   const room = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(true)
@@ -172,6 +204,7 @@ import { LiquidButton } from '@liquefy-ui/react'
   name: 'ElasticSheet',
   order: 4,
   package: '@liquefy-ui/lab',
+  preview: () => <Preview />,
   props: [
     { description: 'The heights it rests at. A percentage or a number up to 1 is a share of the room; pixels or a number above 1 are exact.', name: 'snapPoints', defaultValue: "['50%', '100%']", type: "Array<number | `${number}%` | `${number}px`>" },
     { description: 'The snap point it rests at, when controlled. The sheet follows a drag wherever it is let go and reports it through onSnapChange.', name: 'snap', type: 'ElasticSheetSnapPoint' },
