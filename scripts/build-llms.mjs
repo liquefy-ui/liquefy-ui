@@ -278,12 +278,16 @@ const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled c
   ancestor, so give that parent \`position: relative\` and put the field before the glass
   that should refract it; with children it wraps them and draws \`over\` (the default) or
   \`behind\` them. \`burst(count)\` on its ref fires particles at once.
+- \`LiquidSwipe\` needs \`label\` and takes its pages as \`children\`, one child each. Give
+  every page its own background; a turn is the next page flooding in over this one.
+  \`index\` is a page number; it is a carousel already, so do not add arrow-key
+  handlers or slide labels of your own.
 - Like \`@liquefy-ui/react\`, lab does not read \`prefers-reduced-motion\`. With
   \`motion={false}\` on the provider, droplets appear in place, a level goes straight
   to its mark with a still surface, a morph lands in its new shape, a sheet lands on
-  its snap point, magnetic buttons stay where they rest, change effects do not play
-  and a particle field draws nothing; map the media query to \`motion\` if the app
-  wants to.
+  its snap point, magnetic buttons stay where they rest, a swiped page turns at once,
+  change effects do not play, a particle field draws nothing and a backdrop holds
+  still; map the media query to \`motion\` if the app wants to.
 - \`GlassMerge\` (and \`DropletMenu\`, \`LiquidMorph\`, \`LiquidIsland\`, \`ElasticSheet\` and
   \`MagneticActions\`, which are drawn with it) must not sit under an element with
   \`opacity\`, \`filter\`, \`clip-path\`, \`mask\` or \`will-change: opacity\`: each one leaves

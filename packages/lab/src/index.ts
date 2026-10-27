@@ -120,3 +120,22 @@ export { FluidBackdrop, type FluidBackdropProps } from './fluid-backdrop'
 export { FLUID_DEFAULTS, type FluidOptions } from './fluid-motion'
 export { MeshGradient, type MeshGradientProps } from './mesh-gradient'
 export { MESH_DEFAULTS, MeshMotion, type MeshOptions } from './mesh-motion'
+export { LiquidSwipe, type LiquidSwipeProps } from './liquid-swipe'
+export {
+  chooseSwipe,
+  FLICK_SPEED,
+  handleSize,
+  SWIPE_THRESHOLD,
+  SwipeDeck,
+  waveShape,
+  wavePath,
+  WaveMotion,
+  type SwipeDeckOptions,
+  type SwipeSide,
+  type SwipeSize,
+  type SwipeWave,
+  type WaveFrame,
+  type WaveMotionOptions,
+  type WaveShape,
+  type WaveShapeOptions,
+} from './swipe-motion'

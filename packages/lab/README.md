@@ -769,3 +769,67 @@ a background tab, and `motion={false}` holds the points still, as `FluidBackdrop
 `MeshMotion` is the drift with no DOM attached: `new MeshMotion(columns, rows, wander)`,
 and `points(time)` gives every point's position, row by row, as fractions of the
 gradient. `MESH_DEFAULTS` and `FLUID_DEFAULTS` hold the defaults above.
+
+## LiquidSwipe
+
+Pages turned the way Cuberto's liquid swipe turns them. The next page peeks in at
+the right edge as a small bulge with a glass button on it, and the previous one at
+the left. Pull either sideways — from its handle or from anywhere on the page — and
+its bulge swells like a wave, taller and wider the further it comes and following
+the finger up and down. Let go past the middle, or flick it, and the page floods
+across the room, lands with a slosh, and the new neighbours' handles pop in. Let go
+short of it, or flick it back, and the wave springs back to a handle.
+
+```tsx
+import { LiquidSwipe } from '@liquefy-ui/lab'
+
+<LiquidSwipe label="Getting started" index={index} onIndexChange={setIndex}>
+  <section style={{ background: "url('/fjord.jpg') center / cover" }}>…</section>
+  <section style={{ background: '#1d5c58' }}>…</section>
+  <section style={{ background: '#e6c27a' }}>…</section>
+</LiquidSwipe>
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `children` | — | The pages, one child each. Give every page its own background: a turn is the next page's colour flooding in over this one |
+| `label` | — | The carousel's accessible name |
+| `index`, `defaultIndex`, `onIndexChange` | `0` | Controlled or uncontrolled. A controlled change comes in on a wave from the nearer side; a page further than one away comes in on a single wave |
+| `loop` | `false` | Whether the last page leads on to the first and the first back to the last |
+| `pageLabel` | `` (index, count) => `${index + 1} of ${count}` `` | Each page's accessible name |
+| `previousLabel`, `nextLabel` | `'Previous page'`, `'Next page'` | The accessible names and tooltips of the buttons on the two handles |
+| `tint`, `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component; `tint` goes to the handles' glass |
+
+The carousel is as tall as its tallest page unless it is given a height, and every
+page fills it. Each page is cut out with `clip-path: path()` — a strip along the edge
+it comes in from and a bell of two cubics — redrawn every frame. A clip makes the
+page a backdrop root, so glass on a page bends that page's own background rather
+than what is under the carousel, which is what an opaque page would show anyway. The
+page that covers the room has no clip at all. Nothing above the carousel may have
+`opacity`, `filter`, `clip-path`, `mask` or `will-change: opacity` if the handles'
+glass is to bend the pages.
+
+To assistive technology it is a carousel: a region named by `label`, slides named
+"2 of 4" in a polite live region, so a new page is read out, and the previous and
+next buttons, which go dim at the ends of a carousel that does not loop. The left and
+right arrow keys turn it from anywhere inside, except a field or a widget that
+already uses them. Pages out of view are `inert` — except one that still holds focus,
+which keeps it until its successor has come in and then hands it over.
+
+A touch that moves sideways turns the page; one that moves up or down scrolls, since
+the carousel claims only horizontal panning (`touch-action: pan-y pinch-zoom`), and
+one inside something that scrolls sideways scrolls that first. A mouse swipes the
+same way, except from a field, where a drag selects text. With `motion={false}` on
+the provider a page still follows the finger while it is held — that is the hand
+moving it — but turns or goes back at once, and the handles appear without popping.
+
+### The motion on its own
+
+`waveShape` is a wave's front at a given progress — its straight part, and the
+bulge's height and reach — and `wavePath` its outline as a `clip-path` path.
+`WaveMotion` is one wave's springs: the progress a finger holds and lets go of with
+its speed, the jelly that leads with the tip and sloshes, the bulge's height, and
+the handle's pop. `SwipeDeck` is the pages as a whole — which page covers the room,
+which page each side brings in, a finger's `grab`, `drag` and `letGo`, and `goTo`.
+`chooseSwipe` decides whether a release turns the page: past `SWIPE_THRESHOLD`, or
+faster than `FLICK_SPEED` either way.
