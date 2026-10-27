@@ -364,14 +364,14 @@ export const rasterizeMesh = (
 }
 
 /**
- * A CSS background that stands in for a gradient that is not drawn yet — on
- * the server, before the first frame, and where neither WebGL nor a 2D
- * canvas is available: a soft pool of each colour laid where its point sits,
- * over the average of them all. `colors` can be any CSS colours, one per
- * point, row by row.
+ * A CSS `background-image` that stands in for a gradient that is not drawn
+ * yet — on the server, before the first frame, and where neither WebGL nor a
+ * 2D canvas is available: a soft pool of each colour laid where its point
+ * sits, over a wash from the first colour to the last. `colors` can be any
+ * CSS colours, one per point, row by row.
  */
 export const meshFallbackCss = (colors: readonly string[], columns: number, rows: number): string => {
-  if (colors.length === 0) return 'transparent'
+  if (colors.length === 0) return 'none'
   const pools = colors.slice(0, columns * rows).map((color, index) => {
     const x = Math.round(((index % columns) / Math.max(1, columns - 1)) * 100)
     const y = Math.round((Math.floor(index / columns) / Math.max(1, rows - 1)) * 100)

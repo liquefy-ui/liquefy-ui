@@ -50,15 +50,17 @@ const POOLS = [[18, 26], [78, 20], [64, 78], [24, 82], [48, 50]] as const
 
 /**
  * The stand-in for the water where it cannot be drawn — on the server, and
- * without WebGL2: the same colours in still, soft pools over the base.
+ * without WebGL2: the same colours in still, soft pools, laid over the base
+ * as the background colour. An image list rather than the `background`
+ * shorthand, which is a great deal more for a CSS parser to match.
  */
-const fallbackBackground = (colors: readonly string[], base: string): string => [
-  ...colors.slice(0, POOLS.length).map((color, index) => {
+const fallbackPools = (colors: readonly string[]): string => colors
+  .slice(0, POOLS.length)
+  .map((color, index) => {
     const [x, y] = POOLS[index] ?? [50, 50]
     return `radial-gradient(farthest-side at ${x}% ${y}%, color-mix(in srgb, ${color} 72%, transparent), transparent)`
-  }),
-  base,
-].join(', ')
+  })
+  .join(', ')
 
 /**
  * A backdrop of moving water with colour poured in. Stir it with a pointer
@@ -298,13 +300,17 @@ export const FluidBackdrop = forwardRef<HTMLDivElement, FluidBackdropProps>(({
   }, [animated, interactive, tier])
 
   const initial = cssPalette(colors, tintColor, 4)
-  const fallback = fallbackBackground(
-    initial,
-    background ?? (palette ? cssColor(deepShade(palette[0] ?? [0.5, 0.5, 0.5])) : `color-mix(in srgb, ${initial[0]} 10%, #0b0b0e)`),
-  )
+  const floor = background
+    ?? (palette ? cssColor(deepShade(palette[0] ?? [0.5, 0.5, 0.5])) : `color-mix(in srgb, ${initial[0]} 10%, #0b0b0e)`)
   const root = useLiquidStyles('lq-fluid-backdrop', {
     className,
-    style: { background: fallback, isolation: 'isolate', position: 'relative', ...style },
+    style: {
+      backgroundColor: floor,
+      backgroundImage: fallbackPools(initial),
+      isolation: 'isolate',
+      position: 'relative',
+      ...style,
+    },
     styles,
   })
   const drawing = tier !== null && seeded

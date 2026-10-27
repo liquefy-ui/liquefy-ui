@@ -262,6 +262,6 @@ describe('meshFallbackCss', () => {
     expect(css).toContain('at 100% 0%, #00f')
     expect(css).toContain('at 0% 100%, var(--lq-accent)')
     expect(css).toContain('at 100% 100%, green')
-    expect(meshFallbackCss([], 2, 2)).toBe('transparent')
+    expect(meshFallbackCss([], 2, 2)).toBe('none')
   })
 })

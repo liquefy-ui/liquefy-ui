@@ -106,7 +106,7 @@ describe('FluidBackdrop', () => {
 
   it('takes a background for what the colour floats on', () => {
     const markup = renderToStaticMarkup(<FluidBackdrop background="#fafafa" colors={['red']} />)
-    expect(markup).toMatch(/transparent\), #fafafa;/)
+    expect(markup).toContain('background-color:#fafafa')
   })
 
   it('stays the still stand-in without WebGL, and asks for no frames', () => {
@@ -117,7 +117,7 @@ describe('FluidBackdrop', () => {
     )
     const backdrop = screen.getByTestId('water')
     expect(backdrop.dataset.fluidTier).toBe('fallback')
-    expect(backdrop.style.background).toContain('radial-gradient')
+    expect(backdrop.style.backgroundImage).toContain('radial-gradient')
     expect(screen.getByText('Over the water').parentElement).toBe(backdrop)
     expect(frameRequests).toBe(0)
   })

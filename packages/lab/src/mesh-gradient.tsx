@@ -244,7 +244,7 @@ export const MeshGradient = forwardRef<HTMLDivElement, MeshGradientProps>(({
   const root = useLiquidStyles('lq-mesh-gradient', {
     className,
     style: {
-      background: meshFallbackCss(grid, options.columns, options.rows),
+      backgroundImage: meshFallbackCss(grid, options.columns, options.rows),
       isolation: 'isolate',
       position: 'relative',
       ...style,
