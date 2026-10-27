@@ -269,11 +269,15 @@ const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled c
 - \`MagneticActions\` needs \`label\` (the toolbar's name) and \`actions\`, each with \`icon\`
   and \`label\`; \`onClick\` is a plain click handler. It is a Base UI toolbar, so the
   arrow keys already move between the buttons; do not add a key handler of your own.
+- \`LiquidSwipe\` needs \`label\` and takes its pages as \`children\`, one child each. Give
+  every page its own background; a turn is the next page flooding in over this one.
+  \`index\` is a page number; it is a carousel already, so do not add arrow-key
+  handlers or slide labels of your own.
 - Like \`@liquefy-ui/react\`, lab does not read \`prefers-reduced-motion\`. With
   \`motion={false}\` on the provider, droplets appear in place, a level goes straight
   to its mark with a still surface, a morph lands in its new shape, a sheet lands on
-  its snap point and magnetic buttons stay where they rest; map the media query to
-  \`motion\` if the app wants to.
+  its snap point, magnetic buttons stay where they rest and a swiped page turns at
+  once; map the media query to \`motion\` if the app wants to.
 - \`GlassMerge\` (and \`DropletMenu\`, \`LiquidMorph\`, \`LiquidIsland\`, \`ElasticSheet\` and
   \`MagneticActions\`, which are drawn with it) must not sit under an element with
   \`opacity\`, \`filter\`, \`clip-path\`, \`mask\` or \`will-change: opacity\`: each one leaves

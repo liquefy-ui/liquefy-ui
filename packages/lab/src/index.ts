@@ -88,3 +88,22 @@ export {
   type MagneticPullOptions,
   type MagneticRest,
 } from './magnetic-motion'
+export { LiquidSwipe, type LiquidSwipeProps } from './liquid-swipe'
+export {
+  chooseSwipe,
+  FLICK_SPEED,
+  handleSize,
+  SWIPE_THRESHOLD,
+  SwipeDeck,
+  waveShape,
+  wavePath,
+  WaveMotion,
+  type SwipeDeckOptions,
+  type SwipeSide,
+  type SwipeSize,
+  type SwipeWave,
+  type WaveFrame,
+  type WaveMotionOptions,
+  type WaveShape,
+  type WaveShapeOptions,
+} from './swipe-motion'
