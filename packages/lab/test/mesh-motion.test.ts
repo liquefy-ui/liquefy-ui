@@ -177,24 +177,33 @@ describe('tessellateMesh', () => {
   })
 
   it('covers the whole rectangle without folding at the default wander', () => {
+    // Counted and checked once at the end: an expect per triangle is a million
+    // of them, which is slower than the geometry by far.
+    let offEdge = 0
+    let folded = 0
+    let checked = 0
     for (const [columns, rows] of [[3, 3], [4, 4], [6, 3]] as const) {
       const mesh = tessellateMesh(columns, rows, 48)
       const motion = new MeshMotion(columns, rows, MESH_DEFAULTS.wander, 5)
       for (let time = 0; time < 120; time += 1.7) {
         const positions = meshPositions(mesh, motion.points(time))
         for (let vy = 0; vy < mesh.vertexRows; vy += 1) {
-          expect(at(positions, vy * mesh.vertexColumns).x).toBeCloseTo(0, 6)
-          expect(at(positions, vy * mesh.vertexColumns + mesh.vertexColumns - 1).x).toBeCloseTo(1, 6)
+          if (Math.abs(at(positions, vy * mesh.vertexColumns).x) > 1e-6) offEdge += 1
+          if (Math.abs(at(positions, vy * mesh.vertexColumns + mesh.vertexColumns - 1).x - 1) > 1e-6) offEdge += 1
         }
         // Every triangle keeps the winding it has at rest.
         for (let index = 0; index < mesh.indices.length; index += 3) {
           const a = at(positions, mesh.indices[index] ?? 0)
           const b = at(positions, mesh.indices[index + 1] ?? 0)
           const c = at(positions, mesh.indices[index + 2] ?? 0)
-          expect((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)).toBeLessThan(0)
+          if ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) >= 0) folded += 1
+          checked += 1
         }
       }
     }
+    expect(checked).toBeGreaterThan(500_000)
+    expect(offEdge).toBe(0)
+    expect(folded).toBe(0)
   })
 })
 
