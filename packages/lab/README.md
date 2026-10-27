@@ -538,6 +538,238 @@ and `frame(i)` and `shape(i)` read back where a button is drawn and the
 `magneticLayout` the resting places of a row. Buttons are described by their centre
 and size, so a row of different-sized things — a dock — can be driven the same way.
 
+## ChangeEffect
+
+Plays an effect on what it wraps, once, each time a value changes — Pow's change
+effects for the web.
+
+- `spray` throws droplets of glass up out of it, every size, that fall back and shrink
+  away. Each droplet is a tiny lens: nearly clear in the middle, tinted toward a lit
+  rim, with light gathered at the bottom and a point of light at the top left.
+- `jump` crouches, hops, and lands with a squash it wobbles out of.
+- `shine` runs a band of light across it, from the top-left corner to the bottom-right,
+  inside its rounded corners.
+- `shake` shakes it from side to side, quickly and smaller each time.
+- `glow` lights it from behind and lets the light fade, so glass over it bends the
+  light it gives off.
+
+```tsx
+import { HeartIcon } from '@liquefy-ui/icons'
+import { ChangeEffect } from '@liquefy-ui/lab'
+import { LiquidButton } from '@liquefy-ui/react'
+
+// The spray outside, so its droplets stay where they were thrown while the button jumps
+<ChangeEffect effect="spray" trigger={likes}>
+  <ChangeEffect effect="jump" trigger={likes}>
+    <LiquidButton iconBefore={<HeartIcon />} onClick={like}>{likes}</LiquidButton>
+  </ChangeEffect>
+</ChangeEffect>
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `effect` | — | `'spray'`, `'jump'`, `'shine'`, `'shake'` or `'glow'` |
+| `trigger` | — | Plays the effect once each time this changes, compared with `Object.is`, and never on mount — the same as `IconEffect`'s |
+| `speed` | `1` | How fast it plays: `2` is twice as fast |
+| `tint` | provider's | The colour of a glow's light and of a spray's droplets, any CSS colour |
+| `ref` | | A `ChangeEffectHandle` whose `play()` plays it now, for a change that leaves the value as it was — a wrong passcode entered twice |
+| `className`, `style` | | Applied to the wrapper |
+
+The wrapper is an `inline-flex` box around `children` with nothing on it that would
+stop glass inside from refracting. What an effect draws is `aria-hidden` and clear of
+the pointer, and what it wraps behaves exactly as it did: no handlers, no roles, no
+focus. Plays overlap rather than restart — a second shine crosses behind the first, a
+second spray throws more droplets into the air, and a jump started mid-air leaves from
+where it was caught. The motion runs on a clock of its own that only moves when a
+frame runs, so a busy main thread slows an effect rather than skipping it. With
+`motion={false}` on the provider nothing plays.
+
+## ParticleField
+
+Particles on a canvas: rain, snow, confetti, fireworks, bubbles rising and swaying,
+and magic sparkling — Vortex's presets for the web — or a system of your own. Behind
+glass, the glass refracts them.
+
+```tsx
+import { ParticleField } from '@liquefy-ui/lab'
+import { GlassCard, LiquidButton } from '@liquefy-ui/react'
+
+// Behind glass: the field fills the section, and the card after it bends it
+<section style={{ position: 'relative' }}>
+  <ParticleField preset="snow" />
+  <GlassCard title="Snow">…</GlassCard>
+</section>
+
+// Around something, spilling past its edges
+<ParticleField bleed={28} preset="magic">
+  <LiquidButton>Upgrade</LiquidButton>
+</ParticleField>
+
+// Settings of your own over a preset's
+<ParticleField config={{ rate: 300, speed: 1200 }} preset="rain" />
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `preset` | — | `'rain'`, `'snow'`, `'confetti'`, `'fireworks'`, `'bubbles'` or `'magic'` |
+| `config` | | `Partial<ParticleConfig>` over the preset's, or over `PARTICLE_DEFAULTS` without one. Compared by value, so it can be written inline |
+| `children` | | Without them, the field fills its nearest positioned ancestor and paints where it falls among its siblings — first, under the glass that follows it. With them, it wraps them in an `inline-flex` box |
+| `layer` | `'over'` | With children, whether the particles are drawn over them or behind them |
+| `bleed` | `0` | Pixels the particles are drawn past the field's edges, on every side |
+| `paused` | `false` | Stops new particles being born; the ones in the air see out their lives |
+| `seed` | random | Seeds the random numbers, so the field draws the same particles each time it mounts |
+| `tint` | provider's | What `var(--lq-particle-tint)` in a colour list stands for |
+| `ref` | | A `ParticleFieldHandle` whose `burst(count)` bears that many particles at once — a confetti cannon with `rate: 0` |
+| `className`, `style` | | On the field, or on the wrapper when there are children |
+
+A `ParticleConfig` is what Vortex's `VortexSystem` is: how many are born a second
+(`rate`), how fast and which way they set off (`speed`, `angle`, `spread`), what pulls
+them (`gravity`, `drag`), how long they live (`lifetime`), how big they are and become
+(`size`, `sizeAtDeath`), their `colors`, their `shape`, and where they are born
+(`emitter`: `'top'`, `'bottom'`, `'center'`, `'area'` or a box in shares of the field).
+Each number that varies has a `…Variation`. `depth` makes some particles look further
+away — smaller, slower, fainter — `sway` drifts them side to side, `twinkle` flickers
+them, and `explode` bursts one into a new set when its life runs out, which is how a
+firework's rocket becomes sparks. `prewarm` runs the field on before its first frame so
+it opens full. A config can change while the field runs: particles already alive keep
+the config they were born with, so one preset gives way to the next. Every field keeps
+at most its config's `limit` alive, and never more than `MAX_PARTICLES` (1500).
+
+The shapes are `bead` and `bubble`, drawn as small glass with a lit rim and a point of
+light; `flake`, `spark` and `sparkle`, which glow; `streak`, a line along the way it
+moves; `confetti`, a strip that tumbles; and a plain `circle`.
+
+It is drawn with a 2D canvas rather than WebGL: a few hundred particles a frame are a
+few hundred stamps of sprites painted once per colour, which a 2D canvas does without
+trouble, while every WebGL context counts against the browser's limit of about sixteen
+a page that liquefy-ui's own glass shaders already draw on. The glass in front does the
+refracting. The field is `aria-hidden` and clear of the pointer, stops drawing while it
+is off screen or its tab is in the background, and runs on a clock of its own that only
+moves when a frame is drawn. With `motion={false}` on the provider there are no
+particles at all.
+
+### The particles on their own
+
+`ParticleSystem` is the field with no DOM attached: `resize` it to the field, `step`
+it every frame, and `each` hands back every particle as it should be drawn. `burst`,
+`warm`, `setConfig` and `emitting` are what the component uses. Its random numbers come
+from one source, which a `seed` (or `createRandom(seed)`) makes repeatable, so the same
+seed and the same steps draw the same particles. `PARTICLE_PRESETS` and
+`particleConfig(preset, overrides)` give the presets as plain data.
+
+## FluidBackdrop
+
+Moving water with colour poured in, to lay glass over. Move a pointer over it and the
+colour swirls after it; leave it and it keeps turning, stirred slowly by itself. The
+glass on top bends and frosts whatever moves underneath, which is what it is for.
+
+```tsx
+import { FluidBackdrop } from '@liquefy-ui/lab'
+import { LiquidSurface } from '@liquefy-ui/react'
+
+<FluidBackdrop colors={['#0fb5ae', '#1f6fe0', '#7fe3c4', '#f2c14e']} style={{ height: 420 }}>
+  <LiquidSurface radius={28}>…</LiquidSurface>
+</FluidBackdrop>
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `colors` | the tint, spread | The colours poured in, any CSS colours — `var(--lq-accent)` and `oklch()` included |
+| `tint` | provider `tint` | Spread into four neighbouring hues when there are no `colors`. A grey tint gives shades of grey |
+| `background` | a deep shade of the first colour | What the colour floats on |
+| `speed` | `1` | How fast time runs. `0` holds the water still |
+| `stir` | `0.5` | 0 to 1: how hard the water stirs itself when nobody is touching it |
+| `interactive` | `true` | Whether a pointer over it stirs it |
+| `pressureIterations` | `20` | Jacobi iterations of the pressure solve per frame, 1 to 80 |
+| `vorticity` | `12` | How strongly small eddies are kept spinning, 0 to 80 |
+| `fade` | `0.4` | How fast the colour fades, per second |
+| `resolution` | `128` | Cells across the short side of the velocity grid, 16 to 512 |
+| `dyeResolution` | `512` | Cells across the short side of the colour, 32 to 2048 — never more than the canvas has pixels |
+| `maxPixelRatio` | `1` | Most device pixels per CSS pixel the canvas is drawn at |
+| `children`, `className`, `style`, `styles` | | Laid over the water. It is `position: relative` with `isolation: isolate`; make it `position: fixed; inset: 0` for a page background |
+
+The water is Jos Stam's stable fluids ("Stable Fluids", SIGGRAPH 1999) run as
+fragment-shader passes, the way Pavel Dobryakov's
+[WebGL Fluid Simulation](https://github.com/PavelDoGreat/WebGL-Fluid-Simulation) runs it
+in a browser; the code here is written from the algorithm, not taken from that project.
+Each frame the stirrers and the pointer push the water and drop colour, the curl is fed
+back as vorticity confinement, a pressure field is relaxed by Jacobi iteration and its
+gradient taken off the velocity so the water does not compress, and the velocity, then
+the colour, are carried along by it. The pointer is read from `window`, so it stirs
+through whatever is laid over the backdrop — glass, buttons, text — which still get every
+event; nothing is captured or prevented, and a page that scrolls on touch still scrolls.
+
+**What it costs.** Every frame is `10 + pressureIterations` full passes over the velocity
+grid (about 29 000 cells at the default 128 on a 16:9 canvas), two over the colour
+(about 470 000) and one over the canvas. On the software renderer this was built against
+(SwiftShader, two CPU cores, no GPU), a 728×420 backdrop took about 80 ms a frame — real
+GPUs have not been measured. Turn `pressureIterations`, `resolution` and `dyeResolution`
+down for weak hardware; the colour only looks softer. Each backdrop owns a WebGL context,
+and browsers keep about sixteen, so keep one or two on a page.
+
+**When it stops.** No frames are asked for while the backdrop is off screen or the tab
+is in the background, and its clock moves only by the frames it is shown, so it carries
+on from where it was rather than jumping. With `motion={false}` on the provider it is
+one still picture — the water run on a second and a half and held — and the pointer does
+nothing. Like the rest of liquefy-ui it does not read `prefers-reduced-motion`; map that
+to `motion` if the app wants to.
+
+**Where it cannot run.** Without floating-point render targets the colour is kept in
+8-bit textures and carried by a flow written in closed form — the stirrers and the
+pointer's strokes as vortices — with no simulation behind it: softer, still moving. A
+lost context shows the stand-in below until the browser gives it back, then pours again.
+Without WebGL2, on the server, and before the first frame, it is still pools of the same
+colours in CSS. The root carries `data-fluid-tier` (`solver`, `vortices` or `fallback`)
+to say which.
+
+## MeshGradient
+
+A gradient in the manner of SwiftUI's `MeshGradient`: a colour on every point of a
+grid, blended smoothly between them, and the points drifting slowly round their places so
+the colour flows. Corner points stay put and edge points slide along their edge, so the
+colour always reaches every side. Far lighter than `FluidBackdrop` — nothing is
+simulated.
+
+```tsx
+import { MeshGradient } from '@liquefy-ui/lab'
+
+<MeshGradient
+  colors={['#f4683c', '#f9b16e', '#d63d6b', '#4a5fd8', '#f08aa6', '#e9822b']}
+  columns={3}
+  rows={3}
+  style={{ height: 400 }}
+>
+  …
+</MeshGradient>
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `colors` | the tint, spread | One CSS colour per point, row by row. A shorter list is repeated with each row starting further along, so neighbours differ |
+| `tint` | provider `tint` | Spread into neighbouring hues when there are no `colors` |
+| `columns`, `rows` | `3`, `3` | Points across and down, 2 to 8 each |
+| `speed` | `1` | How fast the points drift; a point swings round every eight to sixteen seconds. `0` holds them still |
+| `wander` | `0.3` | How far a point strays from its place, in cells, 0 to 0.45. Below half a cell neighbours never cross |
+| `maxPixelRatio` | `1` | Most device pixels per CSS pixel the canvas is drawn at |
+| `children`, `className`, `style`, `styles` | | As on `FluidBackdrop` |
+
+The surface through the points is a Catmull–Rom patch each way, so it passes through
+every point with no crease at the seams, and colours are blended in OKLab, so the way
+between two vivid colours stays vivid. It is cut into about 2 500 vertices whatever the
+grid and drawn as one indexed WebGL2 call a frame; the points are moved on the CPU,
+which is a few thousand multiply-adds. On SwiftShader it took about 5 ms a frame (real
+GPUs not measured). Without WebGL2 it is drawn on a 2D canvas 160 pixels across, by a
+small rasterizer in script, and scaled up by the browser — a gradient has nothing sharp
+to lose. On the server and before its first frame it is a CSS stand-in in the same
+colours; `data-mesh-mode` says `webgl`, `canvas` or `fallback`. It stops off screen and in
+a background tab, and `motion={false}` holds the points still, as `FluidBackdrop` does.
+
+### The motion on its own
+
+`MeshMotion` is the drift with no DOM attached: `new MeshMotion(columns, rows, wander)`,
+and `points(time)` gives every point's position, row by row, as fractions of the
+gradient. `MESH_DEFAULTS` and `FLUID_DEFAULTS` hold the defaults above.
+
 ## LiquidSwipe
 
 Pages turned the way Cuberto's liquid swipe turns them. The next page peeks in at

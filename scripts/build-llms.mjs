@@ -269,6 +269,15 @@ const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled c
 - \`MagneticActions\` needs \`label\` (the toolbar's name) and \`actions\`, each with \`icon\`
   and \`label\`; \`onClick\` is a plain click handler. It is a Base UI toolbar, so the
   arrow keys already move between the buttons; do not add a key handler of your own.
+- \`ChangeEffect\` wraps what it plays on as \`children\` and needs \`effect\` (\`spray\`, \`jump\`,
+  \`shine\`, \`shake\` or \`glow\`). It plays once each time \`trigger\` changes (compared with
+  \`Object.is\`, never on mount), like \`IconEffect\`; for a change that leaves the value as
+  it was, call \`play()\` on its ref. Nest two to combine them, the spray outside.
+- \`ParticleField\` takes a \`preset\` (\`rain\`, \`snow\`, \`confetti\`, \`fireworks\`, \`bubbles\`,
+  \`magic\`) and/or a partial \`config\`. Without children it fills its nearest positioned
+  ancestor, so give that parent \`position: relative\` and put the field before the glass
+  that should refract it; with children it wraps them and draws \`over\` (the default) or
+  \`behind\` them. \`burst(count)\` on its ref fires particles at once.
 - \`LiquidSwipe\` needs \`label\` and takes its pages as \`children\`, one child each. Give
   every page its own background; a turn is the next page flooding in over this one.
   \`index\` is a page number; it is a carousel already, so do not add arrow-key
@@ -276,8 +285,9 @@ const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled c
 - Like \`@liquefy-ui/react\`, lab does not read \`prefers-reduced-motion\`. With
   \`motion={false}\` on the provider, droplets appear in place, a level goes straight
   to its mark with a still surface, a morph lands in its new shape, a sheet lands on
-  its snap point, magnetic buttons stay where they rest and a swiped page turns at
-  once; map the media query to \`motion\` if the app wants to.
+  its snap point, magnetic buttons stay where they rest, a swiped page turns at once,
+  change effects do not play, a particle field draws nothing and a backdrop holds
+  still; map the media query to \`motion\` if the app wants to.
 - \`GlassMerge\` (and \`DropletMenu\`, \`LiquidMorph\`, \`LiquidIsland\`, \`ElasticSheet\` and
   \`MagneticActions\`, which are drawn with it) must not sit under an element with
   \`opacity\`, \`filter\`, \`clip-path\`, \`mask\` or \`will-change: opacity\`: each one leaves

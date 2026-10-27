@@ -1,7 +1,7 @@
 {
   "name": "@liquefy-ui/lab",
   "version": "0.0.0",
-  "description": "Experimental, motion-heavy components for liquefy-ui: glass droplets that bud off, fly out and settle with a wobble, and liquid that sloshes in a glass vessel.",
+  "description": "Experimental, motion-heavy components for liquefy-ui: glass droplets that bud off, fly out and settle with a wobble, liquid that sloshes in a glass vessel, effects that play when a value changes, and particles behind glass.",
   "license": "MIT",
   "homepage": "https://liquefy-ui.com",
   "repository": {
@@ -72,6 +72,8 @@
     "radial-menu",
     "fab",
     "gauge",
+    "particles",
+    "confetti",
     "liquefy-ui"
   ]
 }

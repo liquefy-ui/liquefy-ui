@@ -2370,6 +2370,17 @@ kbd {
   top: 14px;
 }
 
+/* A stage that is its own backdrop: the moving backdrops draw what the glass
+   on them bends, so they take the stage's place instead of a photograph. */
+.lab-backdrop {
+  align-items: center;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+  width: 100%;
+}
+
 .lab-row {
   align-items: center;
   display: flex;
@@ -2468,7 +2479,8 @@ kbd {
   overflow: hidden;
 }
 
-.lab-card__stage > .lab-stage {
+.lab-card__stage > .lab-stage,
+.lab-card__stage > .lab-backdrop {
   border-radius: 0;
   padding: 16px;
 }
