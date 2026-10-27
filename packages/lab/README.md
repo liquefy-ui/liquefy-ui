@@ -538,6 +538,125 @@ and `frame(i)` and `shape(i)` read back where a button is drawn and the
 `magneticLayout` the resting places of a row. Buttons are described by their centre
 and size, so a row of different-sized things — a dock — can be driven the same way.
 
+## ChangeEffect
+
+Plays an effect on what it wraps, once, each time a value changes — Pow's change
+effects for the web.
+
+- `spray` throws droplets of glass up out of it, every size, that fall back and shrink
+  away. Each droplet is a tiny lens: nearly clear in the middle, tinted toward a lit
+  rim, with light gathered at the bottom and a point of light at the top left.
+- `jump` crouches, hops, and lands with a squash it wobbles out of.
+- `shine` runs a band of light across it, from the top-left corner to the bottom-right,
+  inside its rounded corners.
+- `shake` shakes it from side to side, quickly and smaller each time.
+- `glow` lights it from behind and lets the light fade, so glass over it bends the
+  light it gives off.
+
+```tsx
+import { HeartIcon } from '@liquefy-ui/icons'
+import { ChangeEffect } from '@liquefy-ui/lab'
+import { LiquidButton } from '@liquefy-ui/react'
+
+// The spray outside, so its droplets stay where they were thrown while the button jumps
+<ChangeEffect effect="spray" trigger={likes}>
+  <ChangeEffect effect="jump" trigger={likes}>
+    <LiquidButton iconBefore={<HeartIcon />} onClick={like}>{likes}</LiquidButton>
+  </ChangeEffect>
+</ChangeEffect>
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `effect` | — | `'spray'`, `'jump'`, `'shine'`, `'shake'` or `'glow'` |
+| `trigger` | — | Plays the effect once each time this changes, compared with `Object.is`, and never on mount — the same as `IconEffect`'s |
+| `speed` | `1` | How fast it plays: `2` is twice as fast |
+| `tint` | provider's | The colour of a glow's light and of a spray's droplets, any CSS colour |
+| `ref` | | A `ChangeEffectHandle` whose `play()` plays it now, for a change that leaves the value as it was — a wrong passcode entered twice |
+| `className`, `style` | | Applied to the wrapper |
+
+The wrapper is an `inline-flex` box around `children` with nothing on it that would
+stop glass inside from refracting. What an effect draws is `aria-hidden` and clear of
+the pointer, and what it wraps behaves exactly as it did: no handlers, no roles, no
+focus. Plays overlap rather than restart — a second shine crosses behind the first, a
+second spray throws more droplets into the air, and a jump started mid-air leaves from
+where it was caught. The motion runs on a clock of its own that only moves when a
+frame runs, so a busy main thread slows an effect rather than skipping it. With
+`motion={false}` on the provider nothing plays.
+
+## ParticleField
+
+Particles on a canvas: rain, snow, confetti, fireworks, bubbles rising and swaying,
+and magic sparkling — Vortex's presets for the web — or a system of your own. Behind
+glass, the glass refracts them.
+
+```tsx
+import { ParticleField } from '@liquefy-ui/lab'
+import { GlassCard, LiquidButton } from '@liquefy-ui/react'
+
+// Behind glass: the field fills the section, and the card after it bends it
+<section style={{ position: 'relative' }}>
+  <ParticleField preset="snow" />
+  <GlassCard title="Snow">…</GlassCard>
+</section>
+
+// Around something, spilling past its edges
+<ParticleField bleed={28} preset="magic">
+  <LiquidButton>Upgrade</LiquidButton>
+</ParticleField>
+
+// Settings of your own over a preset's
+<ParticleField config={{ rate: 300, speed: 1200 }} preset="rain" />
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `preset` | — | `'rain'`, `'snow'`, `'confetti'`, `'fireworks'`, `'bubbles'` or `'magic'` |
+| `config` | | `Partial<ParticleConfig>` over the preset's, or over `PARTICLE_DEFAULTS` without one. Compared by value, so it can be written inline |
+| `children` | | Without them, the field fills its nearest positioned ancestor and paints where it falls among its siblings — first, under the glass that follows it. With them, it wraps them in an `inline-flex` box |
+| `layer` | `'over'` | With children, whether the particles are drawn over them or behind them |
+| `bleed` | `0` | Pixels the particles are drawn past the field's edges, on every side |
+| `paused` | `false` | Stops new particles being born; the ones in the air see out their lives |
+| `seed` | random | Seeds the random numbers, so the field draws the same particles each time it mounts |
+| `tint` | provider's | What `var(--lq-particle-tint)` in a colour list stands for |
+| `ref` | | A `ParticleFieldHandle` whose `burst(count)` bears that many particles at once — a confetti cannon with `rate: 0` |
+| `className`, `style` | | On the field, or on the wrapper when there are children |
+
+A `ParticleConfig` is what Vortex's `VortexSystem` is: how many are born a second
+(`rate`), how fast and which way they set off (`speed`, `angle`, `spread`), what pulls
+them (`gravity`, `drag`), how long they live (`lifetime`), how big they are and become
+(`size`, `sizeAtDeath`), their `colors`, their `shape`, and where they are born
+(`emitter`: `'top'`, `'bottom'`, `'center'`, `'area'` or a box in shares of the field).
+Each number that varies has a `…Variation`. `depth` makes some particles look further
+away — smaller, slower, fainter — `sway` drifts them side to side, `twinkle` flickers
+them, and `explode` bursts one into a new set when its life runs out, which is how a
+firework's rocket becomes sparks. `prewarm` runs the field on before its first frame so
+it opens full. A config can change while the field runs: particles already alive keep
+the config they were born with, so one preset gives way to the next. Every field keeps
+at most its config's `limit` alive, and never more than `MAX_PARTICLES` (1500).
+
+The shapes are `bead` and `bubble`, drawn as small glass with a lit rim and a point of
+light; `flake`, `spark` and `sparkle`, which glow; `streak`, a line along the way it
+moves; `confetti`, a strip that tumbles; and a plain `circle`.
+
+It is drawn with a 2D canvas rather than WebGL: a few hundred particles a frame are a
+few hundred stamps of sprites painted once per colour, which a 2D canvas does without
+trouble, while every WebGL context counts against the browser's limit of about sixteen
+a page that liquefy-ui's own glass shaders already draw on. The glass in front does the
+refracting. The field is `aria-hidden` and clear of the pointer, stops drawing while it
+is off screen or its tab is in the background, and runs on a clock of its own that only
+moves when a frame is drawn. With `motion={false}` on the provider there are no
+particles at all.
+
+### The particles on their own
+
+`ParticleSystem` is the field with no DOM attached: `resize` it to the field, `step`
+it every frame, and `each` hands back every particle as it should be drawn. `burst`,
+`warm`, `setConfig` and `emitting` are what the component uses. Its random numbers come
+from one source, which a `seed` (or `createRandom(seed)`) makes repeatable, so the same
+seed and the same steps draw the same particles. `PARTICLE_PRESETS` and
+`particleConfig(preset, overrides)` give the presets as plain data.
+
 ## FluidBackdrop
 
 Moving water with colour poured in, to lay glass over. Move a pointer over it and the

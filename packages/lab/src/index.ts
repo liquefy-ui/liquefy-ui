@@ -88,6 +88,34 @@ export {
   type MagneticPullOptions,
   type MagneticRest,
 } from './magnetic-motion'
+export {
+  ChangeEffect,
+  type ChangeEffectHandle,
+  type ChangeEffectProps,
+} from './change-effect'
+export type { ChangeEffectName } from './change-effect-motion'
+export {
+  ParticleField,
+  type ParticleFieldHandle,
+  type ParticleFieldProps,
+} from './particle-field'
+export {
+  createRandom,
+  MAX_PARTICLES,
+  PARTICLE_DEFAULTS,
+  PARTICLE_PRESETS,
+  particleConfig,
+  ParticleSystem,
+  type ParticleBleed,
+  type ParticleConfig,
+  type ParticleEmitter,
+  type ParticleEmitterBox,
+  type ParticleExplosion,
+  type ParticleFrame,
+  type ParticlePreset,
+  type ParticleShape,
+  type ParticleSystemOptions,
+} from './particle-system'
 export { FluidBackdrop, type FluidBackdropProps } from './fluid-backdrop'
 export { FLUID_DEFAULTS, type FluidOptions } from './fluid-motion'
 export { MeshGradient, type MeshGradientProps } from './mesh-gradient'
