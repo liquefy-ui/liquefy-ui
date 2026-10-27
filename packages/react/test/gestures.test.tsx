@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { LiquidDrawer } from '../src/liquid-drawer'
@@ -136,7 +136,10 @@ describe('select open state', () => {
     ui(<LiquidSelect label="Finish" onOpenChange={onOpenChange} options={options} />)
 
     await userEvent.click(screen.getByRole('combobox', { name: 'Finish' }))
-    expect(onOpenChange).toHaveBeenLastCalledWith(true)
+    // A mouse press opens the popup a frame later: Base UI waits for focus to
+    // land on the trigger first. The click can resolve before that frame comes,
+    // so the report is waited for rather than read at once.
+    await waitFor(() => expect(onOpenChange).toHaveBeenLastCalledWith(true))
 
     // The popup reaches the DOM before it is open: the positioner renders it
     // `hidden`, carrying `data-closed`, until the opening transition starts, and
