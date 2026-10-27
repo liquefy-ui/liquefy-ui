@@ -5,7 +5,6 @@ import {
   LiquidButton,
   LiquidList,
   LiquidListItem,
-  LiquidSegmented,
   LiquidSwitch,
   LiquidTextField,
 } from '@liquefy-ui/react'
@@ -13,13 +12,16 @@ import { LabControl, LabControls } from '../controls'
 import { LabStage } from '../stage'
 import type { LabExperiment } from '../types'
 
-const SNAP_POINTS = ['25%', '50%', '100%'] as const satisfies readonly ElasticSheetSnapPoint[]
+/**
+ * The lowest height shows the search field and nothing else, as a maps app's
+ * sheet does. Measured from the room's floor: the 8px a short sheet floats
+ * above it, then 28px over the field (the grabber and the body's padding),
+ * its own 48px, and 14px under it — short of the 16px gap above the first
+ * list, so none of the list shows.
+ */
+const PEEK = '98px'
 
-const HEIGHTS = [
-  { label: 'Peek', value: '25%' },
-  { label: 'Half', value: '50%' },
-  { label: 'Full', value: '100%' },
-]
+const SNAP_POINTS = [PEEK, '50%', '100%'] as const satisfies readonly ElasticSheetSnapPoint[]
 
 const NEARBY = [
   { meta: '350 m · 4 min walk', name: 'Ferry terminal' },
@@ -79,16 +81,14 @@ const ROOM = {
   zIndex: 1,
 } as const
 
-/**
- * The two heights the index card offers, in pixels because the card is only
- * 178px tall: a quarter of that would show the grabber and nothing else. The
- * peek shows the title; half shows the search field and the first places.
- */
-const PREVIEW_SNAPS = ['64px', '150px'] as const satisfies readonly ElasticSheetSnapPoint[]
+const ExploreButton = <LiquidButton iconBefore={<SearchIcon size={16} />}>Explore</LiquidButton>
+
+/** The index card is only 178px tall, so its taller height is in pixels too: the field and the first places. */
+const PREVIEW_SNAPS = [PEEK, '150px'] as const satisfies readonly ElasticSheetSnapPoint[]
 
 /**
- * The index card: one sheet that stays up, moved between its peek and half by
- * dragging it or pressing its grabber — no controls around it.
+ * The index card: the Explore button opens the sheet at its peek, and from
+ * there it is all swiping — up for more, down to put it away.
  */
 const Preview = () => {
   const room = useRef<HTMLDivElement>(null)
@@ -97,13 +97,15 @@ const Preview = () => {
     <LabStage align="bottom" height={178} scene="fjord">
       <div ref={room} style={ROOM} />
       <ElasticSheet
+        closeButton={false}
         container={room}
-        defaultOpen
-        defaultSnap="64px"
-        dismissible={false}
+        label="Explore"
         modal={false}
         snapPoints={PREVIEW_SNAPS}
-        title="Explore"
+        // Kept low so the card's room is tall enough for the peek to float
+        // clear of its floor, round all the way, as it does on the big stage.
+        topInset={12}
+        trigger={ExploreButton}
       >
         <Places />
       </ElasticSheet>
@@ -113,8 +115,7 @@ const Preview = () => {
 
 const Playground = () => {
   const room = useRef<HTMLDivElement>(null)
-  const [open, setOpen] = useState(true)
-  const [snap, setSnap] = useState<ElasticSheetSnapPoint>('25%')
+  const [open, setOpen] = useState(false)
   const [modal, setModal] = useState(false)
   const [dismissible, setDismissible] = useState(true)
 
@@ -123,39 +124,22 @@ const Playground = () => {
       <LabStage align="bottom" height={560} scene="fjord">
         <div ref={room} style={ROOM} />
         <ElasticSheet
+          closeButton={false}
           container={room}
           dismissible={dismissible}
+          label="Explore"
           modal={modal}
-          onOpenChange={(next) => {
-            setOpen(next)
-            // Put away, it comes back at its peek, as a presented sheet does.
-            if (!next) setSnap('25%')
-          }}
-          onSnapChange={setSnap}
+          onOpenChange={setOpen}
           open={open}
-          snap={snap}
           snapPoints={SNAP_POINTS}
-          title="Explore"
           // The tallest height leaves the clifftops in view, with room to stretch into.
           topInset={72}
-          trigger={<LiquidButton iconBefore={<SearchIcon size={16} />}>Explore</LiquidButton>}
+          trigger={ExploreButton}
         >
           <Places />
         </ElasticSheet>
       </LabStage>
       <LabControls>
-        <LabControl label="Height">
-          <LiquidSegmented
-            label="Height"
-            onValueChange={(value) => {
-              setSnap(value as ElasticSheetSnapPoint)
-              setOpen(true)
-            }}
-            options={HEIGHTS}
-            size="sm"
-            value={String(snap)}
-          />
-        </LabControl>
         <LabControl label="Modal">
           <LiquidSwitch checked={modal} label="Modal" onCheckedChange={setModal} />
         </LabControl>
@@ -183,16 +167,16 @@ import { ElasticSheet } from '@liquefy-ui/lab'
 import { LiquidButton } from '@liquefy-ui/react'
 
 <ElasticSheet
-  defaultOpen
+  closeButton={false}
+  label="Explore"
   modal={false}
-  snapPoints={['25%', '50%', '100%']}
-  title="Explore"
+  snapPoints={['98px', '50%', '100%']}
   trigger={<LiquidButton iconBefore={<SearchIcon size={16} />}>Explore</LiquidButton>}
 >
   <Places />
 </ElasticSheet>`,
       description:
-        'Drag the sheet by its grabber or its content. Let go slowly and it settles on the nearest height; flick it and it coasts on — a hard flick up runs to the top, one down puts it away. Pull past the top and it stretches, narrows and reaches for your finger.',
+        'Press Explore and the sheet comes up just far enough to show the search field. From there it is all swiping, by the grabber or the content: let go slowly and it settles on the nearest height; flick it and it coasts on — a hard flick up runs to the top, a flick down from the lowest height puts it away. Pull past the top and it stretches, narrows and reaches for your finger.',
       render: () => <Playground />,
       title: 'A maps-style sheet',
     },
@@ -213,6 +197,7 @@ import { LiquidButton } from '@liquefy-ui/react'
     { description: 'Controlled or uncontrolled. A controlled close still slides the sheet away.', name: 'open, defaultOpen, onOpenChange', type: 'boolean' },
     { description: 'Dims what is behind, keeps focus inside and locks the page. Off, the page stays live around the sheet.', name: 'modal', defaultValue: 'true', type: 'boolean' },
     { description: 'Whether a flick down, Escape, the close button and a press outside put it away. Off, the lowest height holds against a rubber band.', name: 'dismissible', defaultValue: 'true', type: 'boolean' },
+    { description: 'Whether a dismissible sheet shows a close button. Off, it is put away by a flick down, Escape or a press outside, as a maps sheet is.', name: 'closeButton', defaultValue: 'true', type: 'boolean' },
     { description: 'The element it moves in instead of the viewport. Give it a position and clip its overflow.', name: 'container', type: 'HTMLElement | RefObject<HTMLElement | null>' },
     { description: 'An element that opens the sheet; focus goes back to it on close.', name: 'trigger', type: 'ReactElement' },
     { description: 'The heading, which also names the dialog. Without one, give it a label.', name: 'title, label', type: 'ReactNode, string' },
