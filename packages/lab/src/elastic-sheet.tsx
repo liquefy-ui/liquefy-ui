@@ -37,6 +37,12 @@ export type ElasticSheetProps = LiquidStyleProps & {
   /** The content, in a body that scrolls once the sheet is at its tallest. */
   children?: ReactNode
   className?: string
+  /**
+   * Whether a dismissible sheet shows a close button in its header. Off, it is
+   * put away as a maps app's sheet is: a flick down, Escape, or a press outside
+   * a modal one.
+   */
+  closeButton?: boolean
   /** The close button's accessible name and tooltip. */
   closeLabel?: string
   /**
@@ -50,8 +56,8 @@ export type ElasticSheetProps = LiquidStyleProps & {
   defaultSnap?: ElasticSheetSnapPoint
   /**
    * Whether the person can put the sheet away: a flick down, Escape, the close
-   * button, and a press outside a modal one. Off, the lowest snap point holds
-   * against a rubber band and only `open` closes it.
+   * button (unless `closeButton` is off), and a press outside a modal one. Off,
+   * the lowest snap point holds against a rubber band and only `open` closes it.
    */
   dismissible?: boolean
   /** The grabber's accessible name. */
@@ -190,6 +196,7 @@ const resolveContainer = (container: ElasticSheetProps['container']): HTMLElemen
 export const ElasticSheet = ({
   children,
   className,
+  closeButton = true,
   closeLabel = 'Close',
   container,
   defaultOpen = false,
@@ -711,12 +718,12 @@ export const ElasticSheet = ({
                   />
                 </div>
               </div>
-              {(title || dismissible) && (
+              {(title || (dismissible && closeButton)) && (
                 <div style={{ alignItems: 'center', display: 'flex', flex: 'none', gap: 12, justifyContent: 'space-between', minHeight: 44, padding: '0 14px 6px 20px' }}>
                   {title
                     ? <Dialog.Title style={{ fontSize: '1.15rem', fontWeight: 680, letterSpacing: '-0.02em', margin: 0 }}>{title}</Dialog.Title>
                     : <span />}
-                  {dismissible && (
+                  {dismissible && closeButton && (
                     <Dialog.Close
                       render={(
                         <LiquidIconButton label={closeLabel} shape="circle" size="sm">

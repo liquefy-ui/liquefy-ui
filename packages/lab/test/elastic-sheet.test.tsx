@@ -306,6 +306,19 @@ describe('ElasticSheet', () => {
     })
   })
 
+  it('leaves the close button out when asked, and still goes on Escape', async () => {
+    const user = userEvent.setup()
+    const onOpenChange = vi.fn()
+    mount(<Sheet closeButton={false} label="Nearby" onOpenChange={onOpenChange} title={undefined} />)
+    await user.click(screen.getByRole('button', { name: 'Open sheet' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Nearby' })
+    expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull()
+    expect(within(dialog).queryByRole('heading')).toBeNull()
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(onOpenChange).toHaveBeenLastCalledWith(false)
+  })
+
   it('leaves the page live and focus where it was when it is not modal', async () => {
     const onOpenChange = vi.fn()
     const onPress = vi.fn()
