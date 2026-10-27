@@ -319,6 +319,23 @@ describe('ElasticSheet', () => {
     expect(onOpenChange).toHaveBeenLastCalledWith(false)
   })
 
+  // The sheet starts below its room. Focusing a control in it there would
+  // scroll the page down to it whenever the room is part of the page.
+  it('hands focus to the sheet itself as it opens, without scrolling to it', async () => {
+    const user = userEvent.setup()
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus')
+    try {
+      mount(<Sheet />)
+      await user.click(screen.getByRole('button', { name: 'Open sheet' }))
+      const dialog = await screen.findByRole('dialog')
+      await waitFor(() => expect(document.activeElement).toBe(dialog))
+      const call = focus.mock.contexts.indexOf(dialog)
+      expect(focus.mock.calls[call]?.[0]).toMatchObject({ preventScroll: true })
+    } finally {
+      focus.mockRestore()
+    }
+  })
+
   it('leaves the page live and focus where it was when it is not modal', async () => {
     const onOpenChange = vi.fn()
     const onPress = vi.fn()

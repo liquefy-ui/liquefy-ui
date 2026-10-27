@@ -669,8 +669,11 @@ export const ElasticSheet = ({
             className={root.className}
             // Moved in only when someone opened it. A non-modal sheet that is
             // simply there, open from the start or opened by the page, leaves
-            // focus where it was — not scrolled to and grabbed.
-            initialFocus={modal ? undefined : (type) => (type ? true : false)}
+            // focus where it was — not scrolled to and grabbed. It goes to the
+            // sheet itself, which Base UI focuses without scrolling: the sheet
+            // starts below its room, and focusing a control in it there would
+            // scroll the page to it when the room is part of the page.
+            initialFocus={(type) => (modal || type ? popupRef.current : false)}
             onClickCapture={(event) => {
               // The press that ends a drag is not a press on whatever it ended over.
               if (!draggedRef.current) return
