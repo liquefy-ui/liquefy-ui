@@ -153,7 +153,7 @@ describe('the README', () => {
   })
 
   it('describes the routes the router actually serves', () => {
-    for (const route of ['#/', '#/playground', '#/components', '#/docs']) {
+    for (const route of ['#/', '#/playground', '#/components', '#/docs', '#/lab']) {
       expect(readme, route).toContain(`\`${route}\``)
     }
   })

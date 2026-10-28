@@ -16,6 +16,28 @@ pnpm add @liquefy-ui/lab @liquefy-ui/react @liquefy-ui/core
 `LiquefyProvider` — its theme, tint, `motion` and `wobbliness` — instead of
 bringing a copy of their own.
 
+Every component is live, with a page of demos and props each, in the Lab at
+[liquefy-ui.com/#/lab](https://liquefy-ui.com/#/lab).
+
+| Component | What it is | After |
+| --- | --- | --- |
+| [`DropletMenu`](#dropletmenu) | A round button that buds its items off as droplets of glass | LiquidFloatingActionButton, SwiftUI's `GlassEffectContainer` |
+| [`GlassMerge`](#glassmerge) | Glass shapes that melt into one another when they come close | SwiftUI's `GlassEffectContainer` |
+| [`LiquidLevel`](#liquidlevel) | A vessel whose liquid rises, falls and sloshes with a value | BAFluidView, WaveProgressView |
+| [`LiquidMorph`](#liquidmorph) | A button that grows into what it opens | Motion Primitives' Morphing Dialog |
+| [`LiquidIsland`](#liquidisland) | A capsule that stretches between live views | The Dynamic Island |
+| [`ElasticSheet`](#elasticsheet) | A sheet pulled up from the bottom that coasts, stretches and quivers | The sheets in Apple Maps |
+| [`LiquidContextMenu`](#liquidcontextmenu) | A long-press menu that lifts what was pressed off the page | iOS context menus |
+| [`MagneticActions`](#magneticactions) | A row of action buttons that reach for the pointer | Magnetic buttons, `GlassEffectContainer` |
+| [`ChangeEffect`](#changeeffect) | Spray, jump, shine, shake or glow once each time a value changes | Pow's change effects |
+| [`ParticleField`](#particlefield) | Rain, snow, confetti, fireworks, bubbles and sparkles on a canvas | Vortex |
+| [`FluidBackdrop`](#fluidbackdrop) | Moving water with colour poured in, stirred by the pointer | Pavel Dobryakov's WebGL Fluid Simulation |
+| [`MeshGradient`](#meshgradient) | A grid of colours that drift slowly round their places | SwiftUI's `MeshGradient` |
+| [`LiquidSwipe`](#liquidswipe) | Pages that flood in from a bulge at the edge | Cuberto's liquid swipe |
+
+The SF Symbols–style icon effects are not here but in `@liquefy-ui/icons/effects`;
+their demos are in the Lab too.
+
 ## DropletMenu
 
 A round glass trigger that buds its items off one at a time, onto an arc or in a
@@ -356,15 +378,21 @@ import { ElasticSheet } from '@liquefy-ui/lab'
 import { LiquidButton } from '@liquefy-ui/react'
 
 <ElasticSheet
-  defaultOpen
+  closeButton={false}
+  label="Explore"
   modal={false}
-  snapPoints={['25%', '50%', '100%']}
-  title="Explore"
+  snapPoints={['98px', '50%', '100%']}
   trigger={<LiquidButton iconBefore={<SearchIcon size={16} />}>Explore</LiquidButton>}
 >
   <Places />
 </ElasticSheet>
 ```
+
+That is the sheet worked by swiping, as in a maps app: the button brings it up just
+far enough to show a search field (`98px` takes in the grabber and the field and
+stops short of the list under it), a swipe up shows more, and a flick down from the
+lowest height puts it away. It has no title and
+no close button; `label` names the dialog instead.
 
 | Prop | Default | |
 | --- | --- | --- |
@@ -373,6 +401,7 @@ import { LiquidButton } from '@liquefy-ui/react'
 | `open`, `defaultOpen`, `onOpenChange` | | Controlled or uncontrolled. A controlled close still slides it away |
 | `modal` | `true` | Dims what is behind, keeps focus inside and locks the page's scroll. `false` leaves the page live around it, as under a map's sheet |
 | `dismissible` | `true` | Whether a flick down, Escape, the close button and a press outside a modal sheet put it away. `false` holds the lowest height against a rubber band; only `open` closes it |
+| `closeButton` | `true` | Whether a dismissible sheet shows a close button. `false` leaves it to a flick down, Escape and a press outside, as a maps sheet is |
 | `container` | viewport | An element (or a ref to one) to move in instead of the viewport. Give it a position and clip its overflow |
 | `trigger` | — | An element that opens it, rendered in place. Focus goes back to it on close |
 | `title`, `label` | — | The heading, which names the dialog; `label` names it when there is no title |
@@ -382,18 +411,22 @@ import { LiquidButton } from '@liquefy-ui/react'
 | `tint`, `className`, `style`, `styles` | | As on every `@liquefy-ui/react` component, applied to the sheet |
 
 Behaviour is Base UI's dialog: focus moves in and is given back, Escape closes it,
-and a modal sheet adds the backdrop, the focus trap and the scroll lock. A non-modal
-sheet moves focus in only when someone opens it from its trigger, so one that is
-simply there from the start does not grab focus or scroll the page to itself. The
-grabber is a vertical slider: the arrow keys step between snap points, Home and End
-go to the ends, and a press steps up through them and round again.
+and a modal sheet adds the backdrop, the focus trap and the scroll lock. Focus goes
+to the sheet itself rather than the first control in it, since the sheet starts
+below its room and focusing a control there would scroll the page down to it; Tab
+goes on from there. A non-modal sheet moves focus in only when someone opens it from
+its trigger, so one that is simply there from the start does not grab focus at all.
+The grabber is a vertical slider: the arrow keys step between snap points, Home and
+End go to the ends, and a press steps up through them and round again.
 
 The sheet and its content share one gesture. A touch anywhere on it drags it; pulled
 up, a sheet below its tallest height grows before its content scrolls, and pulled
 down, content scrolled down goes back to its top before the sheet moves. A sideways
 move is left to whatever scrolls sideways. A mouse drags it by the grabber and the
 header, since dragging across content selects text, and a press that starts in a
-field never drags. The content stays laid out at the sheet's tallest height and is
+field never drags. A quick mouse drag that leaves the sheet before it has been told
+apart from a click is still followed, and the grabber and header are not text, so
+dragging by them never selects the content the pointer passes. The content stays laid out at the sheet's tallest height and is
 clipped as the sheet moves, so nothing reflows while it quivers.
 
 With `motion={false}` on the provider the sheet still follows the finger and still
@@ -462,8 +495,11 @@ Escape, focus handed back. The wrapper takes focus, and Shift+F10 or the context
 key opens the menu from it with the first row focused. What lifts is a copy laid over
 the scrim, since the original has to stay where it is in the page; the original is
 hidden until the copy is set back down on it. Give it `preview` when a second copy of
-`children` would not do — one with state of its own, say. With `motion={false}` on
-the provider it opens and closes at once, and a held press does not sink.
+`children` would not do — one with state of its own, say. The page is held still
+while the menu is open; once it closes the page can scroll again, and a copy still on
+its way down rides along and lands where the page has taken the original. The overlay
+goes as soon as nothing of it is left to see. With `motion={false}` on the provider it opens and closes at
+once, and a held press does not sink.
 
 ### The motion on its own
 

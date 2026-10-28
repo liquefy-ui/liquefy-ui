@@ -5,15 +5,16 @@
 
 A TypeScript UI library that delivers highly transparent Liquid Glass through WebGL optics, physical springs, and accessible React primitives.
 
-![A glass card held still while the playground scrolls slowly from a fjord to the wordmark behind it](brand/liquefy-lens.gif)
+![A glass card held still while the page behind it scrolls slowly from a fjord to the wordmark](brand/liquefy-lens.gif)
 
 > This is an independent open-source project and is not affiliated with Apple Inc. It references public design principles while providing an original implementation for the web.
 
-The capture above comes from the live playground: that is a displacement map
-applied to the real backdrop through `backdrop-filter`, while the shape stretches
-and overshoots from springs reading pointer velocity. Both are on by default.
-Scroll it yourself at **[liquefy-ui.com](https://liquefy-ui.com)**, which also hosts the
-component reference and the shadcn registry.
+The capture above is the lens at work: a displacement map applied to the real
+backdrop through `backdrop-filter`, while the shape stretches and overshoots from
+springs reading pointer velocity. Both are on by default. At
+**[liquefy-ui.com](https://liquefy-ui.com)** the same card sits over water you stir
+with the pointer; the site also hosts the component reference, the Lab and the
+shadcn registry.
 
 ## Packages
 
@@ -22,7 +23,7 @@ component reference and the shadcn registry.
 | `@liquefy-ui/react` | React components, themes, and provider |
 | `@liquefy-ui/core` | Dependency-free WebGL, springs, and motion |
 | `@liquefy-ui/icons` | Tree-shakeable React SVG icons, with SF Symbols–style effects in `@liquefy-ui/icons/effects` |
-| `@liquefy-ui/lab` | Experimental, motion-heavy components on top of `@liquefy-ui/react` — APIs may change between minor versions |
+| `@liquefy-ui/lab` | Experimental, motion-heavy components on top of `@liquefy-ui/react` — APIs may change between minor versions. See [The Lab](#the-lab) |
 | `@liquefy-ui/mcp` | MCP server that answers component questions from the real API |
 
 ## Quick start
@@ -85,7 +86,7 @@ is what keeps those utilities resolving per-theme at use time.
 | --- | --- |
 | MCP server | `claude mcp add liquefy-ui -- npx -y @liquefy-ui/mcp` — eight tools answering from the real exports, no network, no dependencies |
 | `llms.txt` | [`/llms.txt`](https://liquefy-ui.com/llms.txt) and [`/llms-full.txt`](https://liquefy-ui.com/llms-full.txt), generated from source |
-| One page per component | [`/llms/liquid-button.md`](https://liquefy-ui.com/llms/liquid-button.md), plus `icons.md`, `core.md` and `mcp.md` — plain Markdown, because the docs site is a hash-routed SPA that a fetcher without JavaScript cannot read |
+| One page per component | [`/llms/liquid-button.md`](https://liquefy-ui.com/llms/liquid-button.md), plus `icons.md`, `core.md`, `lab.md` and `mcp.md` — plain Markdown, because the docs site is a hash-routed SPA that a fetcher without JavaScript cannot read |
 | shadcn registry | `npx shadcn@latest add @liquefy-ui/liquid-button` — the namespace is in shadcn's registry directory, so it needs no `components.json` entry |
 
 The MCP tools are `get_conventions`, `list_components`, `get_component`,
@@ -110,11 +111,12 @@ Everything is on **[liquefy-ui.com](https://liquefy-ui.com)**:
 | `#/` | The playground first, then framework and agent-tooling compatibility, then component samples |
 | `#/playground` | Every `LiquefyProvider` prop as a live control, applied to the whole site |
 | `#/components` | Index of every component, each with live demos and a full prop table |
+| `#/lab` | The Lab: every `@liquefy-ui/lab` component and the icon effects, live, with a page each (`#/lab/elastic-sheet` and so on) |
 | `#/docs` | Introduction, installation, provider, theming, the `styles` prop, motion |
 | `#/docs/frameworks` · `#/docs/tailwind` · `#/docs/ai-tooling` | Integration |
 | `#/docs/accessibility` · `#/docs/performance` · `#/docs/troubleshooting` | Practices |
 
-Old `#/guides/*` links redirect to their `#/docs/*` equivalents.
+Old `#/guides/*` links redirect to their `#/docs/*` equivalents, and `#/docs/lab` to `#/lab`.
 
 ## Style overrides: the `styles` prop
 
@@ -205,6 +207,34 @@ turn `shimmer` on for colour. Use the provider props to tune them across
 a subtree.
 
 Use `theme="dark"`, `theme="light"`, or `theme="system"` on `LiquefyProvider` to control appearance.
+
+## The Lab
+
+`@liquefy-ui/lab` is where the motion-heavy experiments live: the same glass, with
+choreography and physics on top — surfaces that split off, travel and melt back
+together, sheets that coast and stretch, liquid that sloshes. It is 0.x, so an API
+can still change between minor versions; once one stops moving, it graduates into
+`@liquefy-ui/react`.
+
+```bash
+pnpm add @liquefy-ui/lab @liquefy-ui/react @liquefy-ui/core
+```
+
+`@liquefy-ui/react` is a peer dependency, so lab's components read the same
+`LiquefyProvider` — theme, tint, `motion`, `wobbliness` — and need no stylesheet of
+their own.
+
+| Kind | Components |
+| --- | --- |
+| Menus | `DropletMenu` (glass droplets budding off a button), `LiquidContextMenu` (an iOS context menu that lifts what was pressed), `MagneticActions` (buttons that reach for the pointer) |
+| Surfaces | `GlassMerge` (glass shapes that melt together), `LiquidMorph` (a button that grows into a panel), `LiquidIsland` (a Dynamic Island), `ElasticSheet` (a maps-style sheet that coasts and stretches), `LiquidSwipe` (pages that flood in) |
+| Meters | `LiquidLevel` (liquid that rises, falls and sloshes) |
+| Effects | `ChangeEffect` (spray, jump, shine, shake and glow on a change), `ParticleField` (rain, snow, confetti, fireworks, bubbles) |
+| Backdrops | `FluidBackdrop` (water you stir with the pointer), `MeshGradient` (a drifting mesh of colour) |
+
+Every one is live, with its props and the iOS or web piece that inspired it, at
+[liquefy-ui.com/#/lab](https://liquefy-ui.com/#/lab). The props and behaviour are in
+[`packages/lab/README.md`](./packages/lab/README.md).
 
 ## Icon effects
 
