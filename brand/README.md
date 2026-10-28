@@ -24,10 +24,14 @@ matches the file. GitHub's copy is the one file here that no build or deploy
 installs: it is uploaded once, by hand, under Settings → Social preview.
 
 `liquefy-lens.gif` is the odd one out here: not a logo, and not hand-drawn. It is a
-recording of the landing page's own lens, driven through one unbroken drag so the
-last frame lands back on the first and the loop has no seam. Dark theme, because
-the refraction and the dispersion at the rim both disappear into a light backdrop.
-Re-record it with `scripts/record-lens.mjs` rather than by hand.
+recording of the landing page's own lens stage — the glass card over
+`FluidBackdrop` water — while a pointer stirs it in one figure of eight. It is
+taken frame by frame on a virtual clock rather than filmed, so it plays at the
+page's own speed whatever machine made it, GPU or not. Light theme, the bright
+presentation a visitor with a light system theme gets, since this is the README's
+first look at the material. It plays once and rests on its last frame: the water
+never comes back to where it started, so a loop would jump at the seam. Re-record
+it with `scripts/record-lens.mjs` rather than by hand.
 
 The two lockups differ only in the colour of the wordmark. There is no
 theme-aware single file on purpose: an SVG loaded through `<img>` cannot read the
