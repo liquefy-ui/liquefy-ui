@@ -175,6 +175,13 @@ inside one SVG backdrop filter (`mode: 'lens'`). Safari and Firefox, and a provi
 with `lens` or `transparency` off, get a layer clipped to the merged outline over the
 usual frost or a solid fill, with the same rim and shadow (`mode: 'outline'`).
 
+**What it costs.** In the lens, most of a frame goes on drawing the shapes into the
+filter, and Chromium draws them again for every step that reads them — fourteen
+times a frame. A round or small shape is one small image. A big rounded rect goes in
+as two flat rectangles, which cost next to nothing, and a disc at each corner, so a
+sheet the size of the screen costs about what its corners would on their own:
+dragging an `ElasticSheet` holds 60 frames a second on an M1 Pro at DPR 2.
+
 The shadow falls up to 40px below the shapes and 30px to either side. A backdrop
 filter cannot draw outside its element, so size the element to leave that much room
 around the shapes, or the shadow is cut off at its edge.

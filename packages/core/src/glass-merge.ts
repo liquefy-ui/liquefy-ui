@@ -5,7 +5,7 @@ import {
   mergedField,
   prepareShape,
   shapeBounds,
-  spriteFor,
+  shapeParts,
   traceContours,
   type PreparedShape,
 } from './glass-merge-geometry'
@@ -146,12 +146,21 @@ const addDressing = (
 }
 
 /**
- * The lens built inside the filter. Each shape is an `feImage` sprite; the
- * sprites are merged, blurred and cut at half into one metaball mask; that
+ * The lens built inside the filter. Each shape is an `feImage` sprite, or a
+ * big rounded rect two floods and four corner discs (see `shapeParts`); the
+ * pieces are merged, blurred and cut at half into one metaball mask; that
  * mask blurred again is a height field whose slope is the displacement map;
  * the backdrop is bent by it and cut to the mask, and the mask's edge gives
- * the shadow, the rim and the inset lines. Script per frame is the sprites'
+ * the shadow, the rim and the inset lines. Script per frame is the pieces'
  * attribute writes. Nothing is drawn on a canvas and nothing is encoded.
+ *
+ * What a frame costs is mostly the images, not the primitives: Chromium
+ * shares no result between the primitives that read it, so the pieces are
+ * drawn again down each of the fourteen paths that lead back to them — the
+ * four offsets of the height field, the cut, two for the shadow and seven for
+ * the rim and the lines. Primitives can be added freely; another reader of
+ * the mask, or of anything built from it, costs one more drawing of every
+ * image.
  */
 const attachLens = (element: HTMLElement, settings: Settings): GlassMergeController => {
   const id = `lq-merge-${(mergeCount += 1)}`
@@ -238,14 +247,34 @@ const attachLens = (element: HTMLElement, settings: Settings): GlassMergeControl
   host.appendChild(filter)
   element.appendChild(host)
 
-  type Slot = { attributes: Record<string, string>, image: SVGFEImageElement, node: SVGFEMergeNodeElement }
-  const slots: Slot[] = []
+  // The shapes' pieces go in front of the merge, each with its node in it:
+  // images in one pool and plain rectangles in another, so a piece only ever
+  // changes its attributes, never what it is.
+  type Slot = { attributes: Record<string, string>, element: SVGElement, node: SVGFEMergeNodeElement }
+  const pools = { image: [] as Slot[], rect: [] as Slot[] }
+  const fill = (kind: keyof typeof pools, count: number): Slot[] => {
+    const pool = pools[kind]
+    while (pool.length < count) {
+      const result = `lq-${kind === 'image' ? 'sprite' : 'rect'}-${pool.length}`
+      const element = kind === 'image'
+        ? createElement('feImage', { preserveAspectRatio: 'none', result })
+        : createElement('feFlood', { 'flood-color': '#fff', result })
+      filter.insertBefore(element, merge)
+      pool.push({ attributes: {}, element, node: add('feMergeNode', { in: result }, merge) })
+    }
+    while (pool.length > count) {
+      const slot = pool.pop()!
+      slot.element.remove()
+      slot.node.remove()
+    }
+    return pool
+  }
   // Only what changed is written: an unchanged href in particular must not be
   // set again, or the browser may treat it as a new image to load.
   const write = (slot: Slot, name: string, value: string): void => {
     if (slot.attributes[name] === value) return
     slot.attributes[name] = value
-    slot.image.setAttribute(name, value)
+    slot.element.setAttribute(name, value)
   }
 
   // A primitive with no region of its own is cut to the box its inputs cover,
@@ -285,31 +314,35 @@ const attachLens = (element: HTMLElement, settings: Settings): GlassMergeControl
     mode: 'lens',
     setShapes: (shapes: readonly GlassMergeShape[]) => {
       if (destroyed) return
-      const visible = shapes.map(prepareShape).filter(isVisible)
+      const parts = shapes.map(prepareShape).filter(isVisible)
+        .flatMap((shape) => shapeParts(shape, gooInflation(shape.radius, sigma)))
+      const images = fill('image', parts.filter((part) => part.kind === 'image').length)
+      const rects = fill('rect', parts.length - images.length)
 
-      while (slots.length < visible.length) {
-        const result = `lq-sprite-${slots.length}`
-        const image = createElement('feImage', { preserveAspectRatio: 'none', result })
-        filter.insertBefore(image, merge)
-        slots.push({ attributes: {}, image, node: add('feMergeNode', { in: result }, merge) })
+      // A flood is cut to its region rounded out to whole device pixels, which
+      // would push every flat side out by up to a pixel; rounded to the nearest
+      // one instead, the sides sit where the sprite's antialiased edge did.
+      const ratio = typeof devicePixelRatio === 'number' && devicePixelRatio > 0 ? devicePixelRatio : 1
+      const snap = (value: number): number => Math.round(value * ratio) / ratio
+      const place = (slot: Slot, x: number, y: number, width: number, height: number): void => {
+        write(slot, 'x', x.toFixed(2))
+        write(slot, 'y', y.toFixed(2))
+        write(slot, 'width', width.toFixed(2))
+        write(slot, 'height', height.toFixed(2))
       }
-      while (slots.length > visible.length) {
-        const slot = slots.pop()!
-        slot.image.remove()
-        slot.node.remove()
+      let image = 0
+      let rect = 0
+      for (const part of parts) {
+        if (part.kind === 'image') {
+          const slot = images[image++]!
+          write(slot, 'href', part.href)
+          place(slot, part.x, part.y, part.width, part.height)
+        } else {
+          const left = snap(part.x)
+          const top = snap(part.y)
+          place(rects[rect++]!, left, top, snap(part.x + part.width) - left, snap(part.y + part.height) - top)
+        }
       }
-
-      visible.forEach((shape, index) => {
-        const slot = slots[index]!
-        const sprite = spriteFor(shape, gooInflation(shape.radius, sigma))
-        const halfWidth = sprite.halfWidth * sprite.scale
-        const halfHeight = sprite.halfHeight * sprite.scale
-        write(slot, 'href', sprite.href)
-        write(slot, 'x', (shape.x - halfWidth).toFixed(2))
-        write(slot, 'y', (shape.y - halfHeight).toFixed(2))
-        write(slot, 'width', (halfWidth * 2).toFixed(2))
-        write(slot, 'height', (halfHeight * 2).toFixed(2))
-      })
     },
   }
 }

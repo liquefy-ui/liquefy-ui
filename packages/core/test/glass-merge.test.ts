@@ -97,6 +97,56 @@ describe('attachGlassMerge, lens', () => {
     expect(merge.children).toHaveLength(1)
   })
 
+  it('draws a big rounded rect from a cross of floods and four corner discs, and a small one as its sprite again', () => {
+    lens.supported = true
+    const { controller, element } = mount()
+    const filter = filterOf(element)!
+    const merge = filter.querySelector('feMerge')!
+    const card = { height: 240, radius: 24, width: 360, x: 200, y: 150 }
+    controller.setShapes([card, circle(200, 20, 16)])
+    const floods = [...filter.querySelectorAll('feFlood[result^="lq-rect-"]')]
+    const images = [...filter.querySelectorAll('feImage')]
+    expect(floods).toHaveLength(2)
+    expect(images).toHaveLength(5)
+    // Every piece is merged, and all of them come before the merge.
+    expect([...merge.children].map((node) => node.getAttribute('in')).sort())
+      .toEqual([...floods, ...images].map((piece) => piece.getAttribute('result')).sort())
+    expect([...floods, ...images].every((piece) => piece.compareDocumentPosition(merge) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true)
+    // No image is anywhere near the size of the card.
+    for (const image of images) expect(Number(image.getAttribute('width'))).toBeLessThan(card.width / 4)
+    // The floods' sides land on device pixels, here whole ones, wherever the card is.
+    controller.setShapes([{ ...card, x: 200.3, y: 150.4 }])
+    for (const flood of floods) {
+      for (const name of ['x', 'y', 'width', 'height']) expect(Number.isInteger(Number(flood.getAttribute(name)))).toBe(true)
+    }
+
+    controller.setShapes([{ ...card, height: 56, width: 56 }])
+    expect(filter.querySelectorAll('feFlood[result^="lq-rect-"]')).toHaveLength(0)
+    expect(filter.querySelectorAll('feImage')).toHaveLength(1)
+    expect(merge.children).toHaveLength(1)
+  })
+
+  it('reads the shapes down fourteen paths, each of which draws every image again', () => {
+    lens.supported = true
+    const { element } = mount()
+    const filter = filterOf(element)!
+    const primitives = [...filter.children]
+    // A name refers to the last primitive before the reader that gave it.
+    const source = (reader: number, name: string): number =>
+      primitives.findLastIndex((primitive, index) => index < reader && primitive.getAttribute('result') === name)
+    const inputs = (index: number): string[] => primitives[index]!.localName === 'feMerge'
+      ? [...primitives[index]!.children].map((node) => node.getAttribute('in')!)
+      : ['in', 'in2'].map((name) => primitives[index]!.getAttribute(name)).filter((name): name is string => name !== null)
+    // Chromium works a filter out as a tree: a result read twice is made twice.
+    const paths = (index: number): number => primitives[index]!.getAttribute('result') === 'lq-shapes'
+      ? 1
+      : inputs(index).reduce((sum, name) => {
+        const from = source(index, name)
+        return sum + (from === -1 ? 0 : paths(from))
+      }, 0)
+    expect(paths(primitives.length - 1)).toBe(14)
+  })
+
   it('only writes what moved', () => {
     lens.supported = true
     const { controller, element } = mount()
