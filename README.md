@@ -5,16 +5,17 @@
 
 A TypeScript UI library that delivers highly transparent Liquid Glass through WebGL optics, physical springs, and accessible React primitives.
 
-![A glass card held still while the page behind it scrolls slowly from a fjord to the wordmark](brand/liquefy-lens.gif)
+![A glass card bending the light of coloured water that a pointer stirs underneath it](brand/liquefy-lens.gif)
 
 > This is an independent open-source project and is not affiliated with Apple Inc. It references public design principles while providing an original implementation for the web.
 
-The capture above is the lens at work: a displacement map applied to the real
-backdrop through `backdrop-filter`, while the shape stretches and overshoots from
-springs reading pointer velocity. Both are on by default. At
-**[liquefy-ui.com](https://liquefy-ui.com)** the same card sits over water you stir
-with the pointer; the site also hosts the component reference, the Lab and the
-shadcn registry.
+The capture above comes from the live playground: the card is held over water
+from `FluidBackdrop` in `@liquefy-ui/lab`, and a pointer stirs it in one figure of
+eight. The rim bends whatever passes under it with a displacement map applied to
+the real backdrop through `backdrop-filter`, while the shape stretches and
+overshoots from springs reading pointer velocity. Both are on by default. Stir it
+yourself at **[liquefy-ui.com](https://liquefy-ui.com)**, which also hosts the
+component reference, the Lab and the shadcn registry.
 
 ## Packages
 
