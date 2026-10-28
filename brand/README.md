@@ -15,10 +15,14 @@ a tab, a README and a social card all show the same thing.
 | `liquefy-social.png` | The same card at 1280×640, GitHub's aspect for a repository's social preview |
 
 The two cards are the same drawing at two aspects, and the picture inside them is
-not a mock-up either: it is a clipped screenshot of the landing page's own lens
-stage, taken after a drag so the hint is gone and the springs have settled. Redraw
-them with `scripts/record-card.mjs` — never by hand, and never by cropping one
-from the other. `apps/docs/index.html` declares the size of `liquefy-og.png`, and
+not a mock-up either: it is a screenshot of the landing page's own lens stage —
+the glass panel over `FluidBackdrop` water — clipped to a band across the whole
+stage with the panel in its middle. Dark theme: the lit rim and the bent colour
+at its edge need the contrast to survive a thumbnail. The water never draws the
+same picture twice, so take a few and keep the one where the colour reaches the
+panel's edges. Redraw them with `scripts/record-card.mjs` — never by hand, and
+never by cropping one from the other — so both come from the same frame.
+`apps/docs/index.html` declares the size of `liquefy-og.png`, and
 `test/metadata.test.mjs` reads the PNG header to check the declaration still
 matches the file. GitHub's copy is the one file here that no build or deploy
 installs: it is uploaded once, by hand, under Settings → Social preview.
