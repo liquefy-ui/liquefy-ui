@@ -262,7 +262,8 @@ const LAB_RULES = `- \`@liquefy-ui/react\` is a peer dependency, not a bundled c
   each view's \`announce\` rather than in a live region of your own.
 - \`ElasticSheet\` takes \`snapPoints\` as \`'50%'\`, \`0.5\`, \`'320px'\` or \`320\`, and \`snap\`
   is one of those values, not an index. Give it a \`title\` (or a \`label\`); \`modal={false}\`
-  is the map-style sheet with the page live behind it.
+  is the map-style sheet with the page live behind it, and \`closeButton={false}\` leaves a
+  sheet that is put away by a flick down, Escape or a press outside with no close button.
 - \`LiquidContextMenu\` wraps what is pressed as \`children\` and needs \`items\`, each with a
   \`label\`. It opens on a long press, a right click, Shift+F10 or the context-menu key;
   what lifts is a copy of \`children\` unless \`preview\` is given.
