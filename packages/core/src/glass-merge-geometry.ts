@@ -445,3 +445,66 @@ export const spriteFor = (shape: PreparedShape, growth: number): GlassMergeSprit
   }
   return { ...sprite, scale: described.scale }
 }
+
+// ----------------------------------------------------------------- parts ---
+
+/**
+ * One piece of a shape as it goes into the lens, in the element's pixels: a
+ * sprite image, or a plain white rectangle that the filter draws as an
+ * `feFlood` with no image behind it.
+ */
+export type GlassMergePart =
+  | { height: number, href: string, kind: 'image', width: number, x: number, y: number }
+  | { height: number, kind: 'rect', width: number, x: number, y: number }
+
+/** Below this a rounded rect keeps its one sprite: the corners would save too little of it. */
+const SLICE_SAVING = 0.5
+
+/** A sprite placed so it covers its shape: centred on it, scaled by `scale`. */
+const placeSprite = (sprite: GlassMergeSprite, x: number, y: number): GlassMergePart => {
+  const halfWidth = sprite.halfWidth * sprite.scale
+  const halfHeight = sprite.halfHeight * sprite.scale
+  return { height: halfHeight * 2, href: sprite.href, kind: 'image', width: halfWidth * 2, x: x - halfWidth, y: y - halfHeight }
+}
+
+/**
+ * The pieces a shape grown by `growth` is drawn from. Chromium draws a filter
+ * input again for every primitive that reads it, and the lens reads its
+ * shapes along more than a dozen paths, so every image goes through the
+ * rasteriser that many times a frame — for a sheet the size of the screen,
+ * most of the frame. A rounded rect big enough for it to matter is cut
+ * instead into the cross of two rectangles, which cost next to nothing, and
+ * a disc at each corner, which is all of it that has to be an image. A
+ * circle, a stretched shape, or a small one with big corners stays one sprite.
+ */
+export const shapeParts = (shape: PreparedShape, growth: number): GlassMergePart[] => {
+  const [stretch] = quantiseStretch(shape.stretch, shape.angle)
+  const width = shape.halfWidth * 2 + growth * 2
+  const height = shape.halfHeight * 2 + growth * 2
+  const radius = Math.min(shape.radius + growth, width / 2, height / 2)
+  const whole = () => [placeSprite(spriteFor(shape, growth), shape.x, shape.y)]
+  if (stretch !== 1) return whole()
+
+  // The corners' centres. Within a pixel of each other across the middle,
+  // they are one disc: the ends of a pill.
+  const insetX = width / 2 - radius
+  const insetY = height / 2 - radius
+  const columns = insetX > 0.5 ? [-insetX, insetX] : [0]
+  const rows = insetY > 0.5 ? [-insetY, insetY] : [0]
+  if (columns.length === 1 && rows.length === 1) return whole()
+  const disc = radius >= 0.5 ? spriteFor(prepareShape({ height: radius * 2, radius, width: radius * 2, x: 0, y: 0 }), 0) : null
+  const discSide = disc ? disc.halfWidth * 2 * disc.scale : 0
+  if (columns.length * rows.length * discSide * discSide > width * height * SLICE_SAVING) return whole()
+
+  const left = shape.x - width / 2
+  const top = shape.y - height / 2
+  if (!disc) return [{ height, kind: 'rect', width, x: left, y: top }]
+  const parts: GlassMergePart[] = []
+  // The cross: the full width less the corners' rows, and the full height less their columns.
+  if (rows.length === 2) parts.push({ height: height - radius * 2, kind: 'rect', width, x: left, y: top + radius })
+  if (columns.length === 2) parts.push({ height, kind: 'rect', width: width - radius * 2, x: left + radius, y: top })
+  for (const row of rows) {
+    for (const column of columns) parts.push(placeSprite(disc, shape.x + column, shape.y + row))
+  }
+  return parts
+}

@@ -8,11 +8,13 @@ import {
   quantiseStretch,
   roundRectDistance,
   shapeBounds,
+  shapeParts,
   smoothMin,
   spriteFor,
   spriteKey,
   traceContours,
   type ContourBox,
+  type GlassMergePart,
 } from '../src/glass-merge-geometry'
 import type { GlassMergeShape } from '../src/types'
 
@@ -237,5 +239,77 @@ describe('sprites', () => {
     // Along the stretch the ellipse reaches 1.3 × the sprite's circle radius.
     expect(first.halfWidth).toBeGreaterThanOrEqual(32 * 1.3)
     expect(first.halfHeight).toBeLessThan(first.halfWidth)
+  })
+})
+
+describe('shape parts', () => {
+  const growth = 4
+  const card = prepareShape({ height: 560, radius: 34, width: 700, x: 400, y: 320 })
+  const images = (parts: GlassMergePart[]) => parts.filter((part) => part.kind === 'image')
+  const rects = (parts: GlassMergePart[]) => parts.filter((part) => part.kind === 'rect')
+
+  /** Whether the parts cover a point: a rectangle edge to edge, a disc sprite out to its circle. */
+  const covers = (parts: GlassMergePart[], px: number, py: number) => parts.some((part) => {
+    if (part.kind === 'rect') return px >= part.x && px <= part.x + part.width && py >= part.y && py <= part.y + part.height
+    // A circle sprite is drawn 32 units in radius on a canvas 33 units in half-width.
+    const radius = (part.width / 2) * (32 / 33)
+    return Math.hypot(px - (part.x + part.width / 2), py - (part.y + part.height / 2)) <= radius
+  })
+
+  it('keeps a circle, a stretched shape and a small rounded rect as the one sprite they were', () => {
+    for (const shape of [
+      prepareShape(circle(100, 100, 30)),
+      prepareShape({ angle: 30, height: 300, radius: 20, stretch: 1.2, width: 400, x: 0, y: 0 }),
+      prepareShape({ height: 60, radius: 24, width: 64, x: 50, y: 50 }),
+    ]) {
+      const parts = shapeParts(shape, growth)
+      expect(parts).toHaveLength(1)
+      const sprite = spriteFor(shape, growth)
+      expect(parts[0]).toMatchObject({ href: sprite.href, kind: 'image' })
+      expect(parts[0]!.x + parts[0]!.width / 2).toBeCloseTo(shape.x)
+      expect(parts[0]!.y + parts[0]!.height / 2).toBeCloseTo(shape.y)
+    }
+  })
+
+  it('cuts a big rounded rect into a cross of two rectangles and one disc per corner', () => {
+    const parts = shapeParts(card, growth)
+    expect(rects(parts)).toHaveLength(2)
+    expect(images(parts)).toHaveLength(4)
+    // One image for all four corners, and the circle every round shape shares.
+    expect(new Set(images(parts).map((part) => part.href)).size).toBe(1)
+    expect(images(parts)[0]!.href).toBe(spriteFor(prepareShape(circle(0, 0, 10)), 0).href)
+  })
+
+  it('covers exactly the grown rounded rect', () => {
+    const parts = shapeParts(card, growth)
+    const grown = prepareShape({ height: 560 + growth * 2, radius: 34 + growth, width: 700 + growth * 2, x: 400, y: 320 })
+    for (let px = 40; px <= 760; px += 7) {
+      for (let py = 30; py <= 610; py += 7) {
+        const distance = roundRectDistance(px, py, grown)
+        if (Math.abs(distance) < 0.6) continue
+        expect(covers(parts, px, py), `${px}, ${py}`).toBe(distance < 0)
+      }
+    }
+  })
+
+  it('leaves only the corners to be images, a small part of the shape', () => {
+    const parts = shapeParts(card, growth)
+    const area = (list: GlassMergePart[]) => list.reduce((sum, part) => sum + part.width * part.height, 0)
+    expect(area(images(parts))).toBeLessThan((700 + growth * 2) * (560 + growth * 2) * 0.1)
+  })
+
+  it('draws a long pill as one rectangle between two end discs', () => {
+    const pill = prepareShape({ height: 40, radius: 20, width: 600, x: 300, y: 50 })
+    const parts = shapeParts(pill, growth)
+    expect(rects(parts)).toHaveLength(1)
+    expect(images(parts)).toHaveLength(2)
+    expect(covers(parts, 300, 50)).toBe(true)
+    expect(covers(parts, 300 - 300 - growth + 1, 50)).toBe(true)
+    expect(covers(parts, 300 - 300 - growth + 1, 50 - 20 - growth + 1)).toBe(false)
+  })
+
+  it('draws a rect with square corners as one rectangle and no image', () => {
+    const parts = shapeParts(prepareShape({ height: 300, radius: 0, width: 400, x: 200, y: 150 }), 0)
+    expect(parts).toEqual([{ height: 300, kind: 'rect', width: 400, x: 0, y: 0 }])
   })
 })
