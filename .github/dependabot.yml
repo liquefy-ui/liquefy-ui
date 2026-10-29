@@ -37,3 +37,9 @@ updates:
       rest:
         patterns: ['*']
         exclude-patterns: ['@base-ui/react', 'react', 'react-dom', 'tsdown', 'typescript', 'vite', 'vitest', 'next']
+    ignore:
+      # 0.23.2 moves to rolldown-plugin-dts 0.29, whose tsgo generator needs the
+      # TypeScript 7.1 API; on 7.0 it falls back to tsc and refuses to run. Lift
+      # this once typescript 7.1 is stable or tsdown handles 7.0 again.
+      - dependency-name: tsdown
+        versions: ['0.23.2']
