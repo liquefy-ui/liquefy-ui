@@ -193,7 +193,7 @@ export const DocsShell = ({
   useEffect(() => setMain(mainRef.current), [route])
 
   return (
-    <div className="site-shell docs-shell">
+    <div className="site-shell docs-shell" data-section={section}>
       <Ambience />
       <SiteHeader onOpenSidebar={() => setSidebarOpen(true)} section={section}>
         {search && (

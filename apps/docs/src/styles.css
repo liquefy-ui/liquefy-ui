@@ -224,6 +224,14 @@ a {
   width: 420px;
 }
 
+/* A backdrop filter is redrawn whenever what lies behind it moves, and the Lab
+   previews are stacks of heavy glass. With the glow drifting under them, the top
+   of #/lab fell to 30fps on a Retina Mac; held still, it runs at 60. Still, not
+   gone: it rests on a frame the drift passes through anyway. */
+.site-shell[data-section='lab'] .ambient {
+  animation: none;
+}
+
 .grid-wash {
   background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
