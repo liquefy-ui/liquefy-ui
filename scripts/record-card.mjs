@@ -18,22 +18,32 @@ import { join } from 'node:path'
  *   npm --prefix /tmp/lens-tools i playwright
  *   LENS_MODULES=/tmp/lens-tools node scripts/record-card.mjs
  *
+ * Set LENS_CHROME to a Chromium binary when playwright's own download is missing.
+ * The browser renders through SwiftShader, so no GPU is needed.
+ *
  * The picture in the card is not a mock-up: it is a clipped screenshot of the
- * landing page's own glass stage on its first scene, so the refraction and the
+ * landing page's own glass stage over its water, so the refraction and the
  * lit rim are the ones a visitor gets. This card stays dark so those low-contrast
- * effects remain legible in a small still image.
+ * effects remain legible in a small still image. The water is different on every
+ * run, so run it a few times and keep the take where the colour reaches the
+ * panel's edges; both cards always come from the one frame.
  */
 
 const URL_ = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
-const VIEWPORT = { height: 1000, width: 1600 }
-
-/** The stage's own caption sits at its foot, and the card supplies its own. */
-const CAPTION_H = 42
+/**
+ * The widest the stage gets: at 1080 the playground drops to one column and the
+ * stage takes the whole row, so the panel in its middle has water on both sides.
+ */
+const VIEWPORT = { height: 1000, width: 1080 }
 
 const CARDS = [
   { file: 'liquefy-og.png', height: 630, width: 1200 },
   { file: 'liquefy-social.png', height: 640, width: 1280 },
 ]
+
+/** The card's side padding and the picture's height, shared with the markup below. */
+const PAD_X = 56
+const FIGURE_H = 280
 
 // `createRequire`, not `import`: a bare specifier in an ES module resolves against
 // this file's directory and ignores NODE_PATH, so an install outside the
@@ -61,23 +71,38 @@ const capture = async (page, clip) => {
   return Buffer.from(data, 'base64')
 }
 
-const browser = await chromium.launch()
+const browser = await chromium.launch({
+  args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+  executablePath: process.env.LENS_CHROME || undefined,
+})
+process.once('SIGINT', () => browser.close().finally(() => process.exit(130)))
 const page = await browser.newPage({ colorScheme: 'dark', viewport: VIEWPORT })
+// SwiftShader compiles the page's shaders on the main thread, and the page
+// answers nothing until it has: the better part of a minute without a GPU.
+page.setDefaultTimeout(180_000)
 await page.goto(URL_, { waitUntil: 'load' })
 
 const stage = page.locator('.pg-stage').first()
-await stage.scrollIntoViewIfNeeded()
+// Not `scrollIntoViewIfNeeded`: it waits for the element to hold still, for the
+// same reason the screenshot below cannot.
+await stage.evaluate((element) => element.scrollIntoView({ block: 'center' }))
 await page.waitForTimeout(2500)
 
 const box = await stage.boundingBox()
-await page.locator('.pg-stage__scroll').evaluate((element) => { element.scrollTop = 0 })
-await page.waitForTimeout(500)
+const panel = await page.locator('.pg-card').first().boundingBox()
+// The boxes are measured from the viewport, the protocol's clip from the page.
+const scroll = await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY }))
 
+// A band across the whole stage, centred on the panel, as tall as the
+// narrower card's picture would show of it. The wider card's cover fit then
+// only trims the band top and bottom, and the panel stays whole in both.
+const width = box.width - 4
+const height = Math.round(width * FIGURE_H / (Math.min(...CARDS.map((each) => each.width)) - 2 * PAD_X))
 const strip = await capture(page, {
-  height: box.height - CAPTION_H,
-  width: box.width - 4,
-  x: box.x + 2,
-  y: box.y + 2,
+  height,
+  width,
+  x: box.x + scroll.x + 2,
+  y: panel.y + panel.height / 2 - height / 2 + scroll.y,
 })
 
 const card = (strip64) => `<!doctype html>
@@ -99,7 +124,7 @@ const card = (strip64) => `<!doctype html>
           repeating-linear-gradient(90deg, transparent 0 43px, rgba(255, 255, 255, 0.022) 43px 44px),
           #000;
         display: flex; flex-direction: column; justify-content: space-between;
-        padding: 52px 56px 46px; width: 100%;
+        padding: 52px ${PAD_X}px 46px; width: 100%;
       }
 
       h1 { color: #fff; font-size: 64px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; }
@@ -110,7 +135,7 @@ const card = (strip64) => `<!doctype html>
 
       /* A fixed height with a cover fit, so the strip is cropped to the card
          rather than the card being overrun by whatever the stage measured. */
-      figure { border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 22px; height: 280px; line-height: 0; overflow: hidden; }
+      figure { border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 22px; height: ${FIGURE_H}px; line-height: 0; overflow: hidden; }
       figure img { height: 100%; object-fit: cover; width: 100%; }
     </style>
   </head>

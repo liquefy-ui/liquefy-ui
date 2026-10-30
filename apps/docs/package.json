@@ -13,6 +13,7 @@
   "dependencies": {
     "@liquefy-ui/core": "workspace:*",
     "@liquefy-ui/icons": "workspace:*",
+    "@liquefy-ui/lab": "workspace:*",
     "@liquefy-ui/react": "workspace:*",
     "@vercel/analytics": "2.0.1",
     "react": "19.3.1",

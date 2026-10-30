@@ -1,0 +1,6 @@
+{
+  "main": "../dist/effects.cjs",
+  "module": "../dist/effects.mjs",
+  "types": "../dist/effects.d.cts",
+  "sideEffects": false
+}

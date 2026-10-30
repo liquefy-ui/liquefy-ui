@@ -67,6 +67,8 @@ describe('what the provider writes to the DOM', () => {
     )
     const provider = providerElement()
     expect(provider.dataset.liquidTheme).toBe('dark')
+    // @liquefy-ui/icons/effects reads this one too: it is how icon motion follows
+    // the provider without the icons package depending on this one.
     expect(provider.dataset.liquidMotion).toBe('off')
     expect(provider.dataset.liquidTransparency).toBe('off')
   })

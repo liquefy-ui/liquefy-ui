@@ -117,7 +117,12 @@ describe('mcp server', () => {
 
     const internals = catalog.components.flatMap((component) => component.internalExports)
     expect(internals).toContain('compileLiquidStyles')
-    expect(internals).toContain('useLiquefyPortalContainer')
+    expect(internals).toContain('XGlyph')
+    expect(internals).not.toContain('useLiquefyPortalContainer')
+
+    const portal = call('get_component', { name: 'useLiquefyPortalContainer' })
+    expect(portal.text).toMatch(/^Import: import \{[^}]*\buseLiquefyPortalContainer\b[^}]*\} from '@liquefy-ui\/react'$/m)
+    expect(call('get_conventions').text).not.toContain('useLiquefyPortalContainer')
   })
 
   it('keeps multi-line type declarations whole', () => {

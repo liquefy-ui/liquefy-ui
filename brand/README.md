@@ -15,19 +15,27 @@ a tab, a README and a social card all show the same thing.
 | `liquefy-social.png` | The same card at 1280×640, GitHub's aspect for a repository's social preview |
 
 The two cards are the same drawing at two aspects, and the picture inside them is
-not a mock-up either: it is a clipped screenshot of the landing page's own lens
-stage, taken after a drag so the hint is gone and the springs have settled. Redraw
-them with `scripts/record-card.mjs` — never by hand, and never by cropping one
-from the other. `apps/docs/index.html` declares the size of `liquefy-og.png`, and
+not a mock-up either: it is a screenshot of the landing page's own lens stage —
+the glass panel over `FluidBackdrop` water — clipped to a band across the whole
+stage with the panel in its middle. Dark theme: the lit rim and the bent colour
+at its edge need the contrast to survive a thumbnail. The water never draws the
+same picture twice, so take a few and keep the one where the colour reaches the
+panel's edges. Redraw them with `scripts/record-card.mjs` — never by hand, and
+never by cropping one from the other — so both come from the same frame.
+`apps/docs/index.html` declares the size of `liquefy-og.png`, and
 `test/metadata.test.mjs` reads the PNG header to check the declaration still
 matches the file. GitHub's copy is the one file here that no build or deploy
 installs: it is uploaded once, by hand, under Settings → Social preview.
 
 `liquefy-lens.gif` is the odd one out here: not a logo, and not hand-drawn. It is a
-recording of the landing page's own lens, driven through one unbroken drag so the
-last frame lands back on the first and the loop has no seam. Dark theme, because
-the refraction and the dispersion at the rim both disappear into a light backdrop.
-Re-record it with `scripts/record-lens.mjs` rather than by hand.
+recording of the landing page's own lens stage — the glass card over
+`FluidBackdrop` water — while a pointer stirs it in one figure of eight. It is
+taken frame by frame on a virtual clock rather than filmed, so it plays at the
+page's own speed whatever machine made it, GPU or not. Light theme, the bright
+presentation a visitor with a light system theme gets, since this is the README's
+first look at the material. It plays once and rests on its last frame: the water
+never comes back to where it started, so a loop would jump at the seam. Re-record
+it with `scripts/record-lens.mjs` rather than by hand.
 
 The two lockups differ only in the colour of the wordmark. There is no
 theme-aware single file on purpose: an SVG loaded through `<img>` cannot read the

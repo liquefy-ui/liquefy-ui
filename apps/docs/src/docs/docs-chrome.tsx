@@ -193,7 +193,7 @@ export const DocsShell = ({
   useEffect(() => setMain(mainRef.current), [route])
 
   return (
-    <div className="site-shell docs-shell">
+    <div className="site-shell docs-shell" data-section={section}>
       <Ambience />
       <SiteHeader onOpenSidebar={() => setSidebarOpen(true)} section={section}>
         {search && (
@@ -223,6 +223,7 @@ export const DocsShell = ({
             <a href="#/docs">Docs</a>
             <a href="#/components">Components</a>
             <a href="#/playground">Playground</a>
+            <a href="#/lab">Lab</a>
           </nav>
           <nav aria-label={sidebarLabel}>{sidebar}</nav>
         </aside>
