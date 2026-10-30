@@ -1,5 +1,20 @@
 # @liquefy-ui/react
 
+## 1.3.0
+
+### Minor Changes
+
+- c9a923f: `useLiquefyPortalContainer`: the node inside `LiquefyProvider` that the library's
+  own popups portal into. Pass it as a Base UI `Portal`'s `container` and a popup you
+  compose yourself keeps the theme's custom properties instead of rendering unstyled
+  at the end of `document.body`.
+
+### Patch Changes
+
+- Updated dependencies [7753154]
+- Updated dependencies [fff0154]
+  - @liquefy-ui/core@1.2.0
+
 ## 1.2.0
 
 ### Minor Changes
