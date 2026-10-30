@@ -14,7 +14,7 @@ const REPO_URL = `https://github.com/${OWNER}/liquefy-ui`
 const SITE = 'https://liquefy-ui.com'
 const NPM_SCOPE = '@liquefy-ui'
 
-const PUBLISHED = ['core', 'icons', 'react', 'mcp']
+const PUBLISHED = ['core', 'icons', 'react', 'lab', 'mcp']
 
 const manifest = (name) => JSON.parse(readFileSync(new URL(`../packages/${name}/package.json`, import.meta.url), 'utf8'))
 
@@ -139,8 +139,8 @@ describe('the README', () => {
 
     expect(readme).toContain(`${componentPages} components and ${icons.names.length} icons`)
     expect(contributing).toContain(`${registry.items.length} items`)
-    expect(docPages).toBe(12)
-    expect(contributing.toLowerCase()).toContain('twelve doc pages')
+    expect(docPages).toBe(13)
+    expect(contributing.toLowerCase()).toContain('thirteen doc pages')
     // The catalogue and the registry are built from the same source, so a drift
     // between them means one of the two builders stopped seeing a file.
     expect(registry.items.length).toBe(entries.length + 1)
@@ -153,7 +153,7 @@ describe('the README', () => {
   })
 
   it('describes the routes the router actually serves', () => {
-    for (const route of ['#/', '#/playground', '#/components', '#/docs']) {
+    for (const route of ['#/', '#/playground', '#/components', '#/docs', '#/lab']) {
       expect(readme, route).toContain(`\`${route}\``)
     }
   })

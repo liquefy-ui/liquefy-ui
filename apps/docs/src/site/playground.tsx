@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
+import { FluidBackdrop } from '@liquefy-ui/lab'
 import {
   GlassCard,
   LiquidBadge,
@@ -13,119 +14,40 @@ import {
 } from '@liquefy-ui/react'
 import { HeartIcon, SearchIcon, SparklesIcon } from '@liquefy-ui/icons'
 import { CopyButton } from './chrome'
-import { LiquefyLockup } from './lockup'
 import { DEFAULT_MATERIAL, THEME_LABELS, THEME_ORDER, useSiteConfig } from './site-config'
 
-/**
- * What the glass is held over. Photographs first, because that is what a real
- * product puts behind a panel, and drawn scenes between them for the two things
- * a photograph is bad at proving: the wordmark is the one pale ground here, and
- * hard-edged colour shows where the bend moves a boundary that soft light would
- * have nothing to move.
- */
-const SCENES = [
-  { credit: 'Alexey Topolyanskiy', id: 'fjord', label: 'Fjord', note: 'deep water, hard rock' },
-  { id: 'mark', label: 'The wordmark', light: true, note: 'soft ink, wide shapes' },
-  { credit: 'Wolfgang Lutz', id: 'summit', label: 'Summit', note: 'where a rim usually disappears' },
-  { id: 'chroma', label: 'Saturated colour', note: 'where the rim bends a hard edge' },
-  { credit: 'Stefan Kunze', id: 'coast', label: 'Coast at dusk', note: 'soft light, long gradients' },
-] as const
+/** The colours poured into the water: a lagoon, so the glass has deep blue and bright foam to bend. */
+const WATER = ['#0fb5ae', '#1f6fe0', '#7fe3c4', '#f2c14e'] as const
 
 /**
- * A panel of glass held still while the world moves behind it.
+ * A panel of glass held still over moving water.
  *
- * The scenes are the visitor's to move: the stage is an ordinary scrolling
- * region and nothing snaps it afterwards, so it can be left halfway between two
- * scenes with the glass straddling both — which is the one arrangement that
- * shows what the material does to an edge, and the one a slideshow can never
- * produce. The dots are a shortcut to a scene, not a set of positions the
- * scroll is allowed to rest on.
+ * The water is `FluidBackdrop` from @liquefy-ui/lab: it keeps turning on its own,
+ * and a pointer moved over it stirs it, so whatever the controls on the right do
+ * to the material, there is always an edge passing under the rim to show it.
  */
-const LensStage = () => {
-  const config = useSiteConfig()
-  const scrollerRef = useRef<HTMLDivElement>(null)
-  const [index, setIndex] = useState(0)
-  // The wordmark scene takes its ground from the page theme, so it is pale only
-  // while the page is. The card carries white type, and on a pale ground it has
-  // to answer for that — but in the dark theme that scene is black and there is
-  // nothing to answer, which is why the theme is half of this test.
-  const scene = SCENES[index]
-  const overLight = scene !== undefined && 'light' in scene && config.theme === 'light'
-
-  const show = (next: number) => {
-    const scroller = scrollerRef.current
-    if (!scroller) return
-    scroller.scrollTo({ behavior: 'smooth', top: next * scroller.clientHeight })
-  }
-
-  /**
-   * Which scene the dots point at is read back off the scroll rather than
-   * remembered from the last jump, so it stays honest while the visitor
-   * scrolls by hand — and rounding is only ever applied to this readout, never
-   * to `scrollTop` itself.
-   */
-  const handleScroll = () => {
-    const scroller = scrollerRef.current
-    if (!scroller || scroller.clientHeight === 0) return
-    const at = Math.round(scroller.scrollTop / scroller.clientHeight)
-    setIndex(Math.min(Math.max(at, 0), SCENES.length - 1))
-  }
-
-  return (
-    <div className="pg-stage">
-      <div className="pg-stage__scroll" onScroll={handleScroll} ref={scrollerRef}>
-        <div className="pg-stage__sticky">
-          <LiquidSurface className="pg-card" data-over-light={overLight || undefined} radius={28}>
-            <p className="pg-card__eyebrow">Live material</p>
-            <h3 className="pg-card__title">Nothing behind it is hidden.</h3>
-            <p className="pg-card__body">
-              This panel is the same LiquidSurface every component is built on, held
-              over whatever happens to be passing. Deep water, a pale page and a wall
-              of colour — the material has to survive all three, and the controls on
-              the right change it everywhere at once.
-            </p>
-          </LiquidSurface>
-        </div>
-
-        {SCENES.map((scene) => (
-          <section className={`pg-scene pg-scene--${scene.id}`} key={scene.id}>
-            {scene.id === 'mark' ? (
-              <div aria-hidden="true" className="pg-stage__backdrop">
-                <LiquefyLockup className="pg-stage__word" />
-                <span className="pg-stage__orb pg-stage__orb--one" />
-                <span className="pg-stage__orb pg-stage__orb--two" />
-                <span className="pg-stage__rule" />
-              </div>
-            ) : null}
-            <span className="pg-scene__tag">
-              {scene.label}
-              <em>{scene.note}</em>
-              {'credit' in scene ? <em className="pg-scene__credit">Photo by {scene.credit}</em> : null}
-            </span>
-          </section>
-        ))}
+const LensStage = () => (
+  <div className="pg-stage">
+    <FluidBackdrop className="pg-stage__water" colors={WATER}>
+      <div className="pg-stage__centre">
+        <LiquidSurface className="pg-card" radius={28}>
+          <p className="pg-card__eyebrow">Live material</p>
+          <h3 className="pg-card__title">Nothing behind it is hidden.</h3>
+          <p className="pg-card__body">
+            This panel is the same LiquidSurface every component is built on, held over
+            water that never stops moving. Stir it with the pointer, then change the
+            material on the right and watch the edge bend whatever is passing.
+          </p>
+        </LiquidSurface>
       </div>
+    </FluidBackdrop>
 
-      <div aria-label="Scenes" className="pg-dots" role="group">
-        {SCENES.map((scene, position) => (
-          <button
-            aria-current={position === index ? 'true' : undefined}
-            aria-label={scene.label}
-            className="pg-dots__dot"
-            key={scene.id}
-            onClick={() => show(position)}
-            type="button"
-          />
-        ))}
-      </div>
-
-      <span className="pg-stage__caption">
-        {(SCENES[index] ?? SCENES[0]).label} — {index + 1} of {SCENES.length}. Edge refraction is
-        on by default; every switch for it is on the right.
-      </span>
-    </div>
-  )
-}
+    <span className="pg-stage__caption">
+      Move the pointer over the water to stir it. Edge refraction is on by default; every
+      switch for it is on the right.
+    </span>
+  </div>
+)
 
 
 const SAMPLE_TABS = [

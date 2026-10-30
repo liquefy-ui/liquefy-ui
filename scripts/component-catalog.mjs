@@ -11,6 +11,7 @@ const reactPackageJson = new URL('../packages/react/package.json', import.meta.u
 const corePackageJson = new URL('../packages/core/package.json', import.meta.url)
 const iconsEntry = new URL('../packages/icons/src/index.tsx', import.meta.url)
 const coreEntry = new URL('../packages/core/src/index.ts', import.meta.url)
+const labDir = new URL('../packages/lab/src/', import.meta.url)
 
 /**
  * The deployed docs origin. Every generated URL — registry items, llms.txt links,
@@ -142,11 +143,10 @@ const readTypeDeclarations = (source) => {
 }
 
 /**
- * What `@liquefy-ui/react` actually exports, read from its entry point. Every
- * source file has exports of its own — `compileLiquidStyles` for the tests,
- * `CheckGlyph` for the components, `useLiquefyPortalContainer` for the portal —
- * and advertising those as importable is how an agent ends up writing an import
- * that does not resolve.
+ * What `@liquefy-ui/react` actually exports, read from its entry point. Source
+ * files export more than the package does — `compileLiquidStyles` for the tests,
+ * `CheckGlyph` and the other glyphs for the components — and advertising those
+ * as importable is how an agent ends up writing an import that does not resolve.
  */
 export const readPublicApi = async () => {
   const source = await readFile(new URL('index.ts', srcDir), 'utf8')
@@ -254,9 +254,8 @@ export const readIcons = async () => {
   return { names: names.sort(), propsDeclaration: props?.text }
 }
 
-/** The public surface of @liquefy-ui/core: the engine behind the components. */
-export const readCoreApi = async () => {
-  const source = await readFile(coreEntry, 'utf8')
+/** Names an entry point re-exports from its own files, split into values and types. */
+const readReExports = (source) => {
   const values = []
   const types = []
 
@@ -271,6 +270,31 @@ export const readCoreApi = async () => {
   }
 
   return { types: types.sort(), values: values.sort() }
+}
+
+/** The public surface of @liquefy-ui/core: the engine behind the components. */
+export const readCoreApi = async () => readReExports(await readFile(coreEntry, 'utf8'))
+
+/**
+ * The public surface of @liquefy-ui/lab, with every exported type declaration
+ * behind it verbatim. Lab's props are as easy to invent as the components' are,
+ * and its README is prose that nothing checks against the source.
+ */
+export const readLabApi = async () => {
+  const { types, values } = readReExports(await readFile(new URL('index.ts', labDir), 'utf8'))
+  // Lab passes some of core's types straight through (`GlassMergeShape`), so
+  // their declarations are looked for in core's source as well as lab's own.
+  const sourcesIn = async (dir) => {
+    const files = (await readdir(dir)).filter((file) => /\.tsx?$/.test(file) && file !== 'index.ts').sort()
+    return Promise.all(files.map((file) => readFile(new URL(file, dir), 'utf8')))
+  }
+  const [own, core] = await Promise.all([sourcesIn(labDir), sourcesIn(new URL('./', coreEntry))])
+  const seen = new Set()
+  const declarations = [...own, ...core]
+    .flatMap(readTypeDeclarations)
+    .filter((declaration) => types.includes(declaration.name))
+    .filter((declaration) => !seen.has(declaration.name) && seen.add(declaration.name))
+  return { declarations, types, values }
 }
 
 /**

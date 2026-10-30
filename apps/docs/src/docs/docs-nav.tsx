@@ -1,9 +1,10 @@
-import { CommandIcon, ComponentsIcon, InfoIcon, SparklesIcon } from '@liquefy-ui/icons'
+import { CommandIcon, ComponentsIcon, FlaskIcon, InfoIcon, SparklesIcon } from '@liquefy-ui/icons'
 import { accessibilityDoc } from './pages/accessibility'
 import { aiToolingDoc } from './pages/ai-tooling'
 import { frameworksDoc } from './pages/frameworks'
 import { installationDoc } from './pages/installation'
 import { introductionDoc } from './pages/introduction'
+import { labDoc } from './pages/lab'
 import { motionDoc } from './pages/motion'
 import { performanceDoc } from './pages/performance'
 import { providerDoc } from './pages/provider'
@@ -35,6 +36,12 @@ export const docCategories: DocCategory[] = [
     icon: <InfoIcon size={15} />,
     items: [accessibilityDoc, performanceDoc, troubleshootingDoc],
     title: 'Practices',
+  },
+  {
+    // A preview of what is not settled yet, so it comes after everything that is.
+    icon: <FlaskIcon size={15} />,
+    items: [labDoc],
+    title: 'Experimental',
   },
 ]
 

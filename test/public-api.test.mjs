@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
+import * as iconEffects from '../packages/icons/src/effects.ts'
+import * as icons from '../packages/icons/src/index.tsx'
 import * as liquefy from '../packages/react/src/index.ts'
 
 /**
@@ -68,6 +70,7 @@ const RUNTIME_EXPORTS = [
   'useLiquidStyles',
   'useLiquidToast',
   'useLiquefyConfig',
+  'useLiquefyPortalContainer',
 ]
 
 /** Type-only exports, which do not exist at runtime and so are read from source. */
@@ -184,5 +187,59 @@ describe('public API', () => {
     )
     expect(manifest.peerDependencies.react).toBeTruthy()
     expect(Object.keys(manifest.dependencies)).not.toContain('react')
+  })
+})
+
+/**
+ * The icons promise two things the motion must not break: that the root is
+ * nothing but icons, which render on a server and cost a bundle only the ones it
+ * imports, and that motion lives behind its own entry, paid for only by an app
+ * that imports it.
+ */
+describe('icons public API', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../packages/icons/package.json', import.meta.url), 'utf8'))
+  const effectsEntry = readFileSync(new URL('../packages/icons/src/effects.ts', import.meta.url), 'utf8')
+
+  it('exports only icons from the root', () => {
+    const names = Object.keys(icons)
+    expect(names.length).toBeGreaterThan(40)
+    expect(names.filter((name) => !name.endsWith('Icon'))).toEqual([])
+  })
+
+  it('exports exactly the effects this version promises from icons/effects', () => {
+    expect(Object.keys(iconEffects).sort()).toEqual(['IconEffect', 'MagicReplace'])
+    const types = [...effectsEntry.matchAll(/\btype ([A-Za-z0-9_]+)\b/g)].map(([, name]) => name)
+    expect([...new Set(types)].sort()).toEqual([
+      'IconBounceDirection',
+      'IconDrawOrder',
+      'IconEffectName',
+      'IconEffectProps',
+      'IconRotateDirection',
+      'IconWiggleDirection',
+      'MagicReplaceFallback',
+      'MagicReplaceProps',
+      'MagicReplaceTransition',
+    ])
+  })
+
+  it('keeps the entry points to the root and the effects', () => {
+    expect(Object.keys(manifest.exports).sort()).toEqual(['.', './effects'])
+  })
+
+  // TypeScript's node10 resolution and older bundlers never read \`exports\`, so
+  // \`@liquefy-ui/icons/effects\` is also a folder whose manifest points into dist.
+  it('lets resolvers that ignore exports find icons/effects too', () => {
+    const stub = JSON.parse(readFileSync(new URL('../packages/icons/effects/package.json', import.meta.url), 'utf8'))
+    const entry = manifest.exports['./effects']
+    expect(manifest.files).toContain('effects')
+    expect(`./${stub.main.replace('../', '')}`).toBe(entry.require.default)
+    expect(`./${stub.module.replace('../', '')}`).toBe(entry.import.default)
+    expect(`./${stub.types.replace('../', '')}`).toBe(entry.require.types)
+  })
+
+  it('depends on nothing but React, as a peer', () => {
+    expect(manifest.dependencies).toBeUndefined()
+    expect(Object.keys(manifest.peerDependencies)).toEqual(['react'])
+    expect(manifest.sideEffects).toBe(false)
   })
 })

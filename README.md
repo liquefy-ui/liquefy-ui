@@ -5,15 +5,17 @@
 
 A TypeScript UI library that delivers highly transparent Liquid Glass through WebGL optics, physical springs, and accessible React primitives.
 
-![A glass card held still while the playground scrolls slowly from a fjord to the wordmark behind it](brand/liquefy-lens.gif)
+![A glass card bending the light of coloured water that a pointer stirs underneath it](brand/liquefy-lens.gif)
 
 > This is an independent open-source project and is not affiliated with Apple Inc. It references public design principles while providing an original implementation for the web.
 
-The capture above comes from the live playground: that is a displacement map
-applied to the real backdrop through `backdrop-filter`, while the shape stretches
-and overshoots from springs reading pointer velocity. Both are on by default.
-Scroll it yourself at **[liquefy-ui.com](https://liquefy-ui.com)**, which also hosts the
-component reference and the shadcn registry.
+The capture above comes from the live playground: the card is held over water
+from `FluidBackdrop` in `@liquefy-ui/lab`, and a pointer stirs it in one figure of
+eight. The rim bends whatever passes under it with a displacement map applied to
+the real backdrop through `backdrop-filter`, while the shape stretches and
+overshoots from springs reading pointer velocity. Both are on by default. Stir it
+yourself at **[liquefy-ui.com](https://liquefy-ui.com)**, which also hosts the
+component reference, the Lab and the shadcn registry.
 
 ## Packages
 
@@ -21,7 +23,8 @@ component reference and the shadcn registry.
 | --- | --- |
 | `@liquefy-ui/react` | React components, themes, and provider |
 | `@liquefy-ui/core` | Dependency-free WebGL, springs, and motion |
-| `@liquefy-ui/icons` | Tree-shakeable React SVG icons |
+| `@liquefy-ui/icons` | Tree-shakeable React SVG icons, with SF Symbols–style effects in `@liquefy-ui/icons/effects` |
+| `@liquefy-ui/lab` | Experimental, motion-heavy components on top of `@liquefy-ui/react` — APIs may change between minor versions. See [The Lab](#the-lab) |
 | `@liquefy-ui/mcp` | MCP server that answers component questions from the real API |
 
 ## Quick start
@@ -55,6 +58,10 @@ file needed. Only event handlers have to move: a function cannot cross from a
 server component into a client one, so anything with `onClick` or local state
 belongs in its own `'use client'` component.
 
+`@liquefy-ui/icons` is the exception: its icons are stateless and stay on the
+server side, so a server component that renders one ships no JavaScript for it.
+Only the effects entry, `@liquefy-ui/icons/effects`, is marked `'use client'`.
+
 `apps/next-example` is a working Next.js 16 App Router app whose page is a server
 component, and its build runs in CI. If the client boundary ever regresses, that
 build fails rather than yours.
@@ -80,7 +87,7 @@ is what keeps those utilities resolving per-theme at use time.
 | --- | --- |
 | MCP server | `claude mcp add liquefy-ui -- npx -y @liquefy-ui/mcp` — eight tools answering from the real exports, no network, no dependencies |
 | `llms.txt` | [`/llms.txt`](https://liquefy-ui.com/llms.txt) and [`/llms-full.txt`](https://liquefy-ui.com/llms-full.txt), generated from source |
-| One page per component | [`/llms/liquid-button.md`](https://liquefy-ui.com/llms/liquid-button.md), plus `icons.md`, `core.md` and `mcp.md` — plain Markdown, because the docs site is a hash-routed SPA that a fetcher without JavaScript cannot read |
+| One page per component | [`/llms/liquid-button.md`](https://liquefy-ui.com/llms/liquid-button.md), plus `icons.md`, `core.md`, `lab.md` and `mcp.md` — plain Markdown, because the docs site is a hash-routed SPA that a fetcher without JavaScript cannot read |
 | shadcn registry | `npx shadcn@latest add @liquefy-ui/liquid-button` — the namespace is in shadcn's registry directory, so it needs no `components.json` entry |
 
 The MCP tools are `get_conventions`, `list_components`, `get_component`,
@@ -105,11 +112,12 @@ Everything is on **[liquefy-ui.com](https://liquefy-ui.com)**:
 | `#/` | The playground first, then framework and agent-tooling compatibility, then component samples |
 | `#/playground` | Every `LiquefyProvider` prop as a live control, applied to the whole site |
 | `#/components` | Index of every component, each with live demos and a full prop table |
+| `#/lab` | The Lab: every `@liquefy-ui/lab` component and the icon effects, live, with a page each (`#/lab/elastic-sheet` and so on) |
 | `#/docs` | Introduction, installation, provider, theming, the `styles` prop, motion |
 | `#/docs/frameworks` · `#/docs/tailwind` · `#/docs/ai-tooling` | Integration |
 | `#/docs/accessibility` · `#/docs/performance` · `#/docs/troubleshooting` | Practices |
 
-Old `#/guides/*` links redirect to their `#/docs/*` equivalents.
+Old `#/guides/*` links redirect to their `#/docs/*` equivalents, and `#/docs/lab` to `#/lab`.
 
 ## Style overrides: the `styles` prop
 
@@ -181,7 +189,7 @@ with the token system itself at `#/docs/theming`.
 
 ## Components
 
-36 components and 53 icons, each with live demos and a full prop table at
+36 components and 55 icons, each with live demos and a full prop table at
 [liquefy-ui.com/#/components](https://liquefy-ui.com/#/components).
 
 | Category | Components |
@@ -200,6 +208,55 @@ turn `shimmer` on for colour. Use the provider props to tune them across
 a subtree.
 
 Use `theme="dark"`, `theme="light"`, or `theme="system"` on `LiquefyProvider` to control appearance.
+
+## The Lab
+
+`@liquefy-ui/lab` is where the motion-heavy experiments live: the same glass, with
+choreography and physics on top — surfaces that split off, travel and melt back
+together, sheets that coast and stretch, liquid that sloshes. It is 0.x, so an API
+can still change between minor versions; once one stops moving, it graduates into
+`@liquefy-ui/react`.
+
+```bash
+pnpm add @liquefy-ui/lab @liquefy-ui/react @liquefy-ui/core
+```
+
+`@liquefy-ui/react` is a peer dependency, so lab's components read the same
+`LiquefyProvider` — theme, tint, `motion`, `wobbliness` — and need no stylesheet of
+their own.
+
+| Kind | Components |
+| --- | --- |
+| Menus | `DropletMenu` (glass droplets budding off a button), `LiquidContextMenu` (an iOS context menu that lifts what was pressed), `MagneticActions` (buttons that reach for the pointer) |
+| Surfaces | `GlassMerge` (glass shapes that melt together), `LiquidMorph` (a button that grows into a panel), `LiquidIsland` (a Dynamic Island), `ElasticSheet` (a maps-style sheet that coasts and stretches), `LiquidSwipe` (pages that flood in) |
+| Meters | `LiquidLevel` (liquid that rises, falls and sloshes) |
+| Effects | `ChangeEffect` (spray, jump, shine, shake and glow on a change), `ParticleField` (rain, snow, confetti, fireworks, bubbles) |
+| Backdrops | `FluidBackdrop` (water you stir with the pointer), `MeshGradient` (a drifting mesh of colour) |
+
+Every one is live, with its props and the iOS or web piece that inspired it, at
+[liquefy-ui.com/#/lab](https://liquefy-ui.com/#/lab). The props and behaviour are in
+[`packages/lab/README.md`](./packages/lab/README.md).
+
+## Icon effects
+
+The icons move the way SF Symbols do — bounce, wiggle, breathe, rotate, Draw On
+and Draw Off, and Magic Replace — from their own entry point, so an app that never
+moves an icon pays nothing for it:
+
+```tsx
+import { BellIcon, LockIcon, LockOpenIcon } from '@liquefy-ui/icons'
+import { IconEffect, MagicReplace } from '@liquefy-ui/icons/effects'
+
+<IconEffect effect="bounce" trigger={unread}><BellIcon /></IconEffect>
+<MagicReplace>{locked ? <LockIcon /> : <LockOpenIcon />}</MagicReplace>
+```
+
+`trigger` plays an effect once each time it changes and `active` plays it for as
+long as it is true, SF Symbols' `value:` and `isActive:`. Every effect is a spring
+that overshoots and settles, played by the Web Animations API, and follows the
+nearest provider's `motion`. The props are in
+[`packages/icons/README.md`](./packages/icons/README.md); the demos are in the Lab at
+[liquefy-ui.com/#/lab/icon-effects](https://liquefy-ui.com/#/lab/icon-effects).
 
 ## Design notes
 

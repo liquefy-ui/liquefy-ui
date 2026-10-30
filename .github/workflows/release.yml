@@ -19,9 +19,11 @@ permissions:
   # The registry trusts this workflow by name rather than a token: pnpm exchanges
   # this OIDC token for a short-lived one, and npm attaches the provenance
   # attestation itself. Renaming this file breaks publishing until the trusted
-  # publisher is updated on all four packages. It is also why promoting rc lives
-  # here rather than in a workflow of its own — the publish has to stay in this
-  # file, and splitting the two would only add a second thing to press.
+  # publisher is updated on every package, and a new package cannot ship until
+  # it exists on npm with this workflow as its trusted publisher — there is no
+  # token here to create it with. It is also why promoting rc lives here rather
+  # than in a workflow of its own — the publish has to stay in this file, and
+  # splitting the two would only add a second thing to press.
   id-token: write
 
 jobs:

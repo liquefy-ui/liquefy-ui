@@ -1,12 +1,17 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { renderToStaticMarkup } from 'react-dom/server'
+import * as icons from '@liquefy-ui/icons'
+import * as iconEffects from '@liquefy-ui/icons/effects'
+import * as lab from '@liquefy-ui/lab'
 import { LiquefyProvider } from '@liquefy-ui/react'
 import * as liquefy from '@liquefy-ui/react'
 import { describe, expect, it } from 'vitest'
 import { catalog, componentCount } from '../src/docs/catalog'
 import { docCategories, docCount, docOrder, findDocPage } from '../src/docs/docs-nav'
 import { iconCount, iconEntries, iconsImportLine } from '../src/docs/icons-gallery'
-import type { ComponentDoc } from '../src/docs/types'
+import { docHref, type ComponentDoc } from '../src/docs/types'
+import { dropletMenuCode } from '../src/lab/experiments/droplet-menu'
+import { LAB_CATEGORIES, labExperiments, labInstallCommand, labOrder } from '../src/lab/registry'
 import { analyticsRoute } from '../src/site/analytics'
 
 /**
@@ -35,8 +40,10 @@ const routes = new Set<string>([
   '#/components',
   '#/components/icons',
   '#/playground',
+  '#/lab',
   ...docOrder.map((doc) => `#/docs/${doc.slug}`),
   ...componentDocs.map((doc) => `#/components/${doc.slug}`),
+  ...labExperiments.map((experiment) => `#/lab/${experiment.slug}`),
 ])
 
 /** Public exports of the library, which is what an import line may name. */
@@ -151,6 +158,89 @@ describe('documentation pages', () => {
   })
 })
 
+// The Lab is a screen of its own, built from one file per experiment. Its
+// entries are component pages in every way that matters to a reader, so they are
+// held to the catalogue's rules here — and to a few of their own.
+describe('the lab', () => {
+  const packages: Record<string, object> = {
+    '@liquefy-ui/icons': icons,
+    '@liquefy-ui/icons/effects': iconEffects,
+    '@liquefy-ui/lab': lab,
+    '@liquefy-ui/react': liquefy,
+  }
+
+  /** Names imported from a package by a snippet that does not export them. */
+  const unknownImports = (code: string): string[] =>
+    [...code.matchAll(/import \{([^}]*)\} from '([^']+)'/g)].flatMap(([, names, from]) =>
+      names.split(',').map((name) => name.trim().replace(/^type /, '')).filter(Boolean)
+        .filter((name) => !(name in (packages[from] ?? {})))
+        .map((name) => `${from}: ${name}`))
+
+  it('finds the experiments without a list to keep', () => {
+    expect(labExperiments.length).toBeGreaterThanOrEqual(3)
+    expect(labOrder).toHaveLength(labExperiments.length)
+  })
+
+  it('gives every experiment a unique slug, a known shelf and a page', () => {
+    const slugs = labExperiments.map((experiment) => experiment.slug)
+    expect(new Set(slugs).size).toBe(slugs.length)
+    const shelves = new Set(LAB_CATEGORIES.map((category) => category.key))
+    for (const experiment of labExperiments) {
+      expect(shelves, experiment.slug).toContain(experiment.category)
+      expect(experiment.description.length, experiment.slug).toBeGreaterThan(30)
+      expect(experiment.demos.length, experiment.slug).toBeGreaterThan(0)
+      expect(experiment.props.length, experiment.slug).toBeGreaterThan(0)
+    }
+  })
+
+  // A subpath of the package counts: icon motion comes from @liquefy-ui/icons/effects.
+  it('imports each experiment from the package it says it ships in', () => {
+    const wrong = labExperiments
+      .filter((experiment) => {
+        const source = /from '([^']+)'/.exec(experiment.importLine)?.[1] ?? ''
+        return source !== experiment.package && !source.startsWith(`${experiment.package}/`)
+      })
+      .map((experiment) => experiment.slug)
+    expect(wrong).toEqual([])
+  })
+
+  it('only names exports that exist, in import lines and demo code alike', () => {
+    const snippets = labExperiments.flatMap((experiment) => [
+      experiment.importLine,
+      ...experiment.demos.map((demo) => demo.code),
+    ])
+    expect(snippets.flatMap(unknownImports)).toEqual([])
+  })
+
+  it.each(labExperiments.map((experiment) => [experiment.slug, experiment] as const))(
+    'renders every demo of %s',
+    (_slug, experiment) => {
+      for (const demo of experiment.demos) {
+        expect(() => renderNode(demo.render()), demo.title).not.toThrow()
+      }
+      if (experiment.preview) expect(() => renderNode(experiment.preview!())).not.toThrow()
+    },
+  )
+
+  it('leaves props at their default out of the DropletMenu demo source', () => {
+    expect(dropletMenuCode('around', 120)).not.toMatch(/layout=|placement=|stagger=/)
+    expect(dropletMenuCode('top-left', 60)).toContain('placement="top-left"')
+    expect(dropletMenuCode('top-left', 60)).toContain('stagger={60}')
+    expect(dropletMenuCode('top', 120, 'line')).toContain('layout="line"')
+  })
+
+  // The docs sidebar keeps a Lab entry, but it is a doorway: its link goes to
+  // the Lab screen rather than to a doc page of its own.
+  it('sends the docs entry to the Lab screen', () => {
+    const entry = docOrder.find((doc) => doc.slug === 'lab')
+    expect(entry && docHref(entry)).toBe('#/lab')
+  })
+
+  it('installs the lab with its peers', () => {
+    expect(labInstallCommand).toBe('pnpm add @liquefy-ui/lab @liquefy-ui/react @liquefy-ui/core')
+  })
+})
+
 describe('icons', () => {
   it('matches the count the pages print', () => {
     expect(iconEntries).toHaveLength(iconCount)
@@ -187,9 +277,9 @@ describe('internal links', () => {
 
   // Old links have to keep working, and a redirect to a page that no longer
   // exists is worse than the dead link it replaced.
-  it('redirects the retired guide routes at a real page', () => {
+  it('redirects retired routes at a real page', () => {
     const app = readFileSync(new URL('app.tsx', srcDir), 'utf8')
-    const targets = [...app.matchAll(/'(#\/docs[^']*)'/g)].map(([, target]) => target)
+    const targets = [...app.matchAll(/'(#\/[^']*)'/g)].map(([, target]) => target)
     expect(targets.length).toBeGreaterThan(2)
     for (const target of targets) expect(routes, target).toContain(target)
   })
@@ -218,6 +308,8 @@ describe('the page analytics is told a visit was', () => {
       '/components/icons',
       '/docs',
       '/docs/[page]',
+      '/lab',
+      '/lab/[experiment]',
       '/playground',
     ])
   })

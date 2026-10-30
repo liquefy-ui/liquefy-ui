@@ -9,7 +9,7 @@ import { stylesProp, type CatalogCategory, type ComponentDoc } from './types'
 /** The icon gallery lives under /components but is not a catalog entry. */
 const ICONS_SLUG = 'icons'
 
-const PropsTable = ({ doc }: { doc: ComponentDoc }) => (
+export const PropsTable = ({ doc }: { doc: ComponentDoc }) => (
   <section className="docs-props">
     <h2 id="api">API</h2>
     <p className="docs-props__intro">Props of <code>{doc.propsTitle ?? doc.name}</code>. Native element attributes are forwarded.</p>

@@ -1,6 +1,6 @@
 {
   "name": "@liquefy-ui/mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "mcpName": "io.github.liquefy-ui/liquefy-ui",
   "description": "Model Context Protocol server that answers questions about liquefy-ui from its real API surface.",
   "license": "MIT",
@@ -36,7 +36,7 @@
     "typecheck": "pnpm generate && tsc --noEmit"
   },
   "devDependencies": {
-    "tsdown": "0.23.0",
+    "tsdown": "0.23.1",
     "typescript": "7.0.2",
     "unrun": "0.3.1"
   },

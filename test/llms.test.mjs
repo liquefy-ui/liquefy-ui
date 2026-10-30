@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { HOMEPAGE, readCatalog, readCoreApi, readIcons } from '../scripts/component-catalog.mjs'
+import { HOMEPAGE, readCatalog, readCoreApi, readIcons, readLabApi } from '../scripts/component-catalog.mjs'
+import { catalog } from '../packages/mcp/src/catalog.generated.ts'
 import { tools } from '../packages/mcp/src/server.ts'
 
 /**
@@ -23,6 +24,7 @@ const pages = readdirSync(pagesDir)
 const { entries } = await readCatalog()
 const icons = await readIcons()
 const core = await readCoreApi()
+const lab = await readLabApi()
 
 const lines = short.split('\n')
 const headingIndexes = lines
@@ -33,6 +35,12 @@ const headingIndexes = lines
 /** Names the entry point re-exports, i.e. what may be presented as importable. */
 const publicNames = new Set(entries.flatMap((entry) => entry.publicValues))
 const internalNames = entries.flatMap((entry) => entry.internalValues)
+const entryPoint = readFileSync(new URL('../packages/react/src/index.ts', import.meta.url), 'utf8')
+
+/** The `code` names in every bullet or rule that says something is not exported. */
+const namesCalledInternal = (rules) => rules
+  .filter((rule) => /not exported/i.test(rule))
+  .flatMap((rule) => [...rule.matchAll(/`([A-Za-z_$][\w$]*)`/g)].map(([, name]) => name))
 
 describe('llms.txt structure', () => {
   // https://llmstxt.org: H1, blockquote summary, prose with no headings, then H2
@@ -96,9 +104,10 @@ describe('llms.txt links', () => {
     expect(missing).toEqual([])
   })
 
-  it('has a page for the icon set and for the engine', () => {
+  it('has a page for the icon set, the engine and lab', () => {
     expect(pages).toContain('icons.md')
     expect(pages).toContain('core.md')
+    expect(pages).toContain('lab.md')
     expect(pages).toContain('mcp.md')
   })
 })
@@ -109,6 +118,25 @@ describe('what the generated files claim', () => {
     for (const file of [short, full]) {
       for (const name of internalNames) {
         expect(file, name).not.toContain(`import { ${name} }`)
+      }
+    }
+  })
+
+  // The rules name a few internal exports as examples, and those lists outlive the
+  // names in them: useLiquefyPortalContainer was still called internal by llms.txt
+  // and the MCP conventions after the entry point started exporting it.
+  it('calls a name "not exported" only when the entry point leaves it out', () => {
+    const exported = new Set(entryPoint.match(/[A-Za-z_$][\w$]*/g))
+    const claims = {
+      'llms.txt': namesCalledInternal(short.split(/\n(?=- )|\n\n/)),
+      'llms-full.txt': namesCalledInternal(full.split(/\n(?=- )|\n\n/)),
+      'MCP conventions': namesCalledInternal(catalog.conventions),
+    }
+    for (const [source, names] of Object.entries(claims)) {
+      expect(names.length, source).toBeGreaterThan(0)
+      for (const name of names) {
+        expect(exported.has(name), `${source}: ${name} is exported`).toBe(false)
+        expect(internalNames, `${source}: ${name} is not a real export`).toContain(name)
       }
     }
   })
@@ -129,6 +157,21 @@ describe('what the generated files claim', () => {
   it('names every icon and every core export in the full reference', () => {
     for (const name of icons.names) expect(full, name).toContain(name)
     for (const name of [...core.values, ...core.types]) expect(full, name).toContain(name)
+  })
+
+  // Lab is a second component package, and its props are read out of its source
+  // for the same reason the components' are.
+  it('names every lab export and carries its declarations', () => {
+    const labPage = readFileSync(new URL('lab.md', pagesDir), 'utf8')
+    // A component is an export with a Props type of its own; the import line names all of them.
+    const components = lab.values.filter((name) => lab.types.includes(`${name}Props`))
+    expect(components).toContain('DropletMenu')
+    for (const file of [labPage, full]) {
+      for (const name of [...lab.values, ...lab.types]) expect(file, name).toContain(name)
+      for (const declaration of lab.declarations) expect(file, declaration.name).toContain(declaration.text)
+      expect(file).toContain(`import { ${components.join(', ')} } from '@liquefy-ui/lab'`)
+    }
+    expect(lab.declarations.map((declaration) => declaration.name).sort()).toEqual(lab.types)
   })
 
   it('carries the real type declarations, whole', () => {

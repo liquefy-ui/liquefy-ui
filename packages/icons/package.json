@@ -1,6 +1,6 @@
 {
   "name": "@liquefy-ui/icons",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Crisp, rounded React icons for liquefy-ui.",
   "license": "MIT",
   "homepage": "https://liquefy-ui.com",
@@ -13,7 +13,8 @@
   "type": "module",
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "effects"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -27,6 +28,16 @@
       "require": {
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
+      }
+    },
+    "./effects": {
+      "import": {
+        "types": "./dist/effects.d.mts",
+        "default": "./dist/effects.mjs"
+      },
+      "require": {
+        "types": "./dist/effects.d.cts",
+        "default": "./dist/effects.cjs"
       }
     }
   },
@@ -42,9 +53,12 @@
     "react": ">=18.2"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
-    "react": "19.3.0",
-    "tsdown": "0.23.0",
+    "@types/react-dom": "^19.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tsdown": "0.23.1",
     "typescript": "7.0.2",
     "unrun": "0.3.1"
   },
@@ -58,6 +72,8 @@
     "svg",
     "svg-icons",
     "tree-shakeable",
-    "liquid-glass"
+    "liquid-glass",
+    "symbol-effects",
+    "animation"
   ]
 }

@@ -224,6 +224,14 @@ a {
   width: 420px;
 }
 
+/* A backdrop filter is redrawn whenever what lies behind it moves, and the Lab
+   previews are stacks of heavy glass. With the glow drifting under them, the top
+   of #/lab fell to 30fps on a Retina Mac; held still, it runs at 60. Still, not
+   gone: it rests on a frame the drift passes through anyway. */
+.site-shell[data-section='lab'] .ambient {
+  animation: none;
+}
+
 .grid-wash {
   background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
@@ -830,9 +838,7 @@ pre {
 }
 
 .pg-stage {
-  /* Held in a custom property because the sticky card has to be exactly this
-     tall and cancel exactly this much flow: a percentage margin would resolve
-     against the width, which is the wrong axis and a very quiet bug. */
+  /* A custom property so the narrow layout changes the height in one place. */
   --pg-stage-h: clamp(360px, 54vh, 520px);
   border: 1px solid var(--line);
   border-radius: 26px;
@@ -841,103 +847,22 @@ pre {
   position: relative;
 }
 
-/* The scenes scroll inside the stage while the card sits above them, and the
-   scroller is the visitor's to drive: a wheel or a drag moves the scenes
-   directly and leaves them wherever it is let go, including halfway between two
-   of them. Nothing rounds the offset afterwards — a scene boundary is a place
-   the scroll may land, not one it is pulled to.
-
-   Scroll chaining is deliberately left at its default. Containing it would make
-   the stage hold the wheel until all five scenes had been wound past, which is
-   how an inner scroller mid-article turns into a trap; this way the page
-   carries on the moment the last scene is reached.
-
-   The scrollbar is hidden because the dots already say where in the set the
-   scroll is, and a classic bar would sit inside the stage's rounded corner. */
-.pg-stage__scroll {
-  inset: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  position: absolute;
-  scrollbar-width: none;
+/* The water fills the stage and the card sits in its middle. The backdrop takes
+   the pointer to stir the water; the card takes it back for itself. */
+.pg-stage__water {
+  height: 100%;
+  width: 100%;
 }
 
-.pg-stage__scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.pg-dots {
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  justify-content: center;
-  position: absolute;
-  right: 10px;
-  top: 0;
-  z-index: 3;
-}
-
-/* A 7px dot inside a 22px target: the mark can be small, the thing you hit
-   cannot be. */
-.pg-dots__dot {
-  appearance: none;
-  background: none;
-  border: 0;
-  cursor: pointer;
+.pg-stage__centre {
   display: grid;
-  height: 22px;
-  padding: 0;
+  height: 100%;
   place-items: center;
-  width: 22px;
-}
-
-.pg-dots__dot::before {
-  background: rgba(255, 255, 255, 0.46);
-  border-radius: 999px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
-  content: '';
-  height: 7px;
-  transition: background 200ms ease, height 200ms ease;
-  width: 7px;
-}
-
-.pg-dots__dot[aria-current]::before {
-  background: #fff;
-  height: 18px;
-}
-
-.pg-dots__dot:focus-visible {
-  border-radius: 999px;
-  outline: 2px solid var(--lq-accent);
-  outline-offset: -1px;
-}
-
-.pg-scene {
-  background-position: center;
-  background-size: cover;
-  height: var(--pg-stage-h);
-  position: relative;
-}
-
-/* A zero-flow sticky box: it fills one scroll viewport, stays pinned to it, and
-   takes its own height back out of the flow so the scenes below start where
-   they would have anyway. The card lives inside the scroller rather than over
-   it so that a wheel on the card still scrolls the scenes. */
-.pg-stage__sticky {
-  display: grid;
-  height: var(--pg-stage-h);
-  margin-bottom: calc(var(--pg-stage-h) * -1);
-  place-items: center;
-  pointer-events: none;
-  position: sticky;
-  top: 0;
-  z-index: 2;
 }
 
 /* The one place the clear material cannot carry its own text. Its default has
-   no blur on purpose — clarity over blur is the whole pitch — and a photograph
-   will cheerfully put a white cloud behind white type. So this panel sets a
+   no blur on purpose — clarity over blur is the whole pitch — and the water
+   will cheerfully put pale foam behind white type. So this panel sets a
    legibility floor the way a product would: real frost, a dark fill, and light
    ink whatever the page theme is, because it is always over imagery.
 
@@ -963,33 +888,9 @@ pre {
   /* What actually holds the type up once the veil is down. The panel's fill
      is the visitor's to remove, so legibility cannot be parked in it: this
      is a tight shadow for the letterforms and a wide one for the patch of
-     photograph behind them. */
+     water behind them. */
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 2px 18px rgba(0, 0, 0, 0.5);
   width: min(420px, 78%);
-}
-
-/* Over a pale scene the panel flips its ink rather than dropping a dark scrim
-   over the scene. A scrim would read the wrong way round here — the thing you
-   are meant to be looking through would become the most opaque object on the
-   stage, and the wordmark it is held over would disappear behind it. So the
-   type goes dark, its shadow goes light, and the veil comes up just far enough
-   to lift the letters off the grid behind them. The control on the right still
-   works above that floor. */
-.pg-card[data-over-light='true'] {
-  --lq-veil-floor: 0.62;
-  --lq-fill: rgba(255, 255, 255, calc(0.78 * var(--lq-veil-amount, 1)));
-  color: #10131c;
-  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.85);
-}
-
-.pg-card[data-over-light='true'] .pg-card__eyebrow {
-  color: rgba(16, 19, 28, 0.66);
-}
-
-/* The body sets its own white rather than inheriting, so flipping the panel's
-   colour alone left the paragraph invisible on the pale scene. */
-.pg-card[data-over-light='true'] .pg-card__body {
-  color: rgba(16, 19, 28, 0.82);
 }
 
 .pg-card__eyebrow {
@@ -1013,151 +914,6 @@ pre {
   font-size: 0.86rem;
   line-height: 1.55;
   margin: 0;
-}
-
-/* The wordmark is drawn in `--line-strong` and then halved again by its own
-   opacity, which on a white ground left the scene named after the mark with no
-   mark visible in it. Only the light theme needs the extra ink; on black the
-   page token is already strong enough. */
-:root[data-theme='light'] .pg-scene--mark {
-  --line-strong: rgba(11, 11, 20, 0.3);
-}
-
-.pg-scene--fjord { background-image: url('/scenes/fjord.jpg'); }
-.pg-scene--summit { background-image: url('/scenes/summit.jpg'); }
-.pg-scene--coast { background-image: url('/scenes/coast.jpg'); }
-
-.pg-scene__credit {
-  margin-top: 4px;
-  opacity: 0.5;
-}
-
-.pg-scene__tag {
-  top: 18px;
-  color: var(--fg-muted);
-  font-size: 0.68rem;
-  font-weight: 650;
-  left: 18px;
-  letter-spacing: 0.1em;
-  position: absolute;
-  text-transform: uppercase;
-  z-index: 1;
-}
-
-.pg-scene__tag em {
-  display: block;
-  font-style: normal;
-  font-weight: 450;
-  letter-spacing: 0.02em;
-  opacity: 0.68;
-  text-transform: none;
-}
-
-/* Saturated, hard-edged bands. Every other scene gives the rim a soft gradient
-   to bend, which hides how far it actually moves one; a boundary this abrupt
-   does not. */
-.pg-scene--chroma {
-  background: linear-gradient(
-    118deg,
-    #ff2d55 0 17%,
-    #ff9f0a 17% 34%,
-    #ffd60a 34% 50%,
-    #30d158 50% 66%,
-    #0a84ff 66% 83%,
-    #bf5af2 83% 100%
-  );
-}
-
-.pg-scene--paper {
-  background:
-    radial-gradient(120% 90% at 20% 10%, rgba(255, 255, 255, 0.9), transparent 60%),
-    linear-gradient(170deg, #f4f5f8, #e7eaf1);
-}
-
-.pg-scene--ink {
-  background:
-    radial-gradient(90% 70% at 78% 14%, rgba(255, 255, 255, 0.16), transparent 62%),
-    linear-gradient(170deg, #0a0c12, #05070c);
-}
-
-/* The scenes that bring their own ground bring their own ink with it: the page
-   foreground is right for exactly one of them at a time. */
-.pg-scene--chroma .pg-scene__tag,
-.pg-scene--paper .pg-scene__tag {
-  color: rgba(16, 21, 36, 0.66);
-}
-
-.pg-scene--ink .pg-scene__tag,
-.pg-scene--fjord .pg-scene__tag,
-.pg-scene--summit .pg-scene__tag,
-.pg-scene--coast .pg-scene__tag {
-  color: rgba(255, 255, 255, 0.82);
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
-}
-
-/* The lens can only show off against something with structure, so the stage
-   gets a rule grid and two soft washes for it to bend. */
-.pg-stage__backdrop {
-  background:
-    repeating-linear-gradient(0deg, transparent 0 43px, var(--line) 43px 44px),
-    repeating-linear-gradient(90deg, transparent 0 43px, var(--grid-line) 43px 44px),
-    radial-gradient(120% 130% at 88% 4%, color-mix(in srgb, var(--lq-accent) 34%, transparent), transparent 58%),
-    linear-gradient(150deg, var(--bg-soft), var(--bg) 60%);
-  inset: 0;
-  position: absolute;
-}
-
-/* The lockup, not a word: the stage is the first thing a visitor drags the lens
-   over, so what it bends may as well be the project's own logo. It stays a
-   backdrop — the wordmark inherits the same faint ink the outlined word used. */
-.pg-stage__word {
-  color: var(--line-strong);
-  height: auto;
-  left: 6%;
-  position: absolute;
-  top: 47%;
-  transform: translateY(-50%);
-  user-select: none;
-  width: clamp(240px, 74%, 620px);
-}
-
-/* The capsules keep their real gradient, held back so they read as part of the
-   backdrop rather than as a component sitting on it. */
-.pg-stage__word [data-part='mark'] {
-  opacity: 0.5;
-}
-
-.pg-stage__orb {
-  border-radius: 50%;
-  filter: blur(38px);
-  position: absolute;
-}
-
-.pg-stage__orb--one {
-  background: color-mix(in srgb, var(--lq-accent) 65%, transparent);
-  height: 190px;
-  opacity: 0.5;
-  right: 8%;
-  top: -40px;
-  width: 190px;
-}
-
-.pg-stage__orb--two {
-  background: var(--wash);
-  bottom: -60px;
-  height: 220px;
-  left: 30%;
-  opacity: 0.9;
-  width: 220px;
-}
-
-.pg-stage__rule {
-  background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
-  bottom: 28%;
-  height: 1px;
-  left: 0;
-  position: absolute;
-  right: 0;
 }
 
 .pg-stage__caption::before {
@@ -2158,7 +1914,9 @@ pre {
   padding-left: 22px;
 }
 
-.docs-prose code,
+/* The inline-code chip. A doc page's code blocks live inside .docs-prose too,
+   and the chip's nowrap on their `pre > code` folds every line into one. */
+.docs-prose :not(pre) > code,
 .docs-props td code,
 .mapping code {
   background: var(--code-bg);
@@ -2318,6 +2076,430 @@ kbd {
   justify-content: center;
   min-height: 150px;
   padding: 28px 24px;
+}
+
+/* The Lab. Every experiment is the same glass as the rest of the library, so it
+   is held over a photograph: a flat wash leaves the glass nothing to bend. The
+   stage must not get opacity, filter, clip-path or mask — any of them would make
+   the glass inside see only the stage's own layer. */
+
+.lab-stage {
+  align-items: center;
+  background: url('/scenes/fjord.jpg') center / cover;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+  position: relative;
+  width: 100%;
+}
+
+.lab-stage[data-scene='coast'] {
+  background-image: url('/scenes/coast.jpg');
+}
+
+.lab-stage[data-scene='summit'] {
+  background-image: url('/scenes/summit.jpg');
+}
+
+.lab-stage[data-align='top'] {
+  align-items: flex-start;
+}
+
+.lab-stage[data-align='bottom'] {
+  align-items: flex-end;
+}
+
+.lab-stage[data-align='bottom-end'] {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.lab-stage__credit {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.72rem;
+  font-weight: 550;
+  left: 16px;
+  pointer-events: none;
+  position: absolute;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  top: 14px;
+}
+
+/* A stage that is its own backdrop: the moving backdrops draw what the glass
+   on them bends, so they take the stage's place instead of a photograph. */
+.lab-backdrop {
+  align-items: center;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+  width: 100%;
+}
+
+.lab-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+
+.lab-row--tight {
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+/* The labels share a top line and the controls share a centre line, although
+   a segmented control is taller than a slider. */
+.lab-controls {
+  display: grid;
+  gap: 16px 28px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-top: 20px;
+  width: 100%;
+}
+
+.lab-control {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-rows: auto 1fr;
+}
+
+.lab-control__label {
+  align-items: baseline;
+  color: var(--fg-muted);
+  display: flex;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.lab-control__label em {
+  color: var(--fg);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.76rem;
+  font-style: normal;
+}
+
+.lab-credit {
+  color: var(--fg-muted);
+  font-size: 0.86rem;
+  margin: -6px 0 18px;
+}
+
+.lab-intro {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 8px;
+  max-width: 720px;
+}
+
+.lab-intro p {
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* The index: fewer, larger cards than the component gallery, because each
+   preview is a scene rather than a control. */
+.lab-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.lab-card {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  transition: border-color 220ms ease, background 220ms ease;
+}
+
+.lab-card:hover {
+  background: var(--glass-strong);
+  border-color: var(--line-strong);
+}
+
+.lab-card__stage {
+  border-radius: 13px;
+  display: flex;
+  height: 178px;
+  overflow: hidden;
+}
+
+.lab-card__stage > .lab-stage,
+.lab-card__stage > .lab-backdrop {
+  border-radius: 0;
+  padding: 16px;
+}
+
+.lab-card > a {
+  align-items: center;
+  color: var(--fg);
+  display: flex;
+  gap: 6px;
+  transition: gap 200ms ease;
+}
+
+.lab-card > a:hover {
+  gap: 9px;
+}
+
+.lab-card > a strong {
+  font-size: 0.95rem;
+  font-weight: 720;
+}
+
+.lab-card > p {
+  color: var(--fg-muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* LiquidMorph and LiquidIsland: content laid on glass that changes shape.
+   Each block is laid out at its final size and the glass opens around it, so
+   nothing here animates; it only has to read on thick glass over a photo. */
+
+.lab-morph-search {
+  display: grid;
+}
+
+.lab-morph-search__field {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  height: 52px;
+  padding: 0 8px 0 18px;
+}
+
+.lab-morph-search__field input {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  flex: 1;
+  font: inherit;
+  font-size: 0.95rem;
+  min-width: 0;
+  outline: none;
+}
+
+.lab-morph-search__field input::placeholder,
+.lab-morph-search__placeholder {
+  color: var(--lq-muted);
+  font-size: 0.95rem;
+}
+
+.lab-morph-search__results {
+  padding: 0 6px 8px;
+}
+
+.lab-morph-search__empty {
+  color: var(--lq-muted);
+  font-size: 0.86rem;
+  padding: 12px 14px 16px;
+}
+
+/* LiquidSwipe: a phone-sized frame of onboarding pages over the stage. */
+.lab-swipe {
+  border-radius: 32px;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 0.28);
+  height: 100%;
+  max-width: 390px;
+  width: 100%;
+}
+
+.lab-swipe-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 24px 28px;
+}
+
+.lab-swipe-page__top {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  min-height: 36px;
+}
+
+.lab-swipe-page__top > span {
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lab-swipe-page__words {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.lab-swipe-page__words h3 {
+  font-size: 1.75rem;
+  font-weight: 720;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  margin: 0;
+  max-width: 14ch;
+}
+
+.lab-swipe-page__words p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 8px;
+  max-width: 32ch;
+  opacity: 0.86;
+}
+
+.lab-swipe-page[data-compact] {
+  padding: 14px 16px 16px;
+}
+
+.lab-swipe-page[data-compact] h3 {
+  font-size: 1.1rem;
+}
+
+.lab-morph-player {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.lab-morph-player__track,
+.lab-island-message,
+.lab-island-track,
+.lab-island-download {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.lab-morph-player__track img {
+  border-radius: 12px;
+  height: 56px;
+  object-fit: cover;
+  width: 56px;
+}
+
+.lab-morph-player__track span,
+.lab-morph-profile span,
+.lab-island-message span {
+  display: grid;
+  gap: 2px;
+}
+
+.lab-morph-player__track strong,
+.lab-morph-profile strong,
+.lab-morph-list > strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.lab-morph-player__track em,
+.lab-morph-profile em,
+.lab-island-message em {
+  color: var(--lq-muted);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+.lab-morph-player__controls {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.lab-morph-list {
+  display: grid;
+  gap: 4px;
+  padding: 16px 6px 6px;
+}
+
+.lab-morph-list > strong {
+  padding: 0 13px 4px;
+}
+
+.lab-morph-profile {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 20px 16px 16px;
+  text-align: center;
+}
+
+.lab-morph-profile__actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+}
+
+.lab-morph-gallery {
+  gap: 112px;
+}
+
+.lab-island-track {
+  gap: 10px;
+  height: 44px;
+  padding: 0 4px 0 8px;
+}
+
+.lab-island-track img {
+  border-radius: 8px;
+  height: 28px;
+  object-fit: cover;
+  width: 28px;
+}
+
+.lab-island-track > span {
+  font-size: 0.86rem;
+  font-weight: 650;
+  padding-right: 4px;
+}
+
+.lab-island-download {
+  height: 44px;
+  padding: 0 16px;
+}
+
+.lab-island-download .lq-progress {
+  min-width: 132px;
+}
+
+.lab-island-download > span {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  min-width: 36px;
+  text-align: right;
+}
+
+.lab-island-done {
+  align-items: center;
+  display: flex;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.lab-island-message {
+  padding: 8px 20px 8px 8px;
+}
+
+.lab-island-message strong {
+  font-size: 0.86rem;
+  font-weight: 700;
 }
 
 /* Prop tables */
@@ -2901,15 +3083,13 @@ kbd {
     font-size: clamp(2rem, 9vw, 2.6rem);
   }
 
-  /* The custom property, not `height`: the sticky card and every scene are
-     sized from it too, so overriding only the box left the card centred in a
-     taller box than the one it was being viewed through. */
+  /* Shorter on a phone, so the controls under it start on the first screen. */
   .pg-stage {
     --pg-stage-h: 340px;
   }
 
   /* Smaller as well as shorter. At this width the card was covering most of the
-     stage, which leaves nothing of the scene it is supposed to be held over. */
+     stage, which leaves nothing of the water it is supposed to be held over. */
   .pg-card {
     gap: 8px;
     padding: 18px 20px;
@@ -2940,6 +3120,10 @@ kbd {
 @media (max-width: 560px) {
   .header-actions .jelly-toggle {
     display: none;
+  }
+
+  .lab-controls {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
