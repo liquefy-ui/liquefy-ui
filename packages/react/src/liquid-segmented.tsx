@@ -1,6 +1,8 @@
 import { Toggle } from '@base-ui/react/toggle'
 import { ToggleGroup } from '@base-ui/react/toggle-group'
-import { forwardRef, useRef, useState, type HTMLAttributes, type ReactNode } from 'react'
+import {
+  forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type HTMLAttributes, type ReactNode,
+} from 'react'
 import { useLiquefyConfig } from './provider'
 import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 
@@ -8,6 +10,14 @@ import { useLiquidStyles, type LiquidStyleProps } from './styles-prop'
 // tabpanel, which tells a screen reader to expect panels that do not exist and
 // leaves the arrow keys doing nothing. A toggle group is what this control
 // actually is: one pressed button out of several, with roving focus.
+
+// The indicator used to be sized as an equal share of the track, which only
+// holds while every item fits in an equal share. `grid-auto-columns: 1fr` cannot
+// shrink a column below its content, so one long label on a narrow screen makes
+// its column wider than the rest and the indicator drifts off the pressed item.
+// It now follows the pressed item's measured box, and the equal share stays as
+// the first paint and the server render.
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 export type LiquidSegmentedOption = {
   disabled?: boolean
@@ -39,9 +49,32 @@ export const LiquidSegmented = forwardRef<HTMLDivElement, LiquidSegmentedProps>(
 }, ref) => {
   const config = useLiquefyConfig()
   const indicatorRef = useRef<HTMLSpanElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
+  useImperativeHandle(ref, () => rootRef.current as HTMLDivElement)
   const [internalValue, setInternalValue] = useState(defaultValue ?? options[0]?.value)
   const resolvedValue = value ?? internalValue
   const activeIndex = Math.max(0, options.findIndex((option) => option.value === resolvedValue))
+
+  useIsomorphicLayoutEffect(() => {
+    const group = rootRef.current
+    const indicator = indicatorRef.current
+    if (!group || !indicator) return undefined
+
+    const place = () => {
+      const item = group.querySelectorAll<HTMLElement>('.lq-segmented__item')[activeIndex]
+      if (!item) return
+      // offsetLeft ignores transforms, so this is the indicator's resting spot.
+      indicator.style.setProperty('--lq-segment-x', `${item.offsetLeft - indicator.offsetLeft}px`)
+      indicator.style.setProperty('--lq-segment-w', `${item.offsetWidth}px`)
+    }
+
+    place()
+    if (typeof ResizeObserver === 'undefined') return undefined
+    const observer = new ResizeObserver(place)
+    observer.observe(group)
+    group.querySelectorAll('.lq-segmented__item').forEach((item) => observer.observe(item))
+    return () => observer.disconnect()
+  }, [activeIndex, options.length])
 
   const root = useLiquidStyles('lq-segmented', {
     className,
@@ -83,7 +116,7 @@ export const LiquidSegmented = forwardRef<HTMLDivElement, LiquidSegmentedProps>(
           { duration: 460, easing: 'cubic-bezier(0.2, 0.9, 0.25, 1)' },
         )
       }}
-      ref={ref}
+      ref={rootRef}
       style={root.style}
       value={resolvedValue === undefined ? [] : [resolvedValue]}
       {...props}
