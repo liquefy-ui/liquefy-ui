@@ -1,5 +1,6 @@
 import { clamp, hexToRgb } from './math'
 import type { LiquidRendererOptions } from './types'
+import { observeVisibility } from './visibility'
 
 const vertexShaderSource = `#version 300 es
 in vec2 a_position;
@@ -243,9 +244,13 @@ export class LiquidRenderer {
   private rippleAge = -1
   private rippleOrigin: readonly [number, number] = [0.5, 0.5]
   private rippleStrength = 0
+  private stopObserving: (() => void) | null = null
   private stretch: readonly [number, number] = [0, 0]
   private supported = false
   private tint: readonly [number, number, number]
+  // Off-screen canvases give their backing store back (see visibility.ts), so
+  // nothing is drawn until the observer first reports the canvas in reach.
+  private visible = false
   private wobble = 0
 
   public constructor(private readonly canvas: HTMLCanvasElement, options: LiquidRendererOptions = {}) {
@@ -270,15 +275,22 @@ export class LiquidRenderer {
       return
     }
 
+    // A fresh canvas is 300×150 until told otherwise. Start it asleep and empty
+    // so glass that never comes into view never pays for those pixels.
+    this.canvas.dataset.dormant = 'true'
+    this.canvas.width = 0
+    this.canvas.height = 0
     this.resizeObserver?.observe(this.canvas)
-    this.resize()
-    this.render(performance.now())
+    // Watch the glass, not the canvas: a sleeping canvas is display:none, and
+    // an element with no box never intersects anything, so it would never wake.
+    this.stopObserving = observeVisibility(this.canvas.parentElement ?? this.canvas, (visible) => this.setVisible(visible))
   }
 
   public destroy(): void {
     this.destroyed = true
     cancelAnimationFrame(this.animationFrame)
     this.resizeObserver?.disconnect()
+    this.stopObserving?.()
   }
 
   public isSupported(): boolean {
@@ -335,11 +347,31 @@ export class LiquidRenderer {
     if (this.wobble > 0.003) this.start()
   }
 
+  private setVisible(visible: boolean): void {
+    if (visible === this.visible || this.destroyed) return
+    this.visible = visible
+    if (visible) {
+      delete this.canvas.dataset.dormant
+      this.resize()
+      this.render(performance.now())
+      return
+    }
+
+    // Asleep: stop animating and drop the pixels. A zero-sized canvas holds no
+    // backing store, and `data-dormant` hides it so its blend layer goes too.
+    cancelAnimationFrame(this.animationFrame)
+    this.animationFrame = 0
+    this.canvas.dataset.dormant = 'true'
+    this.canvas.width = 0
+    this.canvas.height = 0
+  }
+
   private get pixelRatio(): number {
     return Math.min(window.devicePixelRatio || 1, 2)
   }
 
   private resize(): void {
+    if (!this.visible) return
     const width = Math.max(1, Math.round(this.canvas.clientWidth * this.pixelRatio))
     const height = Math.max(1, Math.round(this.canvas.clientHeight * this.pixelRatio))
     if (this.canvas.width === width && this.canvas.height === height) return
@@ -350,7 +382,7 @@ export class LiquidRenderer {
   }
 
   private render(time: number): void {
-    if (!this.supported || this.destroyed || !this.blitContext) return
+    if (!this.supported || this.destroyed || !this.visible || !this.blitContext) return
 
     const shared = SharedGlassContext.get()
     const width = this.canvas.width
@@ -392,7 +424,7 @@ export class LiquidRenderer {
   }
 
   private start(): void {
-    if (this.animationFrame || this.destroyed || !this.supported) return
+    if (this.animationFrame || this.destroyed || !this.supported || !this.visible) return
 
     this.lastTime = performance.now()
     const tick = (time: number): void => {
