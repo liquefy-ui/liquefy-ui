@@ -358,7 +358,8 @@
     z-index: 1;
   }
 
-  .lq-surface__shader[data-fallback='true'] {
+  .lq-surface__shader[data-fallback='true'],
+  .lq-surface__shader[data-dormant='true'] {
     display: none;
   }
 
