@@ -6,6 +6,7 @@ import { useState, type ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { LiquidSwipe, type LiquidSwipeProps } from '../src/liquid-swipe'
+import { pathCommandsOf } from './css-values'
 
 // jsdom lays nothing out, so the carousel's room falls back to the window: 1024 × 768.
 const WIDTH = 1024
@@ -282,7 +283,8 @@ describe('LiquidSwipe', () => {
       const clip = slide(1).style.clipPath
       expect(clip.startsWith('path(')).toBe(true)
       // The tip of the bulge sits at the finger's height.
-      expect(clip).toMatch(/ 200\.00 C/)
+      const [rise] = pathCommandsOf(clip).filter(({ command }) => command === 'C')
+      expect(rise?.values.at(-1)).toBe(200)
       pointer(target, 'pointerup', 700, 200, 48)
     })
   })
@@ -297,8 +299,8 @@ describe('LiquidSwipe', () => {
         expect(slide(index).style.visibility).toBe('visible')
       }
       // The previous page peeks in from the left edge, the next from the right.
-      expect(slide(0).style.clipPath).toMatch(/^path\('M-1\.00/)
-      expect(slide(2).style.clipPath).toMatch(new RegExp(`^path\\('M${WIDTH + 1}\\.00`))
+      expect(pathCommandsOf(slide(0).style.clipPath)[0]).toMatchObject({ command: 'M', values: [-1, expect.any(Number)] })
+      expect(pathCommandsOf(slide(2).style.clipPath)[0]).toMatchObject({ command: 'M', values: [WIDTH + 1, expect.any(Number)] })
     })
 
     it('shows one page on both sides when two pages loop', () => {
