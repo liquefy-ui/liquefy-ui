@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -260,8 +260,9 @@ describe('keyboard access', () => {
     const dialog = await screen.findByRole('dialog')
     expect(referencedText(dialog, 'aria-labelledby')).toBe('Delete 3 items?')
     expect(referencedText(dialog, 'aria-describedby')).toBe('This cannot be undone.')
-    // Focus moved inside the panel rather than staying on the trigger.
-    expect(dialog.contains(focused())).toBe(true)
+    // Focus moved inside the panel rather than staying on the trigger. Base UI
+    // moves it after the open renders, so wait for it rather than racing it.
+    await waitFor(() => expect(dialog.contains(focused())).toBe(true))
 
     await user.keyboard('{Escape}')
     expect(screen.queryByRole('dialog')).toBeNull()

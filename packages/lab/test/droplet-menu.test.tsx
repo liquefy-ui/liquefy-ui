@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import type { GlassMergeShape } from '@liquefy-ui/core'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DropletMenu, type DropletMenuItem } from '../src/droplet-menu'
+import { translateOf } from './css-values'
 
 // Every frame's shapes, as the glass surface is handed them.
 const glass = vi.hoisted(() => ({ frames: [] as GlassMergeShape[][] }))
@@ -51,10 +52,7 @@ const touch = (point: { clientX: number, clientY: number }) => ({ ...point, isPr
 const mouse = (point: { clientX: number, clientY: number }) => ({ ...point, isPrimary: true, pointerId: 1, pointerType: 'mouse' })
 
 /** Where a droplet's button is drawn, from its translate. */
-const drawnAt = (menuitem: HTMLElement) => {
-  const [, x, y] = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(menuitem.parentElement?.style.transform ?? '') ?? []
-  return { x: Number(x), y: Number(y) }
-}
+const drawnAt = (menuitem: HTMLElement) => translateOf(menuitem.parentElement?.style.transform ?? '')
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -210,8 +208,9 @@ describe('DropletMenu', () => {
     expect(root.contains(menu)).toBe(true)
     expect(root.contains(root.querySelector('.lq-glass-merge__surface'))).toBe(true)
     // Settled droplets sit at their offsets from the trigger's centre.
-    const first = within(menu).getByRole('menuitem', { name: 'Camera' }).parentElement
-    expect(first?.style.transform).toMatch(/translate\(0\.00px, -\d+\.\d+px\)/)
+    const first = drawnAt(within(menu).getByRole('menuitem', { name: 'Camera' }))
+    expect(first.x).toBeCloseTo(0)
+    expect(first.y).toBeLessThan(0)
   })
 
   it('draws the trigger and every droplet as one glass body', async () => {
