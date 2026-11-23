@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-import { BOT_AUTHOR, CONVENTIONAL_SCOPES, MAX_HEADER_LENGTH, TYPES, checkCommitMessage } from '../scripts/check-commit-msg.mjs'
+import { BOT_AUTHOR, BOT_LOGIN, CONVENTIONAL_SCOPES, MAX_HEADER_LENGTH, TYPES, checkCommitMessage } from '../scripts/check-commit-msg.mjs'
 
 const root = new URL('..', import.meta.url)
 
@@ -148,6 +148,49 @@ describe('the bot exemption', () => {
   })
 })
 
+describe('the length exemption for bot pull requests', () => {
+  // The title of #147, which a 100-character limit rejected at 105.
+  const long = 'chore(dev): bump @testing-library/user-event from 14.6.10 to 14.6.13 in the rest group across 1 directory'
+
+  const run = (...args) => {
+    try {
+      const stdout = execFileSync('node', ['scripts/check-commit-msg.mjs', '--text', ...args], {
+        cwd: new URL('.', root),
+        encoding: 'utf8',
+        stdio: 'pipe',
+      })
+      return { ok: true, output: stdout }
+    } catch (error) {
+      return { ok: false, output: `${error.stdout ?? ''}${error.stderr ?? ''}` }
+    }
+  }
+
+  it.each(['dependabot[bot]', 'github-actions[bot]'])('recognises %s', (login) => expect(BOT_LOGIN.test(login)).toBe(true))
+  it.each(['dependabot', 'yu5ag', 'bot-fan', '[bot]ish'])('does not recognise %s', (login) => expect(BOT_LOGIN.test(login)).toBe(false))
+
+  it('lets a long title through when Dependabot opened the pull request', () => {
+    expect(long.length).toBeGreaterThan(MAX_HEADER_LENGTH)
+    expect(checkCommitMessage(long, { checkLength: false })).toEqual([])
+    expect(run(long, '--author', 'dependabot[bot]').ok).toBe(true)
+  })
+
+  it('still rejects the same title from a person', () => {
+    const result = run(long, '--author', 'yu5ag')
+    expect(result.ok).toBe(false)
+    expect(result.output).toContain(`the limit is ${MAX_HEADER_LENGTH}`)
+    expect(run(long).ok).toBe(false)
+  })
+
+  it('keeps every other rule for a bot', () => {
+    expect(run('Bump @testing-library/user-event from 14.6.10 to 14.6.13', '--author', 'dependabot[bot]').ok).toBe(false)
+    expect(run('chore(dev): bump the rest group.', '--author', 'dependabot[bot]').ok).toBe(false)
+  })
+
+  it('refuses an argument it does not understand', () => {
+    expect(run(long, '--writer', 'dependabot[bot]').ok).toBe(false)
+  })
+})
+
 describe('the rule is wired up', () => {
   it('runs as a commit-msg hook that pnpm install installs', () => {
     const hook = readFileSync(new URL('.githooks/commit-msg', root), 'utf8')
@@ -162,6 +205,12 @@ describe('the rule is wired up', () => {
     expect(workflow).toContain('commit-lint')
     expect(workflow).toContain('--range')
     expect(workflow).toContain('--text')
+  })
+
+  it('tells the title check who opened the pull request', () => {
+    const workflow = readFileSync(new URL('.github/workflows/ci.yml', root), 'utf8')
+    expect(workflow).toContain('github.event.pull_request.user.login')
+    expect(workflow).toMatch(/--text "\$TITLE" --author "\$AUTHOR"/)
   })
 
   // Checking the title is only useful if a corrected title can be checked again.

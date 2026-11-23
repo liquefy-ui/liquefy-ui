@@ -10,7 +10,7 @@ are most often got wrong:
 
 1. **One line**, shaped `type(scope): summary`, 100 characters or fewer. No
    body. Everything you want to explain goes in the pull request description
-   instead.
+   instead. (Dependabot's pull request titles skip the length check only.)
 2. **Never add these trailers**, in any form:
    - `Co-Authored-By: Claude …` (or any other assistant or bot)
    - `Claude-Session: …`
