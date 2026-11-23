@@ -16,6 +16,8 @@ describe('accepts', () => {
     'fix(core,icons): align the token names',
     'feat(react)!: rename LiquidGlass to LiquidSurface',
     'build(deps): move vitest to 4.1.10',
+    // A Dependabot grouped-update title (#147) that the old 72-character limit rejected.
+    'chore(dev): bump @testing-library/user-event from 14.6.10 to 14.6.13 in the rest group',
     'docs: document the four CI jobs\n\nRefs: #12',
     'fix(mcp): resolve the catalog path\n\nCo-authored-by: Ada Lovelace <ada@example.com>',
   ])('%s', (message) => {

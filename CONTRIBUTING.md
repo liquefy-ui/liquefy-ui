@@ -141,7 +141,7 @@ where it stays readable and can be answered.
 | Scope | Optional, lowercase, in parentheses. In use: `core` `icons` `react` `lab` `mcp` `docs` `registry` `deps` `release`. Several: `fix(core,react): …` |
 | Breaking | A `!` before the colon: `feat(react)!: rename LiquidGlass to LiquidSurface` |
 | Summary | Imperative, no full stop at the end |
-| Length | The authored subject line, 72 characters or fewer. GitHub's generated trailing ` (#123)` on a squash commit does not count. |
+| Length | The authored subject line, 100 characters or fewer. GitHub's generated trailing ` (#123)` on a squash commit does not count. |
 | Body | None. Only trailers may follow a blank line — `Refs: #12`, a human `Co-authored-by:` |
 
 `feat` and `fix` are the two types that change a published package, so they are
