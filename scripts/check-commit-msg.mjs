@@ -25,7 +25,9 @@ export const TYPES = [
 // need a commit to this file first — but they must look like the ones here.
 export const CONVENTIONAL_SCOPES = ['core', 'icons', 'react', 'lab', 'mcp', 'docs', 'registry', 'deps', 'release']
 
-export const MAX_HEADER_LENGTH = 72
+// commitlint's default header-max-length. 72 was too tight for Dependabot's
+// grouped updates, whose titles name the package, both versions and the group.
+export const MAX_HEADER_LENGTH = 100
 
 const HEADER = /^(?<type>[a-z]+)(?:\((?<scope>[^()]*)\))?(?<breaking>!)?: (?<subject>.*)$/
 const SCOPE = /^[a-z0-9][a-z0-9-]*(?:[/,][a-z0-9][a-z0-9-]*)*$/
