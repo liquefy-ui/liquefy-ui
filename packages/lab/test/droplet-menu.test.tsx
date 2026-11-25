@@ -321,7 +321,9 @@ describe('DropletMenu', () => {
       expect(drawnAt(photo!)).toEqual({ x: 0, y: -130 })
       expect(drawnAt(voiceMemo!)).toEqual({ x: 0, y: -65 })
 
-      expect(focused()).toBe(camera)
+      // Focus lands on the first droplet once the menu has opened, which on a
+      // slow runner can be a frame after the menu itself is in the DOM.
+      await waitFor(() => expect(focused()).toBe(camera))
       await user.keyboard('{ArrowDown}')
       expect(focused()).toBe(photo)
     })
