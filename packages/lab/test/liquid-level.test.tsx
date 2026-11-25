@@ -163,7 +163,9 @@ describe('LiquidLevel', () => {
     expect(highest).toBeLessThan(17)
     expect(roughest).toBeGreaterThan(1)
 
-    clock.play(600)
+    // Twenty seconds: at the provider's default wobbliness of 1 the liquid
+    // keeps moving for a good while before it comes to rest.
+    clock.play(1200)
     expect(new Set(surface(meter))).toEqual(new Set([20]))
     // Nothing left to animate, so the loop has stopped asking for frames.
     const before = clock.pending
@@ -209,13 +211,13 @@ describe('LiquidLevel', () => {
     vi.spyOn(meter, 'getBoundingClientRect').mockReturnValue(DOMRect.fromRect({ height: 100, width: 100, x: 0, y: 0 }))
 
     fireEvent.pointerMove(meter, { clientX: 100 })
-    clock.play(600)
+    clock.play(1200)
     const leaning = surface(meter)
     // Higher on the right, where the pointer is: nearer the top.
     expect((leaning.at(-1) ?? 0) - (leaning[0] ?? 0)).toBeLessThan(-10)
 
     fireEvent.pointerLeave(meter)
-    clock.play(600)
+    clock.play(1200)
     expect(new Set(surface(meter))).toEqual(new Set([50]))
 
     rerender(

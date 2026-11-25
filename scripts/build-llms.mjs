@@ -68,7 +68,7 @@ import '@liquefy-ui/react/styles.css'
 
 export function App() {
   return (
-    <LiquefyProvider theme="system" tint="#8f8f8f">
+    <LiquefyProvider theme="system">
       <LiquidButton>Create magic</LiquidButton>
     </LiquefyProvider>
   )

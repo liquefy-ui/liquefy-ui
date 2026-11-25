@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { MeshGradient } from '@liquefy-ui/lab'
 import { LiquidDrawer } from '@liquefy-ui/react'
 import { CheckIcon, CopyIcon, GithubIcon, MoonIcon, MoreHorizontalIcon, SunIcon } from '@liquefy-ui/icons'
-import { nextTheme, THEME_LABELS, useSiteConfig } from './site-config'
+import { nextTheme, THEME_LABELS, useSiteConfig, type ResolvedTheme } from './site-config'
 
 export const repositoryUrl = 'https://github.com/liquefy-ui/liquefy-ui'
 /** The maintainer's personal listing, not the organisation's — see `.github/FUNDING.yml`. */
@@ -322,15 +323,51 @@ export const SiteFooter = () => (
   </footer>
 )
 
-/** Background wash and grain shared by every route. */
-export const Ambience = () => (
-  <>
-    <div aria-hidden="true" className="ambient ambient--one" />
-    <div aria-hidden="true" className="ambient ambient--two" />
-    <div aria-hidden="true" className="grid-wash" />
-    <div aria-hidden="true" className="noise" />
-  </>
-)
+/**
+ * The page's colours, as the theme's own tokens. They are resolved against the
+ * provider the mesh sits in, so a theme that changes `--lq-solid-fill` changes
+ * the page with it. Light is the pale grey the tokens sit on, lifted toward
+ * the accent in places and shaded toward the text in others; dark is the
+ * theme's fill pressed most of the way to black, so the glass still has
+ * something to bend without the page turning blue.
+ */
+const MESH_COLORS: Record<ResolvedTheme, readonly string[]> = {
+  dark: [
+    'color-mix(in srgb, var(--lq-solid-fill) 46%, black)',
+    'color-mix(in srgb, var(--lq-solid-fill) 30%, black)',
+    'color-mix(in srgb, var(--lq-solid-fill) 62%, black)',
+    'color-mix(in srgb, var(--lq-solid-fill) 22%, black)',
+    'color-mix(in srgb, var(--lq-solid-fill) 40%, black)',
+  ],
+  light: [
+    'var(--lq-solid-fill)',
+    'color-mix(in srgb, var(--lq-solid-fill) 45%, var(--lq-accent))',
+    'color-mix(in srgb, var(--lq-solid-fill) 90%, var(--lq-foreground))',
+    'color-mix(in srgb, var(--lq-solid-fill) 70%, var(--lq-accent))',
+    'color-mix(in srgb, var(--lq-solid-fill) 94%, var(--lq-foreground))',
+  ],
+}
+
+/** The page under every route — a still mesh gradient — and its grain. */
+export const Ambience = () => {
+  const { theme } = useSiteConfig()
+
+  return (
+    <>
+      {/* Keyed by theme: the mesh reads its colours once, when it mounts, so a
+          flip has to hand it a fresh one to read the other theme's tokens. */}
+      <MeshGradient
+        aria-hidden="true"
+        className="site-mesh"
+        colors={MESH_COLORS[theme]}
+        key={theme}
+        speed={0}
+        style={{ position: 'fixed' }}
+      />
+      <div aria-hidden="true" className="noise" />
+    </>
+  )
+}
 
 /** Scrolls to the top whenever the route changes, like a page load would. */
 export const useScrollReset = (route: string) => {

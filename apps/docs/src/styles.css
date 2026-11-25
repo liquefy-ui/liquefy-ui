@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 /* ---------------------------------------------------------------------------
-   Tokens. Light is white + glass, dark is black + glass; both are neutral, so
-   the only colour on the page is whatever tint the visitor picks.
+   Tokens. Light is pale grey + glass, dark is near-black + glass; both are
+   neutral, and the page under them is a still mesh of the theme's colours.
    Everything below reads these, and nothing hard-codes a theme colour.
 --------------------------------------------------------------------------- */
 
 :root {
-  --bg: #ffffff;
+  --bg: #e9ebf0;
   --bg-soft: #f7f7f8;
   --fg: #0b0b0f;
   --fg-muted: rgba(11, 11, 15, 0.62);
@@ -22,7 +22,6 @@
   --shadow-sm: 0 1px 2px rgba(12, 12, 22, 0.05), 0 8px 24px rgba(12, 12, 22, 0.05);
   --shadow-lg: 0 2px 6px rgba(12, 12, 22, 0.05), 0 24px 64px rgba(12, 12, 22, 0.09);
   --wash: rgba(11, 11, 20, 0.05);
-  --grid-line: rgba(11, 11, 20, 0.055);
   --radius: 18px;
   --header-height: 64px;
   --page-max: 1240px;
@@ -37,7 +36,7 @@
 }
 
 :root[data-theme='dark'] {
-  --bg: #000000;
+  --bg: #0e1119;
   --bg-soft: #08080a;
   --fg: #f6f6f8;
   --fg-muted: rgba(246, 246, 248, 0.62);
@@ -52,63 +51,24 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.5), 0 28px 70px rgba(0, 0, 0, 0.6);
   --wash: rgba(255, 255, 255, 0.07);
-  --grid-line: rgba(255, 255, 255, 0.045);
 
   color-scheme: dark;
 }
 
 /* ---------------------------------------------------------------------------
-   The library is tuned for a mid-tone, faintly cool page. These overrides make
-   the material monochrome so the accent is the only hue on screen, and give
-   the controls enough contrast to read on pure white or pure black.
+   The site wears the library's own theme tokens, untouched, so what is on
+   screen is what a consumer gets out of the box. The few overrides left below
+   are for parts the library still tunes for a cool, tinted page.
 
    Everything here is unlayered, so it wins over @layer liquefy-ui without
    !important. The `system` scope is matched as well, because demo subtrees
    nest a provider without naming a theme.
 --------------------------------------------------------------------------- */
 
-:root[data-theme='light'] .lq-provider:is([data-liquid-theme='light'], [data-liquid-theme='system']) {
-  --lq-clear-line: rgba(11, 11, 20, 0.13);
-  --lq-control-line: rgba(11, 11, 20, 0.15);
-  --lq-dock-active: #0b0b0f;
-  --lq-field-line: rgba(11, 11, 20, 0.14);
-  --lq-foreground: #0b0b0f;
-  --lq-glass-bright: rgba(255, 255, 255, 0.72);
-  --lq-glass-shade: rgba(11, 11, 20, 0.05);
-  --lq-glass-soft: rgba(255, 255, 255, 0.42);
-  --lq-muted: rgba(11, 11, 15, 0.62);
-  --lq-placeholder: rgba(11, 11, 15, 0.42);
-  --lq-quiet-line: rgba(11, 11, 20, 0.1);
-  --lq-regular-line: rgba(11, 11, 20, 0.15);
-  --lq-shadow-color: rgba(12, 12, 22, 0.09);
-  --lq-solid-fill: #ffffff;
-  --lq-switch-line: rgba(11, 11, 20, 0.15);
-  --lq-text: #0b0b0f;
-}
-
-:root[data-theme='dark'] .lq-provider:is([data-liquid-theme='dark'], [data-liquid-theme='system']) {
-  --lq-clear-line: rgba(255, 255, 255, 0.12);
-  --lq-control-line: rgba(255, 255, 255, 0.14);
-  --lq-dock-active: #ffffff;
-  --lq-field-line: rgba(255, 255, 255, 0.12);
-  --lq-foreground: #f6f6f8;
-  --lq-glass-bright: rgba(255, 255, 255, 0.2);
-  --lq-glass-shade: rgba(0, 0, 0, 0.3);
-  --lq-glass-soft: rgba(255, 255, 255, 0.05);
-  --lq-muted: rgba(246, 246, 248, 0.62);
-  --lq-placeholder: rgba(246, 246, 248, 0.4);
-  --lq-quiet-line: rgba(255, 255, 255, 0.1);
-  --lq-regular-line: rgba(255, 255, 255, 0.14);
-  --lq-shadow-color: rgba(0, 0, 0, 0.5);
-  --lq-solid-fill: #101013;
-  --lq-switch-line: rgba(255, 255, 255, 0.14);
-  --lq-text: #f6f6f8;
-}
-
-/* Cards, lists, tables and accordions carry their own light-mode recipe with a
-   cool hairline, which reads as lavender against white. Same recipe, neutral. */
+/* Tables and accordions carry their own light-mode recipe with a cool
+   hairline, which reads as lavender on a grey page. Same recipe, neutral. */
 :root[data-theme='light'] .lq-provider:is([data-liquid-theme='light'], [data-liquid-theme='system']) :is(
-  .lq-card, .lq-accordion, .lq-table-container, .lq-list
+  .lq-accordion, .lq-table-container
 ) {
   --lq-glass-shade: rgba(11, 11, 20, 0.08);
   --lq-line: color-mix(in srgb, var(--lq-accent) 18%, rgba(11, 11, 20, 0.17));
@@ -167,12 +127,14 @@ a {
   text-decoration: none;
 }
 
+/* Both lean on the text colour rather than the accent alone: the default
+   accent is white, which would vanish on the light page. */
 ::selection {
-  background: color-mix(in srgb, var(--lq-accent, #8b8f98) 30%, transparent);
+  background: color-mix(in srgb, color-mix(in srgb, var(--lq-accent, #8b8f98) 40%, var(--fg)) 22%, transparent);
 }
 
 :focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--lq-accent, #8b8f98) 70%, var(--fg));
+  outline: 2px solid color-mix(in srgb, var(--lq-accent, #8b8f98) 30%, var(--fg));
   outline-offset: 2px;
 }
 
@@ -196,52 +158,13 @@ a {
   position: relative;
 }
 
-.ambient {
-  border-radius: 50%;
-  filter: blur(90px);
+/* The page under every route: a mesh of the theme's own colours, held still.
+   Still matters twice over — a backdrop filter is redrawn whenever what lies
+   behind it moves, and every pane on the site is one — and there is nothing
+   here for prefers-reduced-motion to switch off. */
+.site-mesh {
+  inset: 0;
   pointer-events: none;
-  position: absolute;
-  z-index: 0;
-}
-
-.ambient--one {
-  animation: ambient-float 16s ease-in-out infinite alternate;
-  background: color-mix(in srgb, var(--lq-accent, #8b8f98) 32%, transparent);
-  height: 520px;
-  opacity: 0.5;
-  right: -180px;
-  top: -80px;
-  width: 520px;
-}
-
-.ambient--two {
-  animation: ambient-float 22s ease-in-out -6s infinite alternate-reverse;
-  background: var(--wash);
-  height: 420px;
-  left: -200px;
-  opacity: 0.8;
-  top: 620px;
-  width: 420px;
-}
-
-/* A backdrop filter is redrawn whenever what lies behind it moves, and the Lab
-   previews are stacks of heavy glass. With the glow drifting under them, the top
-   of #/lab fell to 30fps on a Retina Mac; held still, it runs at 60. Still, not
-   gone: it rests on a frame the drift passes through anyway. */
-.site-shell[data-section='lab'] .ambient {
-  animation: none;
-}
-
-.grid-wash {
-  background-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 72px 72px;
-  inset: 0 0 auto;
-  height: 900px;
-  mask-image: radial-gradient(120% 70% at 50% 0%, black 10%, transparent 70%);
-  pointer-events: none;
-  position: absolute;
   z-index: 0;
 }
 
@@ -253,11 +176,6 @@ a {
   pointer-events: none;
   position: fixed;
   z-index: 30;
-}
-
-@keyframes ambient-float {
-  from { transform: translate3d(0, 0, 0) scale(1); }
-  to { transform: translate3d(-40px, 60px, 0) scale(1.12); }
 }
 
 /* --- Header -------------------------------------------------------------- */
@@ -517,8 +435,7 @@ a {
 @media (prefers-reduced-motion: reduce) {
   .jelly-toggle[data-motion='on'] .jelly-mark,
   .jelly-toggle[data-motion='on'] .jelly-mark__bell,
-  .jelly-toggle[data-motion='on'] .jelly-mark__tentacles--wavy,
-  .ambient {
+  .jelly-toggle[data-motion='on'] .jelly-mark__tentacles--wavy {
     animation: none;
   }
 }

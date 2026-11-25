@@ -1,12 +1,12 @@
 @layer liquefy-ui {
   :root {
-    --lq-accent: #8f8f8f;
+    --lq-accent: #ffffff;
     --lq-space: 4px;
     --lq-radius-default: 18px;
     --lq-duration: 420ms;
     --lq-easing: cubic-bezier(0.22, 1, 0.36, 1);
     --lq-text: #f8faff;
-    --lq-muted: rgba(242, 246, 255, 0.66);
+    --lq-muted: rgba(242, 246, 255, 0.74);
   }
 
   .lq-provider {
@@ -30,7 +30,7 @@
     --lq-glass-bright: rgba(255, 255, 255, 0.32);
     --lq-glass-shade: rgba(73, 111, 209, 0.07);
     --lq-glass-soft: rgba(255, 255, 255, 0.06);
-    --lq-muted: rgba(242, 246, 255, 0.66);
+    --lq-muted: rgba(242, 246, 255, 0.74);
     --lq-placeholder: rgba(235, 241, 255, 0.42);
     --lq-quiet-fill: transparent;
     --lq-quiet-line: rgba(255, 255, 255, 0.13);
@@ -56,35 +56,35 @@
 
   .lq-provider[data-liquid-theme='light'] {
     --lq-veil-floor: 0;
-    --lq-clear-fill: rgba(255, 255, 255, 0.55);
-    --lq-clear-line: rgba(66, 85, 128, 0.22);
+    --lq-clear-fill: rgba(255, 255, 255, 0.46);
+    --lq-clear-line: rgba(255, 255, 255, 0.72);
     --lq-control-fill: transparent;
-    --lq-control-line: rgba(66, 85, 128, 0.24);
+    --lq-control-line: rgba(0, 0, 0, 0.1);
     --lq-control-hover-line: color-mix(in srgb, var(--lq-button-tint, var(--lq-accent)) 28%, rgba(255, 255, 255, 0.18));
     --lq-dock-active: #17203a;
     --lq-dock-hover-fill: rgba(255, 255, 255, 0.015);
     --lq-dock-indicator-fill: transparent;
     --lq-field-fill: transparent;
     --lq-field-focus-fill: color-mix(in srgb, var(--lq-accent) 1.5%, transparent);
-    --lq-field-line: rgba(66, 85, 128, 0.24);
-    --lq-foreground: #12182a;
-    --lq-glass-bright: rgba(255, 255, 255, 0.56);
-    --lq-glass-shade: rgba(62, 91, 164, 0.07);
-    --lq-glass-soft: rgba(255, 255, 255, 0.16);
-    --lq-muted: rgba(26, 35, 58, 0.62);
-    --lq-placeholder: rgba(28, 40, 68, 0.42);
+    --lq-field-line: rgba(0, 0, 0, 0.1);
+    --lq-foreground: #1d1d1f;
+    --lq-glass-bright: rgba(255, 255, 255, 0.95);
+    --lq-glass-shade: rgba(0, 0, 0, 0.05);
+    --lq-glass-soft: rgba(255, 255, 255, 0.7);
+    --lq-muted: rgba(29, 29, 31, 0.7);
+    --lq-placeholder: rgba(29, 29, 31, 0.46);
     --lq-quiet-fill: transparent;
-    --lq-quiet-line: rgba(66, 85, 128, 0.16);
+    --lq-quiet-line: rgba(0, 0, 0, 0.08);
     --lq-regular-fill: rgba(255, 255, 255, 0.015);
-    --lq-regular-line: rgba(66, 85, 128, 0.26);
+    --lq-regular-line: rgba(0, 0, 0, 0.1);
     --lq-rim-bright: rgba(255, 255, 255, 0.94);
     --lq-rim-dim: rgba(255, 255, 255, 0.62);
     --lq-rim-mid: rgba(255, 255, 255, 0.4);
     --lq-rim-width: 1.6px;
-    --lq-shadow-color: rgba(42, 55, 91, 0.1);
-    --lq-solid-fill: rgb(239, 244, 255);
+    --lq-shadow-color: rgba(0, 0, 0, 0.1);
+    --lq-solid-fill: #e9ebf0;
     --lq-switch-fill: transparent;
-    --lq-switch-line: rgba(66, 85, 128, 0.24);
+    --lq-switch-line: rgba(0, 0, 0, 0.1);
     color: var(--lq-foreground);
     color-scheme: light;
   }
@@ -1056,35 +1056,35 @@
   @media (prefers-color-scheme: light) {
     .lq-provider[data-liquid-theme='system'] {
       --lq-veil-floor: 0;
-      --lq-clear-fill: rgba(255, 255, 255, 0.55);
-      --lq-clear-line: rgba(66, 85, 128, 0.22);
+      --lq-clear-fill: rgba(255, 255, 255, 0.46);
+      --lq-clear-line: rgba(255, 255, 255, 0.72);
       --lq-control-fill: transparent;
-      --lq-control-line: rgba(66, 85, 128, 0.24);
+      --lq-control-line: rgba(0, 0, 0, 0.1);
       --lq-control-hover-line: color-mix(in srgb, var(--lq-button-tint, var(--lq-accent)) 28%, rgba(255, 255, 255, 0.18));
       --lq-dock-active: #17203a;
       --lq-dock-hover-fill: rgba(255, 255, 255, 0.015);
       --lq-dock-indicator-fill: transparent;
       --lq-field-fill: transparent;
       --lq-field-focus-fill: color-mix(in srgb, var(--lq-accent) 1.5%, transparent);
-      --lq-field-line: rgba(66, 85, 128, 0.24);
-      --lq-foreground: #12182a;
-      --lq-glass-bright: rgba(255, 255, 255, 0.56);
-      --lq-glass-shade: rgba(62, 91, 164, 0.07);
-      --lq-glass-soft: rgba(255, 255, 255, 0.16);
-      --lq-muted: rgba(26, 35, 58, 0.62);
-      --lq-placeholder: rgba(28, 40, 68, 0.42);
+      --lq-field-line: rgba(0, 0, 0, 0.1);
+      --lq-foreground: #1d1d1f;
+      --lq-glass-bright: rgba(255, 255, 255, 0.95);
+      --lq-glass-shade: rgba(0, 0, 0, 0.05);
+      --lq-glass-soft: rgba(255, 255, 255, 0.7);
+      --lq-muted: rgba(29, 29, 31, 0.7);
+      --lq-placeholder: rgba(29, 29, 31, 0.46);
       --lq-quiet-fill: transparent;
-      --lq-quiet-line: rgba(66, 85, 128, 0.16);
+      --lq-quiet-line: rgba(0, 0, 0, 0.08);
       --lq-regular-fill: rgba(255, 255, 255, 0.015);
-      --lq-regular-line: rgba(66, 85, 128, 0.26);
+      --lq-regular-line: rgba(0, 0, 0, 0.1);
       --lq-rim-bright: rgba(255, 255, 255, 0.94);
       --lq-rim-dim: rgba(255, 255, 255, 0.62);
       --lq-rim-mid: rgba(255, 255, 255, 0.4);
       --lq-rim-width: 1.6px;
-      --lq-shadow-color: rgba(42, 55, 91, 0.1);
-      --lq-solid-fill: rgb(239, 244, 255);
+      --lq-shadow-color: rgba(0, 0, 0, 0.1);
+      --lq-solid-fill: #e9ebf0;
       --lq-switch-fill: transparent;
-      --lq-switch-line: rgba(66, 85, 128, 0.24);
+      --lq-switch-line: rgba(0, 0, 0, 0.1);
       color: var(--lq-foreground);
       color-scheme: light;
     }
@@ -3592,16 +3592,14 @@
 @layer liquefy-ui {
   /* ---------- Light-mode glass for data surfaces ----------
      On a light background a near-white rim just vanishes, so simply stripping
-     the highlights left Table/Accordion/Card/List looking flat and washed-out
+     the highlights left Table and Accordion looking flat and washed-out
      ("whitish"), not glassy. Give them REAL frosted glass instead: a soft
      backdrop blur + heavy saturation pulls the tinted page through them so the
      body reads as cool glass rather than milk, and a crisp edge defines the
      pane. The lens stays off (that was the "mirror"), and dark mode is
      untouched. */
-  .lq-provider[data-liquid-theme='light'] .lq-card,
   .lq-provider[data-liquid-theme='light'] .lq-accordion,
-  .lq-provider[data-liquid-theme='light'] .lq-table-container,
-  .lq-provider[data-liquid-theme='light'] .lq-list {
+  .lq-provider[data-liquid-theme='light'] .lq-table-container {
     --lq-blur: calc(7px + var(--lq-frost, 0px));
     --lq-saturate: 1.7;
     --lq-brighten: 1;
@@ -3612,6 +3610,24 @@
     /* On a pale background the pane is defined by its edge, not its body — a
        crisp cool hairline + specular rim is what reads as glass here. */
     --lq-line: color-mix(in srgb, var(--lq-accent) 24%, rgba(66, 85, 128, 0.42));
+  }
+
+  /* Cards and lists see the backdrop the way they do in the dark theme: no
+     blur of their own beyond the provider's frost, the clear variant's
+     saturation, and the clear hairline. A fixed 7px blur and 1.7 saturation
+     here used to hide the page behind them even at veil 0 and frost 0, which
+     is the one setting that promises nothing is hidden. The rim and the
+     shade carry the edge instead. */
+  .lq-provider[data-liquid-theme='light'] .lq-card,
+  .lq-provider[data-liquid-theme='light'] .lq-list {
+    --lq-blur: var(--lq-frost, 0px);
+    --lq-saturate: calc(1 + 0.08 * var(--lq-veil-amount));
+    --lq-brighten: 1;
+    --lq-glow: 0.1;
+    --lq-glass-bright: var(--lq-rim-bright);
+    --lq-glass-soft: rgba(255, 255, 255, 0.1);
+    --lq-glass-shade: var(--lq-shadow-color);
+    --lq-line: var(--lq-clear-line);
   }
 
   .lq-provider[data-liquid-theme='light'] .lq-card > .lq-surface__edge,
@@ -3665,10 +3681,8 @@
       --lq-fill: color-mix(in srgb, var(--lq-solid-fill) 54%, transparent);
     }
 
-    .lq-provider[data-liquid-theme='system'] .lq-card,
     .lq-provider[data-liquid-theme='system'] .lq-accordion,
-    .lq-provider[data-liquid-theme='system'] .lq-table-container,
-    .lq-provider[data-liquid-theme='system'] .lq-list {
+    .lq-provider[data-liquid-theme='system'] .lq-table-container {
       --lq-blur: calc(7px + var(--lq-frost, 0px));
       --lq-saturate: 1.7;
       --lq-brighten: 1;
@@ -3677,6 +3691,18 @@
       --lq-glass-soft: rgba(255, 255, 255, 0.1);
       --lq-glass-shade: rgba(62, 91, 164, 0.14);
       --lq-line: color-mix(in srgb, var(--lq-accent) 24%, rgba(66, 85, 128, 0.42));
+    }
+
+    .lq-provider[data-liquid-theme='system'] .lq-card,
+    .lq-provider[data-liquid-theme='system'] .lq-list {
+      --lq-blur: var(--lq-frost, 0px);
+      --lq-saturate: calc(1 + 0.08 * var(--lq-veil-amount));
+      --lq-brighten: 1;
+      --lq-glow: 0.1;
+      --lq-glass-bright: var(--lq-rim-bright);
+      --lq-glass-soft: rgba(255, 255, 255, 0.1);
+      --lq-glass-shade: var(--lq-shadow-color);
+      --lq-line: var(--lq-clear-line);
     }
 
     .lq-provider[data-liquid-theme='system'] .lq-card > .lq-surface__edge,

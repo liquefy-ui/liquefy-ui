@@ -61,16 +61,16 @@ export type SiteConfig = MaterialConfig & {
 export const DEFAULT_MATERIAL: MaterialConfig = {
   frost: 0,
   glow: true,
-  intensity: 1.2,
+  intensity: 1,
   lens: true,
-  refraction: 1,
-  ripple: false,
-  shimmer: false,
-  sparkle: false,
+  refraction: 0,
+  ripple: true,
+  shimmer: true,
+  sparkle: true,
   transparency: true,
   veil: 0,
   webgl: true,
-  wobbliness: 0.1,
+  wobbliness: 1,
 }
 
 /**
@@ -185,7 +185,7 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.dataset.theme = theme
     document.querySelector('meta[name="theme-color"]')?.setAttribute(
       'content',
-      theme === 'light' ? '#ffffff' : '#000000',
+      theme === 'light' ? '#e9ebf0' : '#0e1119',
     )
   }, [theme])
 

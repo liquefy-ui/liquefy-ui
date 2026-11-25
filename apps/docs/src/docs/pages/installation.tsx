@@ -62,7 +62,7 @@ export const installationDoc: DocEntry = {
 import '@liquefy-ui/react/styles.css'
 
 export const App = () => (
-  <LiquefyProvider theme="system" tint="#8b8f98">
+  <LiquefyProvider theme="system">
     <YourApp />
   </LiquefyProvider>
 )`}

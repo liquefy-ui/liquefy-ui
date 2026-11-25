@@ -21,7 +21,7 @@ import { GlassCard, LiquidButton, LiquefyProvider } from '@liquefy-ui/react'
 
 export default function Page() {
   return (
-    <LiquefyProvider theme="system" tint="#8b8f98">
+    <LiquefyProvider theme="system">
       <GlassCard title="Server rendered">
         <LiquidButton>Create magic</LiquidButton>
       </GlassCard>

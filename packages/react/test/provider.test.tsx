@@ -36,20 +36,20 @@ describe('provider defaults', () => {
       breakpoints: defaultBreakpoints,
       frost: 0,
       glow: true,
-      intensity: 1.2,
+      intensity: 1,
       lens: true,
       motion: true,
-      refraction: 1,
-      ripple: false,
-      shimmer: false,
-      sparkle: false,
+      refraction: 0,
+      ripple: true,
+      shimmer: true,
+      sparkle: true,
       spacing: 4,
       theme: 'system',
-      tint: '#8f8f8f',
+      tint: '#ffffff',
       transparency: true,
       veil: 0,
       webgl: true,
-      wobbliness: 0.1,
+      wobbliness: 1,
     })
   })
 
@@ -122,10 +122,10 @@ describe('nested providers', () => {
     )
     const config = readConfig()
     expect(config.webgl).toBe(false)
-    expect(config.tint).toBe('#8f8f8f')
-    expect(config.intensity).toBe(1.2)
+    expect(config.tint).toBe('#ffffff')
+    expect(config.intensity).toBe(1)
     expect(config.theme).toBe('system')
-    expect(config.wobbliness).toBe(0.1)
+    expect(config.wobbliness).toBe(1)
   })
 
   it('keeps everything a spread hands it', () => {

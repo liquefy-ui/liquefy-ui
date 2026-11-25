@@ -3,6 +3,30 @@ import { ArrowRightIcon } from '@liquefy-ui/icons'
 import { Callout, CodeBlock, DemoBlock, GuideTable, Section } from '../docs-chrome'
 import type { DocEntry, PropRow } from '../types'
 
+/**
+ * What each theme declares out of the box. Kept in step with styles.css by
+ * apps/docs/test/theme-defaults.test.ts, which reads the stylesheet.
+ */
+export const themeDefaults: { dark: string; light: string; name: string }[] = [
+  { dark: '#f8faff', light: '#1d1d1f', name: '--lq-foreground' },
+  { dark: 'rgba(242, 246, 255, 0.74)', light: 'rgba(29, 29, 31, 0.7)', name: '--lq-muted' },
+  { dark: 'rgba(235, 241, 255, 0.42)', light: 'rgba(29, 29, 31, 0.46)', name: '--lq-placeholder' },
+  { dark: 'rgb(30, 38, 60)', light: '#e9ebf0', name: '--lq-solid-fill' },
+  { dark: 'rgba(255, 255, 255, 0.12)', light: 'rgba(255, 255, 255, 0.46)', name: '--lq-clear-fill' },
+  { dark: 'rgba(255, 255, 255, 0.012)', light: 'rgba(255, 255, 255, 0.015)', name: '--lq-regular-fill' },
+  { dark: 'rgba(255, 255, 255, 0.15)', light: 'rgba(255, 255, 255, 0.72)', name: '--lq-clear-line' },
+  { dark: 'rgba(255, 255, 255, 0.16)', light: 'rgba(0, 0, 0, 0.1)', name: '--lq-control-line' },
+  { dark: 'rgba(255, 255, 255, 0.13)', light: 'rgba(0, 0, 0, 0.1)', name: '--lq-field-line' },
+  { dark: 'rgba(255, 255, 255, 0.13)', light: 'rgba(0, 0, 0, 0.08)', name: '--lq-quiet-line' },
+  { dark: 'rgba(255, 255, 255, 0.18)', light: 'rgba(0, 0, 0, 0.1)', name: '--lq-regular-line' },
+  { dark: 'rgba(255, 255, 255, 0.14)', light: 'rgba(0, 0, 0, 0.1)', name: '--lq-switch-line' },
+  { dark: 'rgba(255, 255, 255, 0.32)', light: 'rgba(255, 255, 255, 0.95)', name: '--lq-glass-bright' },
+  { dark: 'rgba(255, 255, 255, 0.06)', light: 'rgba(255, 255, 255, 0.7)', name: '--lq-glass-soft' },
+  { dark: 'rgba(73, 111, 209, 0.07)', light: 'rgba(0, 0, 0, 0.05)', name: '--lq-glass-shade' },
+  { dark: 'rgba(4, 9, 24, 0.14)', light: 'rgba(0, 0, 0, 0.1)', name: '--lq-shadow-color' },
+  { dark: '0.34', light: '0', name: '--lq-veil-floor' },
+]
+
 const tokenRows: PropRow[] = [
   { description: 'The accent, and the per-surface tint derived from it.', name: '--lq-accent / --lq-tint', type: 'colour' },
   { description: 'Body text and the muted secondary tone.', name: '--lq-foreground / --lq-muted', type: 'colour' },
@@ -71,6 +95,32 @@ export const themingDoc: DocEntry = {
                     <td><code>{row.name}</code></td>
                     <td><code className="docs-props__type">{row.type}</code></td>
                     <td>{row.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p>
+          The values each theme starts from. The accent is not in it: that is the provider&apos;s{' '}
+          <code>tint</code>, <code>#ffffff</code> unless you pass one.
+        </p>
+        <div className="docs-props">
+          <div className="docs-props__scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Token</th>
+                  <th>Light</th>
+                  <th>Dark</th>
+                </tr>
+              </thead>
+              <tbody>
+                {themeDefaults.map((row) => (
+                  <tr key={row.name}>
+                    <td><code>{row.name}</code></td>
+                    <td><code className="docs-props__type">{row.light}</code></td>
+                    <td><code className="docs-props__type">{row.dark}</code></td>
                   </tr>
                 ))}
               </tbody>

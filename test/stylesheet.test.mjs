@@ -157,3 +157,35 @@ describe('text entries on a touchscreen', () => {
     expect(coarseBlockOf('.lq-text-field__control')).not.toContain(':has(')
   })
 })
+
+/**
+ * In the light theme a card and a list used to carry their own 7px blur and a
+ * 1.7 saturation boost, which no provider setting could take away: at veil 0 and
+ * frost 0 the page still went soft behind them, in light only. They now see the
+ * backdrop the way they do in dark — the clear variant's optics — and the system
+ * scope has to say the same, or `theme="system"` on a light machine keeps the fog.
+ */
+describe('light cards and lists', () => {
+  const scopes = [
+    ['light', ".lq-provider[data-liquid-theme='light'] .lq-card,\n  .lq-provider[data-liquid-theme='light'] .lq-list"],
+    ['system', ".lq-provider[data-liquid-theme='system'] .lq-card,\n    .lq-provider[data-liquid-theme='system'] .lq-list"],
+  ]
+
+  for (const [scope, selector] of scopes) {
+    it(`adds no blur or saturation of its own in the ${scope} scope`, () => {
+      const start = css.indexOf(`${selector} {`)
+      expect(start, `no ${scope} card/list block`).toBeGreaterThan(-1)
+      const block = css.slice(start, css.indexOf('}', start))
+      expect(block).toMatch(/--lq-blur:\s*var\(--lq-frost, 0px\);/)
+      expect(block).toMatch(/--lq-saturate:\s*calc\(1 \+ 0\.08 \* var\(--lq-veil-amount\)\);/)
+      expect(block).toMatch(/--lq-line:\s*var\(--lq-clear-line\);/)
+    })
+  }
+
+  it('leaves no other light rule giving a card or a list a fixed blur', () => {
+    const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    const offenders = rules.filter(([, selector, body]) =>
+      /data-liquid-theme='(light|system)'\] \.lq-(card|list)\b(?![_-])/.test(selector) && /--lq-blur:\s*calc\(\d/.test(body))
+    expect(offenders.map(([, selector]) => selector.trim())).toEqual([])
+  })
+})
