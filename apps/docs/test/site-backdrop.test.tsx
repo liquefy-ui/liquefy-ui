@@ -50,9 +50,14 @@ describe('the page backdrop', () => {
     expect(backdropOf(page)).toEqual({ leftovers: 0, meshes: 1 })
   })
 
-  it('holds the mesh still', () => {
-    const mesh = chrome.slice(chrome.indexOf('<MeshGradient'), chrome.indexOf('/>', chrome.indexOf('<MeshGradient')))
-    expect(mesh).toMatch(/\bspeed=\{0\}/)
+  // Still everywhere but the docs and component pages, which drift — and stop
+  // when the OS asks for reduced motion.
+  it('holds the mesh still, except where it is asked to drift', () => {
+    const meshes = [...chrome.matchAll(/<MeshGradient[\s\S]*?\/>/g)].map(([tag]) => tag)
+    expect(meshes).toHaveLength(2)
+    expect(meshes.filter((tag) => /\bspeed=\{0\}/.test(tag))).toHaveLength(1)
+    expect(meshes.some((tag) => /speed=\{reducedMotion \? 0 : /.test(tag))).toBe(true)
+    expect(read('../src/docs/docs-chrome.tsx')).toMatch(/<Ambience drifting=\{section === 'docs' \|\| section === 'components'\} \/>/)
   })
 
   it('keeps no grid or drifting glow in the stylesheet', () => {

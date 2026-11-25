@@ -13,7 +13,7 @@ const propRows: PropRow[] = [
   },
   {
     defaultValue: "'#ffffff'",
-    description: 'The accent every surface tints against. Written out as --lq-accent, so a change costs no re-render of the components below.',
+    description: 'The accent every surface tints against. Written out as --lq-accent, so a change costs no re-render of the components below. Where the tint would not read as text or a ring on a theme\'s page — white in light, near-black in dark — the provider also writes --lq-accent-ink and --lq-accent-line, the nearest colours that do; see Theming.',
     name: 'tint',
     type: 'string',
   },
@@ -316,6 +316,8 @@ export const Chart = () => {
             [<code>data-liquid-motion</code>, <><code>on</code> / <code>off</code></>, 'Lets CSS opt out of transitions in the same breath as the springs.'],
             [<code>data-liquid-transparency</code>, <><code>on</code> / <code>off</code></>, 'Switches the fill set between translucent and opaque.'],
             [<code>--lq-accent</code>, 'the tint', 'Read by every surface, control and focus ring.'],
+            [<><code>--lq-accent-ink-light</code> / <code>-dark</code></>, <>a colour, or <code>initial</code></>, <>A readable stand-in for the tint as text, per theme; <code>initial</code> when the tint reads as it is. The theme scope picks one as <code>--lq-accent-ink</code>.</>],
+            [<><code>--lq-accent-line-light</code> / <code>-dark</code></>, <>a colour, or <code>initial</code></>, <>The same for rings, indicators and icons, picked as <code>--lq-accent-line</code>.</>],
             [<code>--lq-frost</code>, 'the provider frost in pixels', 'Added to the backdrop blur each surface asks for itself.'],
             [<code>--lq-intensity</code>, 'the intensity', 'Scales blur, saturation and bezel brightness.'],
             [<code>--lq-space</code>, 'the spacing unit', <>The unit behind <code>p</code>, <code>m</code>, <code>gap</code> and friends.</>],

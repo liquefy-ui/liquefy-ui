@@ -80,7 +80,7 @@ A few of them are worth knowing about before making changes:
 Thirteen doc pages live in `apps/docs/src/docs/pages/*.tsx`, registered in
 `apps/docs/src/docs/docs-nav.tsx` — one `DocEntry` per page, grouped into sidebar
 categories. The 36 component pages come from `apps/docs/src/docs/catalog-*.tsx`,
-and the shadcn registry publishes 40 items built from the same source. Old
+and the shadcn registry publishes 41 items built from the same source. Old
 `#/guides/*` links redirect to their `#/docs/*` equivalents.
 
 The Lab (`#/lab`) is the screen for `@liquefy-ui/lab` (and the motion parts of

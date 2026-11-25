@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { MeshGradient } from '@liquefy-ui/lab'
 import { LiquidDrawer } from '@liquefy-ui/react'
 import { CheckIcon, CopyIcon, GithubIcon, MoonIcon, MoreHorizontalIcon, SunIcon } from '@liquefy-ui/icons'
@@ -346,25 +346,65 @@ const meshColors = (theme: ResolvedTheme): string[] => {
   ]
 }
 
-/** The page under every route: a still mesh gradient. */
-export const Ambience = () => {
-  const { theme } = useSiteConfig()
+const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
 
-  return (
-    <>
-      {/* Keyed by theme: the mesh reads its colours once, when it mounts, so a
-          flip has to hand it a fresh one to read the other theme's tokens. */}
+const subscribeReducedMotion = (onChange: () => void) => {
+  const media = window.matchMedia(REDUCED_MOTION)
+  media.addEventListener('change', onChange)
+  return () => media.removeEventListener('change', onChange)
+}
+
+/** Whether the OS asks for less motion; `false` on the server. */
+const useReducedMotion = () => useSyncExternalStore(
+  subscribeReducedMotion,
+  () => window.matchMedia(REDUCED_MOTION).matches,
+  () => false,
+)
+
+/**
+ * The moving mesh behind the docs and component pages: the provider's tint
+ * spread into a palette (no `colors`), on a 3×3 grid, wandering as far as a
+ * point may and drifting a little faster than the default.
+ */
+const DRIFTING_MESH = { columns: 3, rows: 3, speed: 1.1, wander: 0.45 } as const
+
+/**
+ * The page under every route. Most routes get a still mesh of the theme's
+ * own fill; `drifting` gives the docs and component pages the tint's mesh,
+ * moving — and still, when the OS asks for reduced motion.
+ */
+export const Ambience = ({ drifting = false }: { drifting?: boolean }) => {
+  const { theme } = useSiteConfig()
+  const reducedMotion = useReducedMotion()
+
+  // Keyed by theme: the mesh reads its colours once, when it mounts, so a
+  // flip has to hand it a fresh one to read the other theme's tokens.
+  if (drifting) {
+    return (
       <MeshGradient
         aria-hidden="true"
         className="site-mesh"
-        colors={meshColors(theme)}
-        columns={4}
+        columns={DRIFTING_MESH.columns}
         key={theme}
-        rows={4}
-        speed={0}
+        rows={DRIFTING_MESH.rows}
+        speed={reducedMotion ? 0 : DRIFTING_MESH.speed}
         style={{ position: 'fixed' }}
+        wander={DRIFTING_MESH.wander}
       />
-    </>
+    )
+  }
+
+  return (
+    <MeshGradient
+      aria-hidden="true"
+      className="site-mesh"
+      colors={meshColors(theme)}
+      columns={4}
+      key={theme}
+      rows={4}
+      speed={0}
+      style={{ position: 'fixed' }}
+    />
   )
 }
 

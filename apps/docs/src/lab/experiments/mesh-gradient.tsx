@@ -51,7 +51,7 @@ const Weather = () => (
 )
 
 const Playground = () => {
-  const [palette, setPalette] = useState<PaletteKey>('dawn')
+  const [palette, setPalette] = useState<PaletteKey>('tint')
   const [grid, setGrid] = useState<number>(MESH_DEFAULTS.columns)
   // As percentages, so the sliders move in whole steps.
   const [speed, setSpeed] = useState(MESH_DEFAULTS.speed * 100)

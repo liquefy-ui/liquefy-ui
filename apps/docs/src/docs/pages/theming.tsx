@@ -31,6 +31,7 @@ const tokenRows: PropRow[] = [
   { description: 'The accent, and the per-surface tint derived from it.', name: '--lq-accent / --lq-tint', type: 'colour' },
   { description: 'Body text and the muted secondary tone.', name: '--lq-foreground / --lq-muted', type: 'colour' },
   { description: 'Placeholder text in fields.', name: '--lq-placeholder', type: 'colour' },
+  { description: 'The accent made readable for text, and for rings and indicators. Set by the provider only when the tint needs it.', name: '--lq-accent-ink / --lq-accent-line', type: 'colour' },
   { description: 'Hairline borders: surfaces, controls, fields.', name: '--lq-line / --lq-control-line / --lq-field-line', type: 'colour' },
   { description: 'Fills, all transparent by default — that is the point of the material.', name: '--lq-clear-fill / --lq-regular-fill / --lq-solid-fill', type: 'colour' },
   { description: 'Glass highlights: the bright top edge, the bottom shade, the soft inner wash.', name: '--lq-glass-bright / --lq-glass-shade / --lq-glass-soft', type: 'colour' },
@@ -266,6 +267,38 @@ export const themingDoc: DocEntry = {
           out without changing components.{' '}
           <a className="text-link" href="#/docs/accessibility">Accessibility<ArrowRightIcon size={14} /></a>
         </p>
+      </Section>
+
+      <Section id="accent-ink" title="Drawing with the accent">
+        <p>
+          The accent is also drawn <em>with</em>: the card eyebrow, list icons, the checked box, the
+          switch, the radio dot, the slider fill, the tab underline and every focus ring. A white or
+          pale tint would vanish on the light page, so the provider works out, per theme, whether the
+          tint reads against that theme&apos;s page fill — 4.5:1 for text, 3:1 for everything else.
+          Where it does not, it writes the nearest colour that does: the tint moved toward the
+          theme&apos;s text colour, only as far as it has to go.
+        </p>
+        <ul className="docs-prose__list">
+          <li>
+            <strong><code>--lq-accent-ink</code></strong> — text drawn in the accent.
+          </li>
+          <li>
+            <strong><code>--lq-accent-line</code></strong> — rings, indicators, icons and checked
+            borders.
+          </li>
+        </ul>
+        <p>
+          A tint that already reads leaves both unset, and every part draws exactly as it did. With
+          the default <code>#ffffff</code> that is the case in dark, and in light both become a mid
+          grey. Only hex and <code>rgb()</code> tints are worked out; for any other form, set the two
+          yourself. Setting them is also how to choose your own:
+        </p>
+        <CodeBlock
+          code={`.lq-provider[data-liquid-theme='light'] {
+  --lq-accent-ink: #3a3a3c;
+  --lq-accent-line: #5a5a5e;
+}`}
+        />
       </Section>
 
       <Section id="tailwind" title="If you are on Tailwind">

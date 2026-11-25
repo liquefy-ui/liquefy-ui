@@ -15,6 +15,12 @@
        which is not enough to read as a surface — so the dark theme asks for
        a floor and the light one, sitting on white, does not need one. */
     --lq-veil-floor: 0.34;
+    /* Colours for drawing with the accent where the tint itself would not
+       read: written by the provider per theme, and unset when the tint
+       already clears the contrast. Every rule that uses them falls back to
+       the tint. Override these two to choose your own. */
+    --lq-accent-ink: var(--lq-accent-ink-dark);
+    --lq-accent-line: var(--lq-accent-line-dark);
     --lq-clear-fill: rgba(255, 255, 255, 0.12);
     --lq-clear-line: rgba(255, 255, 255, 0.15);
     --lq-control-fill: transparent;
@@ -56,6 +62,8 @@
 
   .lq-provider[data-liquid-theme='light'] {
     --lq-veil-floor: 0;
+    --lq-accent-ink: var(--lq-accent-ink-light);
+    --lq-accent-line: var(--lq-accent-line-light);
     --lq-clear-fill: rgba(255, 255, 255, 0.46);
     --lq-clear-line: rgba(255, 255, 255, 0.72);
     --lq-control-fill: transparent;
@@ -447,7 +455,7 @@
   .lq-switch:focus-visible,
   .lq-dock__item:focus-visible,
   .lq-text-field__control:focus-within {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 3px;
   }
 
@@ -516,7 +524,7 @@
   }
 
   .lq-card__eyebrow {
-    color: color-mix(in srgb, var(--lq-accent) 72%, white);
+    color: var(--lq-accent-ink, color-mix(in srgb, var(--lq-accent) 72%, white));
     display: block;
     font-size: 0.7rem;
     font-weight: 750;
@@ -585,7 +593,7 @@
 
   .lq-switch[data-checked] {
     background: color-mix(in srgb, var(--lq-accent) 3%, transparent);
-    border-color: color-mix(in srgb, var(--lq-accent) 30%, rgba(255, 255, 255, 0.12));
+    border-color: var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 30%, rgba(255, 255, 255, 0.12)));
     box-shadow: 0 6px 16px color-mix(in srgb, var(--lq-accent) 8%, transparent), inset 0 0.75px 0 rgba(255, 255, 255, 0.14);
   }
 
@@ -693,7 +701,7 @@
      track pseudo-element has no idea where the thumb is, so the fill used to be
      a fixed gradient pretending to be one. */
   .lq-slider__indicator {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--lq-accent) 72%, white 4%), color-mix(in srgb, var(--lq-accent) 88%, white 12%));
+    background: var(--lq-accent-line, linear-gradient(90deg, color-mix(in srgb, var(--lq-accent) 72%, white 4%), color-mix(in srgb, var(--lq-accent) 88%, white 12%)));
     border-radius: inherit;
   }
 
@@ -713,7 +721,7 @@
   /* The focus ring belongs to the thumb; the input that takes the focus sits
      inside it and has no size of its own. */
   .lq-slider__thumb:has(:focus-visible) {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 3px;
   }
 
@@ -1056,6 +1064,8 @@
   @media (prefers-color-scheme: light) {
     .lq-provider[data-liquid-theme='system'] {
       --lq-veil-floor: 0;
+      --lq-accent-ink: var(--lq-accent-ink-light);
+      --lq-accent-line: var(--lq-accent-line-light);
       --lq-clear-fill: rgba(255, 255, 255, 0.46);
       --lq-clear-line: rgba(255, 255, 255, 0.72);
       --lq-control-fill: transparent;
@@ -1253,14 +1263,14 @@
   }
 
   .lq-checkbox__box:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 3px;
   }
 
   .lq-checkbox__box[data-checked],
   .lq-checkbox__box[data-indeterminate] {
-    background: color-mix(in srgb, var(--lq-accent) 26%, transparent);
-    border-color: color-mix(in srgb, var(--lq-accent) 58%, rgba(255, 255, 255, 0.2));
+    background: color-mix(in srgb, var(--lq-accent-line, var(--lq-accent)) 26%, transparent);
+    border-color: var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 58%, rgba(255, 255, 255, 0.2)));
     box-shadow:
       0 4px 12px color-mix(in srgb, var(--lq-accent) 16%, transparent),
       inset 0 0.75px 0 rgba(255, 255, 255, 0.28);
@@ -1336,20 +1346,20 @@
   }
 
   .lq-radio__control:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 3px;
   }
 
   .lq-radio__control[data-checked] {
     animation: lq-jelly-pop 620ms cubic-bezier(0.2, 0.9, 0.25, 1);
-    border-color: color-mix(in srgb, var(--lq-accent) 58%, rgba(255, 255, 255, 0.2));
+    border-color: var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 58%, rgba(255, 255, 255, 0.2)));
     box-shadow:
       0 4px 12px color-mix(in srgb, var(--lq-accent) 14%, transparent),
       inset 0 0.75px 0 rgba(255, 255, 255, 0.24);
   }
 
   .lq-radio__dot {
-    background: color-mix(in srgb, var(--lq-accent) 78%, white);
+    background: var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 78%, white));
     border-radius: 50%;
     box-shadow: 0 1px 4px color-mix(in srgb, var(--lq-accent) 32%, transparent);
     height: 10px;
@@ -1415,7 +1425,7 @@
   }
 
   .lq-select__trigger:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 3px;
   }
 
@@ -1476,7 +1486,7 @@
   }
 
   .lq-select__option[data-selected] {
-    color: color-mix(in srgb, var(--lq-accent) 60%, var(--lq-foreground));
+    color: var(--lq-accent-ink, color-mix(in srgb, var(--lq-accent) 60%, var(--lq-foreground)));
     font-weight: 650;
   }
 
@@ -1535,7 +1545,7 @@
   }
 
   .lq-date-picker__trigger:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 3px;
   }
 
@@ -1604,7 +1614,7 @@
   }
 
   .lq-date-picker__nav:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 2px;
   }
 
@@ -1650,7 +1660,7 @@
   }
 
   .lq-date-picker__day:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: -1px;
   }
 
@@ -1798,7 +1808,7 @@
   }
 
   .lq-segmented__item:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 2px;
   }
 
@@ -1838,7 +1848,7 @@
   }
 
   .lq-rating__star:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 2px;
   }
 
@@ -1926,7 +1936,7 @@
   }
 
   .lq-chip:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 2px;
   }
 
@@ -2192,7 +2202,7 @@
   }
 
   .lq-list__item-button:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: -2px;
   }
 
@@ -2201,7 +2211,7 @@
     background: color-mix(in srgb, var(--lq-accent) 12%, transparent);
     border: 1px solid color-mix(in srgb, var(--lq-accent) 22%, rgba(255, 255, 255, 0.08));
     border-radius: 9px;
-    color: color-mix(in srgb, var(--lq-accent) 72%, white);
+    color: var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     display: inline-flex;
     flex: 0 0 auto;
     height: 34px;
@@ -2333,9 +2343,9 @@
        living body of tinted liquid rather than a flat bar. */
     background: linear-gradient(
       90deg,
-      color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent)) 90%, white 4%),
-      color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent)) 52%, white 36%),
-      color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent)) 90%, white 4%)
+      color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent-line, var(--lq-accent))) 90%, white 4%),
+      color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent-line, var(--lq-accent))) 52%, white 36%),
+      color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent-line, var(--lq-accent))) 90%, white 4%)
     );
     background-size: 220% 100%;
     border-radius: inherit;
@@ -2370,7 +2380,7 @@
     animation: lq-progress-bob 1.6s ease-in-out infinite;
     background: radial-gradient(
       120% 150% at 100% 50%,
-      color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent)) 30%, white 60%),
+      color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent-line, var(--lq-accent))) 30%, white 60%),
       transparent 60%
     );
     border-radius: inherit;
@@ -2420,11 +2430,11 @@
   @keyframes lq-progress-glow {
     0%,
     100% {
-      box-shadow: 0 0 9px color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent)) 34%, transparent);
+      box-shadow: 0 0 9px color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent-line, var(--lq-accent))) 34%, transparent);
     }
 
     50% {
-      box-shadow: 0 0 18px color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent)) 60%, transparent);
+      box-shadow: 0 0 18px color-mix(in srgb, var(--lq-progress-tint, var(--lq-accent-line, var(--lq-accent))) 60%, transparent);
     }
   }
 
@@ -2471,7 +2481,7 @@
   }
 
   .lq-spinner__arc {
-    stroke: color-mix(in srgb, var(--lq-spinner-tint, var(--lq-accent)) 82%, white);
+    stroke: color-mix(in srgb, var(--lq-spinner-tint, var(--lq-accent-line, var(--lq-accent))) 82%, white);
     transition: stroke-dasharray 480ms var(--lq-easing);
   }
 
@@ -2559,7 +2569,7 @@
   }
 
   .lq-gauge__arc {
-    stroke: color-mix(in srgb, var(--lq-gauge-tint, var(--lq-accent)) 82%, white);
+    stroke: color-mix(in srgb, var(--lq-gauge-tint, var(--lq-accent-line, var(--lq-accent))) 82%, white);
     transition: stroke-dasharray 480ms var(--lq-easing);
   }
 
@@ -2932,7 +2942,7 @@
   }
 
   .lq-tab:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: -2px;
   }
 
@@ -2941,7 +2951,7 @@
   }
 
   .lq-tab__underline {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--lq-accent) 88%, white), color-mix(in srgb, var(--lq-accent) 52%, white 30%));
+    background: var(--lq-accent-line, linear-gradient(90deg, color-mix(in srgb, var(--lq-accent) 88%, white), color-mix(in srgb, var(--lq-accent) 52%, white 30%)));
     border-radius: 3px 3px 0 0;
     bottom: -1px;
     box-shadow: 0 0 10px color-mix(in srgb, var(--lq-accent) 44%, transparent);
@@ -3126,7 +3136,7 @@
   }
 
   .lq-pagination__item:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: 2px;
   }
 
@@ -3183,7 +3193,7 @@
   }
 
   .lq-menu__item:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: -2px;
   }
 
@@ -3499,7 +3509,7 @@
   }
 
   .lq-accordion__trigger:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--lq-accent) 72%, white);
+    outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 72%, white));
     outline-offset: -2px;
   }
 

@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { accentInkProperties } from './accent-ink'
 
 export type LiquefyConfig = {
   /** Minimum widths behind the responsive form of the `styles` prop. */
@@ -148,7 +149,10 @@ export const LiquefyProvider = ({
       shimmer, sparkle, spacing, theme, tint, transparency, veil, webgl, wobbliness,
     ],
   )
+  // Readable colours for drawing with the tint, per theme; see accent-ink.ts.
+  const accentInk = useMemo(() => accentInkProperties(tint), [tint])
   const style: CustomProperties = {
+    ...accentInk,
     '--lq-accent': tint,
     '--lq-frost': `${frost}px`,
     '--lq-intensity': intensity,

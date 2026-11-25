@@ -91,8 +91,8 @@
 }
 
 :root[data-theme='light'] .lq-provider:is([data-liquid-theme='light'], [data-liquid-theme='system']) .lq-switch[data-checked='true'] {
-  background: color-mix(in srgb, var(--lq-accent) 34%, rgba(11, 11, 20, 0.14));
-  border-color: color-mix(in srgb, var(--lq-accent) 55%, rgba(11, 11, 20, 0.2));
+  background: color-mix(in srgb, var(--lq-accent-line, var(--lq-accent)) 34%, rgba(11, 11, 20, 0.14));
+  border-color: var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 55%, rgba(11, 11, 20, 0.2)));
 }
 
 :root[data-theme='dark'] .lq-provider:is([data-liquid-theme='dark'], [data-liquid-theme='system']) .lq-switch[data-checked='true'] {
@@ -132,7 +132,7 @@ a {
 }
 
 :focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--lq-accent, #8b8f98) 30%, var(--fg));
+  outline: 2px solid var(--lq-accent-line, color-mix(in srgb, var(--lq-accent, #8b8f98) 30%, var(--fg)));
   outline-offset: 2px;
 }
 
@@ -485,8 +485,8 @@ pre {
 }
 
 .docs-copy[data-copied='true'] {
-  border-color: color-mix(in srgb, var(--lq-accent) 60%, var(--line));
-  color: color-mix(in srgb, var(--lq-accent) 80%, var(--fg));
+  border-color: var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 60%, var(--line)));
+  color: var(--lq-accent-ink, color-mix(in srgb, var(--lq-accent) 80%, var(--fg)));
 }
 
 .command-row {
@@ -540,7 +540,7 @@ pre {
 }
 
 .command-row[data-copied='true'] .command-row__copy {
-  color: color-mix(in srgb, var(--lq-accent) 80%, var(--fg));
+  color: var(--lq-accent-ink, color-mix(in srgb, var(--lq-accent) 80%, var(--fg)));
 }
 
 .section {
@@ -1896,7 +1896,7 @@ kbd {
 }
 
 .docs-callout[data-tone='warning'] {
-  border-left-color: color-mix(in srgb, var(--lq-accent) 60%, var(--fg));
+  border-left-color: var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 60%, var(--fg)));
 }
 
 .docs-callout strong {
@@ -2475,7 +2475,7 @@ kbd {
 }
 
 .docs-props__type {
-  color: color-mix(in srgb, var(--lq-accent) 55%, var(--fg)) !important;
+  color: var(--lq-accent-ink, color-mix(in srgb, var(--lq-accent) 55%, var(--fg))) !important;
   white-space: normal !important;
 }
 
@@ -2735,7 +2735,7 @@ kbd {
 }
 
 .docs-icons__tile[data-copied='true'] {
-  border-color: color-mix(in srgb, var(--lq-accent) 60%, var(--line));
+  border-color: var(--lq-accent-line, color-mix(in srgb, var(--lq-accent) 60%, var(--line)));
 }
 
 .docs-icons__glyph {

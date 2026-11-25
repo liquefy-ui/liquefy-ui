@@ -194,7 +194,7 @@ export const DocsShell = ({
 
   return (
     <div className="site-shell docs-shell" data-section={section}>
-      <Ambience />
+      <Ambience drifting={section === 'docs' || section === 'components'} />
       <SiteHeader onOpenSidebar={() => setSidebarOpen(true)} section={section}>
         {search && (
           <label className="docs-search">

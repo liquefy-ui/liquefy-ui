@@ -189,3 +189,31 @@ describe('light cards and lists', () => {
     expect(offenders.map(([, selector]) => selector.trim())).toEqual([])
   })
 })
+
+/**
+ * The accent's readable stand-ins (see packages/react/src/accent-ink.ts). Each
+ * theme points at its own pair, and every use keeps the tint as its fallback,
+ * which is what leaves a tint that already reads looking exactly as it did.
+ */
+describe('drawing with the accent', () => {
+  it('points each theme at its own pair', () => {
+    expect(css).toMatch(/\.lq-provider \{[^}]*--lq-accent-ink: var\(--lq-accent-ink-dark\);[^}]*--lq-accent-line: var\(--lq-accent-line-dark\);/)
+    for (const scope of ["\\.lq-provider\\[data-liquid-theme='light'\\]", "\\.lq-provider\\[data-liquid-theme='system'\\]"]) {
+      expect(css).toMatch(new RegExp(`${scope} \\{[^}]*--lq-accent-ink: var\\(--lq-accent-ink-light\\);[^}]*--lq-accent-line: var\\(--lq-accent-line-light\\);`))
+    }
+  })
+
+  it('always keeps the tint as the fallback, so a tint that reads draws as before', () => {
+    const uses = [...css.matchAll(/var\(--lq-accent-(ink|line)\b([^)]*)\)/g)]
+      .filter(([, , rest]) => !/^-(dark|light)/.test(rest))
+    expect(uses.length).toBeGreaterThan(20)
+    for (const [use, , rest] of uses) expect(rest, use).toMatch(/^,/)
+  })
+
+  it('no longer lifts the accent toward white for a ring or the card eyebrow without a readable stand-in', () => {
+    const bare = [...css.matchAll(/^\s*(outline|color):[^;]*color-mix\(in srgb, var\(--lq-accent\) 72%, white\)[^;]*;/gm)]
+      .map(([line]) => line.trim())
+      .filter((line) => !line.includes('var(--lq-accent-line,') && !line.includes('var(--lq-accent-ink,'))
+    expect(bare).toEqual([])
+  })
+})
