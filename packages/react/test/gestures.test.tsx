@@ -106,7 +106,8 @@ describe('drawer flick', () => {
     const { onOpenChange, panel } = drawer()
 
     await userEvent.click(screen.getByRole('combobox', { name: 'Finish' }))
-    const listbox = screen.getByRole('listbox')
+    // The popup portals in after the click settles, which a slow runner can see a frame late.
+    const listbox = await screen.findByRole('listbox')
     expect(panel.contains(listbox)).toBe(false)
 
     // React bubbles the portaled popup's events back through the drawer, so this
