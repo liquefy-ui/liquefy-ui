@@ -185,7 +185,7 @@ export const SiteProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.dataset.theme = theme
     document.querySelector('meta[name="theme-color"]')?.setAttribute(
       'content',
-      theme === 'light' ? '#e9ebf0' : '#0e1119',
+      theme === 'light' ? '#e9ebf0' : '#1e263c',
     )
   }, [theme])
 

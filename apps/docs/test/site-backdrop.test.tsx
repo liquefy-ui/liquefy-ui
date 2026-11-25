@@ -25,7 +25,7 @@ const chrome = read('../src/site/chrome.tsx')
 const backdropOf = (page: ReactNode) => {
   document.body.innerHTML = renderToStaticMarkup(<SiteProvider>{page}</SiteProvider>)
   return {
-    leftovers: document.querySelectorAll('.ambient, .grid-wash').length,
+    leftovers: document.querySelectorAll('.ambient, .grid-wash, .noise').length,
     meshes: document.querySelectorAll('.site-mesh').length,
   }
 }
@@ -56,6 +56,6 @@ describe('the page backdrop', () => {
   })
 
   it('keeps no grid or drifting glow in the stylesheet', () => {
-    expect(css).not.toMatch(/\.ambient\b|\.grid-wash\b|--grid-line|ambient-float/)
+    expect(css).not.toMatch(/\.noise\b|\.ambient\b|\.grid-wash\b|--grid-line|ambient-float/)
   })
 })

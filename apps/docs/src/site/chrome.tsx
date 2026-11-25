@@ -323,32 +323,30 @@ export const SiteFooter = () => (
   </footer>
 )
 
+/** How far toward black the dark page goes, relative to the light one. */
+const DARK_DEPTH = 0.5
+
 /**
- * The page's colours, as the theme's own tokens. They are resolved against the
- * provider the mesh sits in, so a theme that changes `--lq-solid-fill` changes
- * the page with it. Light is the pale grey the tokens sit on, lifted toward
- * the accent in places and shaded toward the text in others; dark is the
- * theme's fill pressed most of the way to black, so the glass still has
- * something to bend without the page turning blue.
+ * The page's colours: the theme's `--lq-solid-fill`, with the accent and the
+ * text colour mixed into it in a few places. They are resolved against the
+ * provider the mesh sits in, so the page follows the theme's tokens. Dark
+ * mixes in half as much, which leaves it close to the plain fill.
  */
-const MESH_COLORS: Record<ResolvedTheme, readonly string[]> = {
-  dark: [
-    'color-mix(in srgb, var(--lq-solid-fill) 46%, black)',
-    'color-mix(in srgb, var(--lq-solid-fill) 30%, black)',
-    'color-mix(in srgb, var(--lq-solid-fill) 62%, black)',
-    'color-mix(in srgb, var(--lq-solid-fill) 22%, black)',
-    'color-mix(in srgb, var(--lq-solid-fill) 40%, black)',
-  ],
-  light: [
+const meshColors = (theme: ResolvedTheme): string[] => {
+  const depth = theme === 'dark' ? DARK_DEPTH : 1
+  const mix = (token: string, amount: number) =>
+    `color-mix(in srgb, var(${token}) ${Math.round(amount * depth)}%, var(--lq-solid-fill))`
+  return [
+    mix('--lq-foreground', 4),
+    mix('--lq-accent', 50),
+    mix('--lq-foreground', 18),
+    mix('--lq-accent', 28),
+    mix('--lq-foreground', 10),
     'var(--lq-solid-fill)',
-    'color-mix(in srgb, var(--lq-solid-fill) 45%, var(--lq-accent))',
-    'color-mix(in srgb, var(--lq-solid-fill) 90%, var(--lq-foreground))',
-    'color-mix(in srgb, var(--lq-solid-fill) 70%, var(--lq-accent))',
-    'color-mix(in srgb, var(--lq-solid-fill) 94%, var(--lq-foreground))',
-  ],
+  ]
 }
 
-/** The page under every route — a still mesh gradient — and its grain. */
+/** The page under every route: a still mesh gradient. */
 export const Ambience = () => {
   const { theme } = useSiteConfig()
 
@@ -359,12 +357,13 @@ export const Ambience = () => {
       <MeshGradient
         aria-hidden="true"
         className="site-mesh"
-        colors={MESH_COLORS[theme]}
+        colors={meshColors(theme)}
+        columns={4}
         key={theme}
+        rows={4}
         speed={0}
         style={{ position: 'fixed' }}
       />
-      <div aria-hidden="true" className="noise" />
     </>
   )
 }

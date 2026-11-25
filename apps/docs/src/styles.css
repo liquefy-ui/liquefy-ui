@@ -1,14 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 /* ---------------------------------------------------------------------------
-   Tokens. Light is pale grey + glass, dark is near-black + glass; both are
-   neutral, and the page under them is a still mesh of the theme's colours.
+   Tokens. The page is the theme's own `--lq-solid-fill` — pale grey in light,
+   deep blue-grey in dark — as a still mesh, with the glass straight on it.
    Everything below reads these, and nothing hard-codes a theme colour.
 --------------------------------------------------------------------------- */
 
 :root {
   --bg: #e9ebf0;
-  --bg-soft: #f7f7f8;
   --fg: #0b0b0f;
   --fg-muted: rgba(11, 11, 15, 0.62);
   --fg-faint: rgba(11, 11, 15, 0.44);
@@ -36,8 +35,7 @@
 }
 
 :root[data-theme='dark'] {
-  --bg: #0e1119;
-  --bg-soft: #08080a;
+  --bg: #1e263c;
   --fg: #f6f6f8;
   --fg-muted: rgba(246, 246, 248, 0.62);
   --fg-faint: rgba(246, 246, 248, 0.42);
@@ -166,16 +164,6 @@ a {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-}
-
-.noise {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
-  inset: 0;
-  mix-blend-mode: soft-light;
-  opacity: 0.5;
-  pointer-events: none;
-  position: fixed;
-  z-index: 30;
 }
 
 /* --- Header -------------------------------------------------------------- */
@@ -1349,9 +1337,9 @@ pre {
 
 .showcase-tile__stage {
   align-items: center;
-  background:
-    radial-gradient(90% 120% at 20% 0%, var(--wash), transparent 70%),
-    var(--bg-soft);
+  /* The theme's own page colour, not a lighter panel: a clear card on a
+     near-white stage reads as a white card, which is not the material. */
+  background: var(--lq-solid-fill, var(--bg));
   border: 1px solid var(--line);
   border-radius: 14px;
   display: flex;
@@ -1979,9 +1967,9 @@ kbd {
 }
 
 .docs-demo__stage {
-  background:
-    radial-gradient(90% 120% at 20% 0%, var(--wash), transparent 70%),
-    var(--bg-soft);
+  /* The theme's own page colour, not a lighter panel: a clear card on a
+     near-white stage reads as a white card, which is not the material. */
+  background: var(--lq-solid-fill, var(--bg));
   margin-bottom: 12px;
 }
 
@@ -3182,9 +3170,9 @@ kbd {
 
 .gallery-card__stage {
   align-items: center;
-  background:
-    radial-gradient(90% 120% at 20% 0%, var(--wash), transparent 70%),
-    var(--bg-soft);
+  /* The theme's own page colour, not a lighter panel: a clear card on a
+     near-white stage reads as a white card, which is not the material. */
+  background: var(--lq-solid-fill, var(--bg));
   border: 1px solid var(--line);
   border-radius: 13px;
   display: flex;
