@@ -56,7 +56,12 @@ const useMediaQuery = (query: string) => {
   return matches
 }
 
-export const TemplateTheme = ({ children, title }: { children: ReactNode; title: string }) => {
+export const TemplateTheme = ({ children, title, tint = '#ffffff', showBackdrop = true }: {
+  children: ReactNode
+  title: string
+  tint?: string
+  showBackdrop?: boolean
+}) => {
   const { motion, theme } = useSiteConfig()
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
   const reducedTransparency = useMediaQuery('(prefers-reduced-transparency: reduce)')
@@ -80,12 +85,12 @@ export const TemplateTheme = ({ children, title }: { children: ReactNode; title:
       shimmer
       sparkle
       theme={theme}
-      tint="#ffffff"
+      tint={tint}
       transparency={!reducedTransparency}
       veil={0}
       wobbliness={1}
     >
-      <TemplateBackdrop />
+      {showBackdrop && <TemplateBackdrop />}
       {children}
     </LiquefyProvider>
   )

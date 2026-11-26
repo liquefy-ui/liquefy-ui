@@ -58,7 +58,8 @@
   margin: 0 0 calc(6 * var(--lq-space));
 }
 
-.template-container :focus-visible {
+.template-container :focus-visible,
+.demo-shell--full-bleed :focus-visible {
   outline-color: var(--lq-foreground);
 }
 
@@ -267,11 +268,13 @@
 
 .roadmap-overview {
   align-items: end;
+  background: linear-gradient(110deg, color-mix(in srgb, var(--lq-accent) 15%, transparent), transparent 90%);
   border-bottom: 1px solid var(--lq-quiet-line);
   display: grid;
   gap: calc(8 * var(--lq-space));
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   padding-block: calc(2 * var(--lq-space)) calc(6 * var(--lq-space));
+  padding-inline: calc(4 * var(--lq-space));
 }
 
 .roadmap-overview form,
@@ -283,8 +286,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-.template-page[data-liquid-theme='light'] .roadmap-progress .lq-progress__fill {
-  --lq-progress-tint: var(--lq-foreground);
+.roadmap .lq-segmented__indicator,
+.roadmap-list .lq-select__trigger[data-status='doing'] {
+  background: color-mix(in srgb, var(--lq-accent) 18%, transparent);
 }
 
 .roadmap-timeline {
@@ -304,7 +308,7 @@
 }
 
 .roadmap-date {
-  border-inline-start: 2px solid var(--lq-regular-line);
+  border-inline-start: 2px solid var(--lq-accent);
   padding: calc(2 * var(--lq-space)) calc(3 * var(--lq-space));
 }
 
@@ -464,7 +468,7 @@
 
 .expense-bar__track {
   align-items: end;
-  background: color-mix(in srgb, var(--lq-foreground) 5%, transparent);
+  background: color-mix(in srgb, var(--lq-accent) 12%, transparent);
   border-radius: calc(2 * var(--lq-space));
   display: flex;
   height: clamp(88px, 13vw, 144px);
@@ -473,8 +477,8 @@
 .expense-bar__fill {
   background: linear-gradient(
     to top,
-    color-mix(in srgb, var(--lq-foreground) 20%, transparent),
-    color-mix(in srgb, var(--lq-foreground) 64%, transparent)
+    color-mix(in srgb, var(--lq-accent) 52%, transparent),
+    var(--lq-accent)
   );
   border-radius: inherit;
   position: relative;
@@ -509,20 +513,46 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.demo-shell--full-bleed {
+  padding: 0;
+}
+
+.demo-shell--full-bleed .demo-heading {
+  inset-block-start: max(calc(4 * var(--lq-space)), env(safe-area-inset-top));
+  inset-inline-start: max(calc(6 * var(--lq-space)), env(safe-area-inset-left));
+  position: absolute;
+  z-index: 2;
+}
+
+.demo-shell--full-bleed .demo-back {
+  margin-block-end: 0;
+}
+
+.demo-shell--full-bleed h1 {
+  font-size: clamp(1.375rem, 3vw, 2rem);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin: 0;
+}
+
 .focus-studio {
+  --studio-water-floor: color-mix(in srgb, var(--lq-accent) 18%, var(--lq-solid-fill));
   align-content: center;
-  border: 1px solid var(--lq-clear-line);
-  border-radius: calc(2 * var(--lq-radius-default));
   display: grid;
   gap: calc(4 * var(--lq-space));
   justify-items: center;
-  min-height: 536px;
+  min-height: 100dvh;
   overflow: hidden;
-  padding: calc(5 * var(--lq-space));
+  padding-block: max(calc(25 * var(--lq-space)), env(safe-area-inset-top)) max(calc(10 * var(--lq-space)), env(safe-area-inset-bottom));
+  padding-inline: calc(5 * var(--lq-space));
 }
 
-.template-page[data-liquid-theme='light'] .focus-studio > canvas {
+.focus-studio > canvas {
   opacity: 0.4;
+}
+
+.template-page[data-liquid-theme='dark'] .focus-studio {
+  --studio-water-floor: color-mix(in srgb, var(--lq-accent) 9%, var(--lq-solid-fill));
 }
 
 .studio-status {
@@ -544,6 +574,7 @@
 }
 
 .studio-modes {
+  --lq-control-fill: color-mix(in srgb, var(--lq-solid-fill) 64%, transparent);
   margin-top: calc(-2 * var(--lq-space));
 }
 
@@ -567,6 +598,10 @@
 
   .demo-shell {
     padding-block-start: calc(3 * var(--lq-space));
+  }
+
+  .demo-shell.demo-shell--full-bleed {
+    padding-block-start: 0;
   }
 
   .feed-post__photo {
@@ -599,6 +634,33 @@
 
   .expense-mobile {
     display: inline;
+  }
+}
+
+@media (max-height: 640px) {
+  .focus-studio {
+    gap: calc(2 * var(--lq-space));
+    padding-block: max(calc(20 * var(--lq-space)), env(safe-area-inset-top)) max(calc(4 * var(--lq-space)), env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 560px) and (max-height: 520px) {
+  .focus-studio {
+    column-gap: calc(6 * var(--lq-space));
+    grid-template-columns: auto auto;
+    justify-content: center;
+  }
+
+  .studio-level {
+    align-self: center;
+    grid-column: 1;
+    grid-row: 1 / span 3;
+  }
+
+  .studio-island,
+  .studio-actions,
+  .studio-modes {
+    grid-column: 2;
   }
 }
 

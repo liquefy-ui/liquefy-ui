@@ -10,10 +10,10 @@ const timerModes = [
 ]
 
 const waterColors = [
-  'color-mix(in srgb, var(--lq-foreground) 14%, var(--lq-solid-fill))',
-  'color-mix(in srgb, var(--lq-accent) 24%, var(--lq-solid-fill))',
-  'color-mix(in srgb, var(--lq-foreground) 26%, var(--lq-solid-fill))',
-  'var(--lq-solid-fill)',
+  'var(--lq-accent)',
+  'color-mix(in srgb, var(--lq-accent) 72%, #24728a)',
+  'color-mix(in srgb, var(--lq-accent) 58%, var(--lq-solid-fill))',
+  '#257b87',
 ]
 
 const statusViews = {
@@ -86,7 +86,7 @@ export const FocusStudio = () => {
 
   return (
     <FluidBackdrop
-      background="var(--lq-solid-fill)"
+      background="var(--studio-water-floor)"
       className="focus-studio"
       colors={waterColors}
       dyeResolution={256}
@@ -95,8 +95,8 @@ export const FocusStudio = () => {
       speed={0.65}
       stir={0.35}
     >
-      <LiquidIsland label="Session status" size={44} view={view} views={statusViews} />
-      <LiquidLevel label={`${time} remaining`} max={duration} size={236} value={remaining}>
+      <LiquidIsland className="studio-island" label="Session status" size={44} view={view} views={statusViews} />
+      <LiquidLevel className="studio-level" label={`${time} remaining`} max={duration} size={236} value={remaining}>
         <span className="studio-time">{time}</span>
       </LiquidLevel>
       <MagneticActions
@@ -104,6 +104,7 @@ export const FocusStudio = () => {
           { icon: running ? <PauseIcon size={24} /> : <PlayIcon size={24} />, label: running ? 'Pause timer' : 'Start timer', onClick: toggle },
           { icon: <XIcon size={22} />, label: 'Reset timer', onClick: () => selectMode(mode) },
         ]}
+        className="studio-actions"
         label="Timer controls"
         size="lg"
       />

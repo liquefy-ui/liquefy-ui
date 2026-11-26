@@ -86,6 +86,7 @@ export const TaskBoard = () => {
                       end={(
                         <LiquidSelect
                           aria-label={`Status for ${task.title}`}
+                          data-status={task.status}
                           onValueChange={(status) => setTasks((current) => current.map((item) => item.id === task.id ? { ...item, status } : item))}
                           options={statuses}
                           value={task.status}
