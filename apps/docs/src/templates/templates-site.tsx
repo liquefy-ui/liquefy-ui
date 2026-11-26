@@ -1,16 +1,21 @@
 import { ChevronLeftIcon, EyeIcon } from '@liquefy-ui/icons'
-import { GlassCard, LiquidButton, LiquidTab, LiquidTabList, LiquidTabPanel, LiquidTabs } from '@liquefy-ui/react'
+import { GlassCard, LiquidButton } from '@liquefy-ui/react'
 import { SiteHeader, useScrollReset } from '../site/chrome'
 import { useSiteConfig } from '../site/site-config'
-import { LANDSCAPE_GALLERY_ROUTE, TEMPLATES_ROUTE } from './routes'
+import { ExpenseTracker } from './expense-tracker'
+import { Notes } from './notes'
+import { PhotoFeed } from './photo-feed'
+import { RecipeBox } from './recipe-box'
+import { templateRoute, TEMPLATES_ROUTE } from './routes'
+import { TaskBoard } from './task-board'
 import { paneGlass, TemplateTheme } from './template-theme'
 
 const templates = [
-  {
-    name: 'Landscape Gallery',
-    preview: LANDSCAPE_GALLERY_ROUTE,
-    thumbnail: '/templates/landscape-gallery',
-  },
+  { id: 'photo-feed', name: 'Photo Feed', category: 'Social', App: PhotoFeed },
+  { id: 'task-board', name: 'Task Board', category: 'Project management', App: TaskBoard },
+  { id: 'notes', name: 'Notes', category: 'Productivity', App: Notes },
+  { id: 'expense-tracker', name: 'Expense Tracker', category: 'Personal finance', App: ExpenseTracker },
+  { id: 'recipe-box', name: 'Recipe Box', category: 'Food', App: RecipeBox },
 ]
 
 export const TemplatesSite = () => {
@@ -23,17 +28,20 @@ export const TemplatesSite = () => {
       <main className="template-container">
         <h1>Templates</h1>
         <ul className="template-list">
-          {templates.map(({ name, preview, thumbnail }) => (
-            <li key={preview}>
+          {templates.map(({ id, name, category }) => (
+            <li key={id}>
               <GlassCard className="template-card" interactive={false} styles={paneGlass}>
-                <img alt="" className="template-card__image" height={800} src={`${thumbnail}-${theme}.webp`} width={1120} />
+                <img alt="" className="template-card__image" height={566} src={`/templates/${id}-${theme}.webp`} width={880} />
                 <div className="template-card__details">
-                  <h2>{name}</h2>
+                  <div>
+                    <h2>{name}</h2>
+                    <p className="demo-muted">{category}</p>
+                  </div>
                   <LiquidButton
                     aria-label={`View preview of ${name} (opens in a new tab)`}
                     className="template-card__action"
                     iconBefore={<EyeIcon size={16} />}
-                    onClick={() => window.open(preview, '_blank', 'noopener,noreferrer')}
+                    onClick={() => window.open(templateRoute(id), '_blank', 'noopener,noreferrer')}
                   >
                     View preview
                   </LiquidButton>
@@ -47,38 +55,20 @@ export const TemplatesSite = () => {
   )
 }
 
-const landscapes = [
-  { id: 'coast', label: 'Coast', alt: 'Sunlit cliffs above the sea', credit: 'Stefan Kunze' },
-  { id: 'fjord', label: 'Fjord', alt: 'A deep blue fjord between rocky mountains', credit: 'Alexey Topolyanskiy' },
-  { id: 'summit', label: 'Summit', alt: 'Yellow tents beneath snowy peaks', credit: 'Wolfgang Lutz' },
-]
-
-export const LandscapeGallery = () => {
-  useScrollReset(LANDSCAPE_GALLERY_ROUTE)
+export const TemplatePreview = ({ route }: { route: string }) => {
+  useScrollReset(route)
+  const template = templates.find(({ id }) => templateRoute(id) === route)
+  const title = template?.name ?? 'Template not found'
 
   return (
-    <TemplateTheme title="Landscape Gallery">
-      <main className="template-container landscape-gallery">
-        <a className="landscape-gallery__back" href={TEMPLATES_ROUTE}>
+    <TemplateTheme title={title}>
+      <main className="template-container demo-shell">
+        <a className="demo-back" href={TEMPLATES_ROUTE}>
           <ChevronLeftIcon size={16} />
           Templates
         </a>
-        <h1>Landscape Gallery</h1>
-        <LiquidTabs defaultValue="coast">
-          <LiquidTabList label="Landscapes">
-            {landscapes.map(({ id, label }) => (
-              <LiquidTab className="landscape-gallery__tab" key={id} value={id}>{label}</LiquidTab>
-            ))}
-          </LiquidTabList>
-          {landscapes.map(({ id, alt, credit }) => (
-            <LiquidTabPanel className="landscape-gallery__panel" key={id} value={id}>
-              <figure>
-                <img alt={alt} height={900} src={`/scenes/${id}.jpg`} width={1600} />
-                <figcaption>Photo by {credit}</figcaption>
-              </figure>
-            </LiquidTabPanel>
-          ))}
-        </LiquidTabs>
+        <h1>{title}</h1>
+        {template && <template.App />}
       </main>
     </TemplateTheme>
   )

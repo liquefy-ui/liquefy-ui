@@ -171,9 +171,9 @@ export type SiteSection = 'components' | 'docs' | 'home' | 'lab' | 'playground' 
 const NAV = [
   { href: '#/docs', label: 'Docs', match: 'docs' },
   { href: '#/components', label: 'Components', match: 'components' },
+  { href: TEMPLATES_ROUTE, label: 'Templates', match: 'templates' },
   { href: '#/playground', label: 'Playground', match: 'playground' },
   { href: '#/lab', label: 'Lab', match: 'lab' },
-  { href: TEMPLATES_ROUTE, label: 'Templates', match: 'templates' },
 ] as const satisfies readonly { href: string; label: string; match: SiteSection }[]
 
 type SiteHeaderProps = {

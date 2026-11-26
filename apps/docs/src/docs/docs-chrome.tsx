@@ -223,9 +223,9 @@ export const DocsShell = ({
           <nav aria-label="Site" className="docs-sidebar__sections">
             <a href="#/docs">Docs</a>
             <a href="#/components">Components</a>
+            <a href={TEMPLATES_ROUTE}>Templates</a>
             <a href="#/playground">Playground</a>
             <a href="#/lab">Lab</a>
-            <a href={TEMPLATES_ROUTE}>Templates</a>
           </nav>
           <nav aria-label={sidebarLabel}>{sidebar}</nav>
         </aside>
