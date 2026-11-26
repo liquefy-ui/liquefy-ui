@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { LiquidSurface } from '@liquefy-ui/react'
 import { SearchIcon, XIcon } from '@liquefy-ui/icons'
 import { Ambience, CopyButton, SiteFooter, SiteHeader, useScrollReset, type SiteSection } from '../site/chrome'
+import { TEMPLATES_ROUTE } from '../templates/routes'
 import type { DemoDef } from './types'
 
 export { CopyButton }
@@ -224,6 +225,7 @@ export const DocsShell = ({
             <a href="#/components">Components</a>
             <a href="#/playground">Playground</a>
             <a href="#/lab">Lab</a>
+            <a href={TEMPLATES_ROUTE}>Templates</a>
           </nav>
           <nav aria-label={sidebarLabel}>{sidebar}</nav>
         </aside>

@@ -6,6 +6,8 @@ import { SiteAnalytics } from './site/analytics'
 import { Landing } from './site/landing'
 import { PlaygroundPage } from './site/playground-page'
 import { SiteProvider } from './site/site-config'
+import { LANDSCAPE_GALLERY_ROUTE, TEMPLATES_ROUTE } from './templates/routes'
+import { LandscapeGallery, TemplatesSite } from './templates/templates-site'
 
 // Old links pointed at #/guides; everything there now lives under #/docs.
 const REDIRECTS: [RegExp, string][] = [
@@ -25,6 +27,8 @@ const pageFor = (route: string): ReactNode => {
   if (route.startsWith('#/docs')) return <DocsSite route={route} />
   if (route.startsWith('#/playground')) return <PlaygroundPage route={route} />
   if (route.startsWith('#/lab')) return <LabSite route={route} />
+  if (route === TEMPLATES_ROUTE) return <TemplatesSite />
+  if (route === LANDSCAPE_GALLERY_ROUTE) return <LandscapeGallery />
   return <Landing />
 }
 

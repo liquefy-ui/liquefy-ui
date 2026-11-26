@@ -1,0 +1,181 @@
+.app.template-page {
+  background: var(--lq-solid-fill);
+  color: var(--lq-foreground);
+  font: 15px/1.6 -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Segoe UI', sans-serif;
+  isolation: isolate;
+  min-height: 100dvh;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme] .app.template-page[data-liquid-theme='light'] {
+  --lq-solid-fill: #e8e8ed;
+  --lq-foreground: #1d1d1f;
+  --lq-muted: rgba(29, 29, 31, 0.7);
+  --lq-placeholder: rgba(29, 29, 31, 0.46);
+  --lq-clear-fill: rgba(255, 255, 255, 0.46);
+  --lq-clear-line: rgba(255, 255, 255, 0.72);
+  --lq-glass-bright: rgba(255, 255, 255, 0.95);
+  --lq-glass-soft: rgba(255, 255, 255, 0.7);
+  --lq-glass-shade: rgba(0, 0, 0, 0.05);
+  --lq-shadow-color: rgba(0, 0, 0, 0.1);
+  --lq-control-line: rgba(0, 0, 0, 0.1);
+  --lq-field-line: rgba(0, 0, 0, 0.1);
+  --lq-quiet-line: rgba(0, 0, 0, 0.08);
+  --lq-regular-line: rgba(0, 0, 0, 0.1);
+  --lq-switch-line: rgba(0, 0, 0, 0.1);
+}
+
+:root[data-theme] .app.template-page[data-liquid-theme='dark'] {
+  --lq-solid-fill: #1c1c1e;
+  --lq-glass-shade: rgba(0, 0, 0, 0.2);
+  --lq-shadow-color: rgba(0, 0, 0, 0.3);
+  --lq-text: #f5f5f7;
+  --lq-foreground: #f5f5f7;
+  --lq-muted: rgba(245, 245, 247, 0.86);
+  --lq-placeholder: rgba(245, 245, 247, 0.42);
+}
+
+.template-backdrop {
+  background: var(--lq-solid-fill);
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: -1;
+}
+
+.template-container {
+  margin-inline: auto;
+  max-width: 1120px;
+  padding: calc(16 * var(--lq-space)) calc(6 * var(--lq-space));
+}
+
+.template-container h1 {
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin: 0 0 calc(6 * var(--lq-space));
+}
+
+.template-container :focus-visible {
+  outline-color: var(--lq-foreground);
+}
+
+.template-list {
+  display: grid;
+  gap: calc(4 * var(--lq-space));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.template-card {
+  padding: calc(3 * var(--lq-space));
+}
+
+.template-card .lq-card__body {
+  align-items: center;
+  display: grid;
+  gap: calc(6 * var(--lq-space));
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+.template-card__image {
+  border: 1px solid var(--lq-quiet-line);
+  border-radius: calc(var(--lq-radius-default) - 2 * var(--lq-space));
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.template-card__details {
+  display: grid;
+  gap: calc(4 * var(--lq-space));
+  justify-items: start;
+  padding: calc(4 * var(--lq-space));
+}
+
+.template-card__details h2 {
+  font-size: 1.5rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.template-card__action,
+.landscape-gallery__tab {
+  font-size: 0.875rem;
+  min-height: 44px;
+}
+
+.landscape-gallery {
+  max-width: 1008px;
+  padding-block-start: calc(6 * var(--lq-space));
+}
+
+.landscape-gallery__back {
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.875rem;
+  font-weight: 600;
+  gap: var(--lq-space);
+  margin-bottom: calc(3 * var(--lq-space));
+  min-height: 44px;
+}
+
+.landscape-gallery__back:hover {
+  text-decoration: underline;
+}
+
+.landscape-gallery .lq-tab__underline {
+  background: var(--lq-foreground);
+  box-shadow: none;
+}
+
+.landscape-gallery__panel {
+  padding: calc(4 * var(--lq-space)) 0 0;
+}
+
+.landscape-gallery figure {
+  margin: 0;
+}
+
+.landscape-gallery figure img {
+  border-radius: var(--lq-radius-default);
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.landscape-gallery figcaption {
+  color: var(--lq-muted);
+  font-size: 0.875rem;
+  margin-top: calc(2 * var(--lq-space));
+}
+
+@media (max-width: 680px) {
+  .template-container {
+    padding: calc(8 * var(--lq-space)) calc(4 * var(--lq-space));
+  }
+
+  .template-card .lq-card__body {
+    gap: var(--lq-space);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .template-card__details {
+    padding: calc(3 * var(--lq-space));
+  }
+
+  .landscape-gallery {
+    padding-block-start: calc(3 * var(--lq-space));
+  }
+
+  .landscape-gallery figure img {
+    aspect-ratio: 4 / 3;
+    height: auto;
+    object-fit: cover;
+  }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { LiquidDrawer } from '@liquefy-ui/react'
 import { CheckIcon, CopyIcon, GithubIcon, MoonIcon, MoreHorizontalIcon, SunIcon } from '@liquefy-ui/icons'
+import { TEMPLATES_ROUTE } from '../templates/routes'
 import { nextTheme, THEME_LABELS, useSiteConfig } from './site-config'
 
 export const repositoryUrl = 'https://github.com/liquefy-ui/liquefy-ui'
@@ -165,13 +166,14 @@ export const CommandRow = ({ command, label }: { command: string; label?: string
   )
 }
 
-export type SiteSection = 'components' | 'docs' | 'home' | 'lab' | 'playground'
+export type SiteSection = 'components' | 'docs' | 'home' | 'lab' | 'playground' | 'templates'
 
 const NAV = [
   { href: '#/docs', label: 'Docs', match: 'docs' },
   { href: '#/components', label: 'Components', match: 'components' },
   { href: '#/playground', label: 'Playground', match: 'playground' },
   { href: '#/lab', label: 'Lab', match: 'lab' },
+  { href: TEMPLATES_ROUTE, label: 'Templates', match: 'templates' },
 ] as const satisfies readonly { href: string; label: string; match: SiteSection }[]
 
 type SiteHeaderProps = {

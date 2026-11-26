@@ -109,7 +109,7 @@
    cool hairline, which reads as lavender against white. Same recipe, neutral. */
 :root[data-theme='light'] .lq-provider:is([data-liquid-theme='light'], [data-liquid-theme='system']) :is(
   .lq-card, .lq-accordion, .lq-table-container, .lq-list
-) {
+):where(:not(.template-page *)) {
   --lq-glass-shade: rgba(11, 11, 20, 0.08);
   --lq-line: color-mix(in srgb, var(--lq-accent) 18%, rgba(11, 11, 20, 0.17));
   --lq-saturate: 1.25;
@@ -3220,7 +3220,7 @@ kbd {
 }
 
 /* Below this the toggles and the nav no longer fit next to the brand. */
-@media (max-width: 560px) {
+@media (max-width: 680px) {
   .header-menu {
     display: block;
   }
@@ -3229,7 +3229,9 @@ kbd {
   .site-header .header-actions {
     display: none;
   }
+}
 
+@media (max-width: 560px) {
   .docs-search {
     max-width: none;
   }

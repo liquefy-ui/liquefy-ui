@@ -18,6 +18,8 @@ describe('the page a visit is filed under', () => {
     ['#/components/liquid-button', '/components/liquid-button'],
     ['#/lab', '/lab'],
     ['#/lab/droplet-menu', '/lab/droplet-menu'],
+    ['#/templates', '/templates'],
+    ['#/templates/landscape-gallery', '/templates/landscape-gallery'],
   ])('%j is the page %j', (hash, path) => {
     expect(analyticsRoute(hash).path).toBe(path)
   })
@@ -39,6 +41,8 @@ describe('the page a visit is filed under', () => {
     ['#/playground', '/playground'],
     ['#/lab', '/lab'],
     ['#/lab/droplet-menu', '/lab/[experiment]'],
+    ['#/templates', '/templates'],
+    ['#/templates/landscape-gallery', '/templates/[template]'],
   ])('%j is grouped under %j', (hash, route) => {
     expect(analyticsRoute(hash).route).toBe(route)
   })
