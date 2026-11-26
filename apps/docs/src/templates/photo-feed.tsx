@@ -1,8 +1,6 @@
 import { HeartIcon, PinIcon } from '@liquefy-ui/icons'
 import { GlassCard, LiquidAvatar, LiquidButton, LiquidIconButton, LiquidSegmented, LiquidTextField } from '@liquefy-ui/react'
 import { useState, type FormEvent } from 'react'
-import { usePreviewState } from './preview-state'
-import { PreviewStatus } from './preview-status'
 import { paneGlass } from './template-theme'
 
 const posts = [
@@ -73,21 +71,20 @@ const Post = ({ post, reaction, onChange }: {
 
 export const PhotoFeed = () => {
   const [filter, setFilter] = useState('feed')
-  const { value: reactions, update, hasUnsavedChanges } = usePreviewState<Record<string, Reaction>>('photo-feed', {})
+  const [reactions, setReactions] = useState<Record<string, Reaction>>({})
   const savedPosts = posts.filter(({ id }) => reactions[id]?.saved)
   const visible = filter === 'saved' ? savedPosts : posts
 
   return (
     <div className="demo-stack">
       <LiquidSegmented className="demo-switcher" label="Photo collection" onValueChange={setFilter} options={feedFilters} value={filter} />
-      <PreviewStatus hasUnsavedChanges={hasUnsavedChanges} />
       <div className="feed-layout">
         <div className="demo-stack">
           {visible.length === 0 && <p className="demo-empty">No saved photos yet.</p>}
           {visible.map((post) => (
             <Post
               key={post.id}
-              onChange={(change) => update((current) => ({ ...current, [post.id]: change(current[post.id] ?? emptyReaction) }))}
+              onChange={(change) => setReactions((current) => ({ ...current, [post.id]: change(current[post.id] ?? emptyReaction) }))}
               post={post}
               reaction={reactions[post.id] ?? emptyReaction}
             />

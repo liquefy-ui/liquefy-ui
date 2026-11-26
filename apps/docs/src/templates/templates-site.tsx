@@ -3,9 +3,9 @@ import { GlassCard, LiquidButton } from '@liquefy-ui/react'
 import { SiteHeader, useScrollReset } from '../site/chrome'
 import { useSiteConfig } from '../site/site-config'
 import { ExpenseTracker } from './expense-tracker'
+import { FocusStudio } from './focus-studio'
 import { Notes } from './notes'
 import { PhotoFeed } from './photo-feed'
-import { RecipeBox } from './recipe-box'
 import { templateRoute, TEMPLATES_ROUTE } from './routes'
 import { TaskBoard } from './task-board'
 import { paneGlass, TemplateTheme } from './template-theme'
@@ -15,7 +15,7 @@ const templates = [
   { id: 'task-board', name: 'Task Board', category: 'Project management', App: TaskBoard },
   { id: 'notes', name: 'Notes', category: 'Productivity', App: Notes },
   { id: 'expense-tracker', name: 'Expense Tracker', category: 'Personal finance', App: ExpenseTracker },
-  { id: 'recipe-box', name: 'Recipe Box', category: 'Food', App: RecipeBox },
+  { id: 'focus-studio', name: 'Focus Studio', category: 'Productivity', App: FocusStudio },
 ]
 
 export const TemplatesSite = () => {

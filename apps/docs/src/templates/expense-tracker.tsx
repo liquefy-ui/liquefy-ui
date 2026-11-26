@@ -1,12 +1,10 @@
 import { PlusIcon } from '@liquefy-ui/icons'
 import {
-  GlassCard, LiquidButton, LiquidDialog, LiquidProgress, LiquidSelect, LiquidTable,
+  GlassCard, LiquidButton, LiquidDialog, LiquidSelect, LiquidTable,
   LiquidTableBody, LiquidTableCell, LiquidTableContainer, LiquidTableHead,
   LiquidTableHeaderCell, LiquidTableRow, LiquidTextField,
 } from '@liquefy-ui/react'
 import { useState, type FormEvent } from 'react'
-import { usePreviewState } from './preview-state'
-import { PreviewStatus } from './preview-status'
 import { paneGlass } from './template-theme'
 
 type Expense = { id: string; name: string; cents: number; category: string; date: string }
@@ -21,6 +19,7 @@ const initialExpenses: Expense[] = [
 
 const usd = new Intl.NumberFormat('en-US', { currency: 'USD', style: 'currency' })
 const money = (cents: number) => usd.format(cents / 100)
+const chartMoney = new Intl.NumberFormat('en-US', { currency: 'USD', notation: 'compact', style: 'currency' })
 const today = () => {
   const date = new Date()
   const year = date.getFullYear()
@@ -58,67 +57,71 @@ const ExpenseForm = ({ onAdd, onClose }: { onAdd: (expense: Expense) => void; on
 }
 
 export const ExpenseTracker = () => {
-  const { value: expenses, update, hasUnsavedChanges } = usePreviewState('expense-tracker', initialExpenses)
+  const [expenses, setExpenses] = useState(initialExpenses)
   const [open, setOpen] = useState(false)
   const total = expenses.reduce((sum, { cents }) => sum + cents, 0)
   const latest = [...expenses].sort((a, b) => b.date.localeCompare(a.date))
+  const spending = categories.map(({ label, value }) => ({
+    label,
+    cents: expenses.filter(({ category }) => category === value).reduce((sum, { cents }) => sum + cents, 0),
+  }))
+  const chartMax = Math.max(1, ...spending.map(({ cents }) => cents))
 
   return (
     <div className="demo-stack">
-      <div className="demo-spread expense-toolbar">
-        <div>
-          <div className="demo-muted">Total spent</div>
+      <GlassCard className="expense-overview" interactive={false} styles={paneGlass}>
+        <div className="expense-insight">
+          <h2>Total spent</h2>
           <strong className="expense-total" aria-live="polite">{money(total)}</strong>
+          <span className="demo-muted">{expenses.length} transactions</span>
+          <LiquidButton iconBefore={<PlusIcon size={16} />} onClick={() => setOpen(true)}>Add expense</LiquidButton>
         </div>
-        <LiquidButton iconBefore={<PlusIcon size={16} />} onClick={() => setOpen(true)}>Add expense</LiquidButton>
-      </div>
-      <PreviewStatus hasUnsavedChanges={hasUnsavedChanges} />
-      <div className="expense-layout">
-        <section className="demo-stack expense-transactions" aria-labelledby="expense-transactions">
-          <h2 id="expense-transactions">Transactions</h2>
-          <LiquidTableContainer styles={paneGlass}>
-            <LiquidTable aria-label="Transactions" size="sm">
-              <LiquidTableHead>
-                <LiquidTableRow>
-                  <LiquidTableHeaderCell>Expense</LiquidTableHeaderCell>
-                  <LiquidTableHeaderCell className="expense-desktop">Date</LiquidTableHeaderCell>
-                  <LiquidTableHeaderCell align="right">Amount</LiquidTableHeaderCell>
-                </LiquidTableRow>
-              </LiquidTableHead>
-              <LiquidTableBody>
-                {latest.map(({ id, name, cents, category, date }) => (
-                  <LiquidTableRow key={id}>
-                    <LiquidTableCell>
-                      <strong>{name}</strong>
-                      <span className="expense-category demo-muted">{category}<span className="expense-mobile"> · {date}</span></span>
-                    </LiquidTableCell>
-                    <LiquidTableCell className="expense-desktop"><time dateTime={date}>{date}</time></LiquidTableCell>
-                    <LiquidTableCell align="right">{money(cents)}</LiquidTableCell>
-                  </LiquidTableRow>
-                ))}
-              </LiquidTableBody>
-            </LiquidTable>
-          </LiquidTableContainer>
-        </section>
-        <GlassCard className="demo-pane" interactive={false} styles={paneGlass}>
-          <div className="demo-stack">
-            <h2>By category</h2>
-            {categories.map(({ value, label }) => {
-              const subtotals = expenses.filter(({ category }) => category === value).reduce((sum, { cents }) => sum + cents, 0)
-              return (
-                <div key={value}>
-                  <div className="demo-spread"><span>{label}</span><strong>{money(subtotals)}</strong></div>
-                  <LiquidProgress aria-label={label} value={total === 0 ? 0 : (subtotals / total) * 100} />
+        <figure className="expense-chart">
+          <figcaption>Spending by category</figcaption>
+          <ul className="expense-bars demo-list">
+            {spending.map(({ label, cents }) => (
+              <li aria-label={`${label}: ${money(cents)}`} className="expense-bar" key={label}>
+                <div aria-hidden="true" className="expense-bar__track">
+                  <div className="expense-bar__fill" style={{ height: `${cents / chartMax * 100}%` }}>
+                    <span>{cents < 100_000 ? money(cents) : chartMoney.format(cents / 100)}</span>
+                  </div>
                 </div>
-              )
-            })}
-          </div>
-        </GlassCard>
-      </div>
+                <span>{label}</span>
+              </li>
+            ))}
+          </ul>
+        </figure>
+      </GlassCard>
+      <section className="demo-stack expense-transactions" aria-labelledby="expense-transactions">
+        <h2 id="expense-transactions">Transactions</h2>
+        <LiquidTableContainer styles={paneGlass}>
+          <LiquidTable aria-label="Transactions" size="sm">
+            <LiquidTableHead>
+              <LiquidTableRow>
+                <LiquidTableHeaderCell>Expense</LiquidTableHeaderCell>
+                <LiquidTableHeaderCell className="expense-desktop">Date</LiquidTableHeaderCell>
+                <LiquidTableHeaderCell align="right">Amount</LiquidTableHeaderCell>
+              </LiquidTableRow>
+            </LiquidTableHead>
+            <LiquidTableBody>
+              {latest.map(({ id, name, cents, category, date }) => (
+                <LiquidTableRow key={id}>
+                  <LiquidTableCell>
+                    <strong>{name}</strong>
+                    <span className="expense-category demo-muted">{category}<span className="expense-mobile"> · {date}</span></span>
+                  </LiquidTableCell>
+                  <LiquidTableCell className="expense-desktop"><time dateTime={date}>{date}</time></LiquidTableCell>
+                  <LiquidTableCell align="right">{money(cents)}</LiquidTableCell>
+                </LiquidTableRow>
+              ))}
+            </LiquidTableBody>
+          </LiquidTable>
+        </LiquidTableContainer>
+      </section>
       <LiquidDialog open={open} onOpenChange={setOpen} title="Add expense">
         <ExpenseForm
           onAdd={(expense) => {
-            update((current) => [expense, ...current])
+            setExpenses((current) => [expense, ...current])
             setOpen(false)
           }}
           onClose={() => setOpen(false)}

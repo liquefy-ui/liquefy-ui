@@ -1,8 +1,6 @@
 import { PlusIcon } from '@liquefy-ui/icons'
-import { GlassCard, LiquidButton, LiquidProgress, LiquidSelect, LiquidTextField } from '@liquefy-ui/react'
+import { LiquidButton, LiquidList, LiquidListItem, LiquidProgress, LiquidSegmented, LiquidSelect, LiquidTextField } from '@liquefy-ui/react'
 import { useState, type FormEvent } from 'react'
-import { usePreviewState } from './preview-state'
-import { PreviewStatus } from './preview-status'
 import { paneGlass } from './template-theme'
 
 const statuses = [
@@ -10,79 +8,100 @@ const statuses = [
   { label: 'In progress', value: 'doing' },
   { label: 'Done', value: 'done' },
 ]
-type Task = { id: string; title: string; detail?: string; status: string }
 
+const filters = [
+  { label: 'All tasks', value: 'all' },
+  { label: 'In progress', value: 'doing' },
+  { label: 'Done', value: 'done' },
+]
+
+const milestones = [
+  { id: 'review', date: 'Nov 26', label: 'Review' },
+  { id: 'handoff', date: 'Nov 27', label: 'Handoff' },
+  { id: 'launch', date: 'Nov 28', label: 'Launch' },
+]
+
+type Task = { id: string; title: string; team?: string; status: string; milestone: string }
 const initialTasks: Task[] = [
-  { id: 'og', title: 'Create the share image', detail: 'Design', status: 'todo' },
-  { id: 'mobile', title: 'Review mobile checkout', detail: 'QA', status: 'todo' },
-  { id: 'launch', title: 'Schedule the launch email', detail: 'Marketing', status: 'todo' },
-  { id: 'contact', title: 'Connect the contact form', detail: 'Engineering', status: 'doing' },
-  { id: 'copy', title: 'Edit the pricing page', detail: 'Content', status: 'doing' },
-  { id: 'domain', title: 'Configure the domain', detail: 'Engineering', status: 'done' },
-  { id: 'legal', title: 'Approve the privacy policy', detail: 'Legal', status: 'done' },
+  { id: 'og', title: 'Create the share image', team: 'Design', status: 'done', milestone: 'review' },
+  { id: 'checkout', title: 'Review mobile checkout', team: 'QA', status: 'doing', milestone: 'review' },
+  { id: 'copy', title: 'Edit the pricing page', team: 'Content', status: 'doing', milestone: 'review' },
+  { id: 'contact', title: 'Connect the contact form', team: 'Engineering', status: 'todo', milestone: 'handoff' },
+  { id: 'legal', title: 'Approve the privacy policy', team: 'Legal', status: 'done', milestone: 'handoff' },
+  { id: 'domain', title: 'Configure the domain', team: 'Engineering', status: 'todo', milestone: 'launch' },
+  { id: 'email', title: 'Schedule the launch email', team: 'Marketing', status: 'todo', milestone: 'launch' },
 ]
 
 export const TaskBoard = () => {
-  const { value: tasks, update, hasUnsavedChanges } = usePreviewState('task-board', initialTasks)
+  const [tasks, setTasks] = useState(initialTasks)
+  const [filter, setFilter] = useState('all')
   const [draft, setDraft] = useState('')
   const completed = tasks.filter(({ status }) => status === 'done').length
+  const visibleTasks = filter === 'all' ? tasks : tasks.filter(({ status }) => status === filter)
   const addTask = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const title = draft.trim()
     if (!title) return
-    const task: Task = { id: crypto.randomUUID(), title, status: 'todo' }
-    update((current) => [task, ...current])
+    const task: Task = { id: crypto.randomUUID(), title, status: 'todo', milestone: 'review' }
+    setTasks((current) => [task, ...current])
     setDraft('')
+    setFilter('all')
   }
 
   return (
-    <div className="demo-stack">
-      <GlassCard className="demo-pane" interactive={false} styles={paneGlass}>
-        <div className="board-toolbar">
-          <div>
-            <div className="demo-spread">
-              <h2>Website launch</h2>
-              <span className="demo-muted">{completed} of {tasks.length} done</span>
-            </div>
-            <LiquidProgress aria-label="Website launch progress" value={tasks.length ? (completed / tasks.length) * 100 : 0} />
-          </div>
+    <div className="roadmap">
+      <div className="roadmap-overview">
+        <div>
+          <h2>Website launch</h2>
           <form className="demo-inline-form" onSubmit={addTask}>
             <LiquidTextField aria-label="New task" maxLength={100} onChange={(event) => setDraft(event.currentTarget.value)} placeholder="New task" value={draft} />
             <LiquidButton disabled={!draft.trim()} iconBefore={<PlusIcon size={16} />} type="submit">Add task</LiquidButton>
           </form>
         </div>
-      </GlassCard>
-      <PreviewStatus hasUnsavedChanges={hasUnsavedChanges} />
-      <div className="board-columns">
-        {statuses.map(({ label, value }) => {
-          const items = tasks.filter(({ status }) => status === value)
+        <div className="roadmap-progress">
+          <div className="demo-spread">
+            <span>Progress</span>
+            <strong>{completed} of {tasks.length} done</strong>
+          </div>
+          <LiquidProgress aria-label="Website launch progress" value={(completed / tasks.length) * 100} />
+        </div>
+      </div>
+      <LiquidSegmented className="demo-switcher" label="Filter tasks" onValueChange={setFilter} options={filters} value={filter} />
+      <ol className="roadmap-timeline">
+        {milestones.map(({ date, id, label }) => {
+          const items = visibleTasks.filter(({ milestone }) => milestone === id)
           return (
-            <section aria-label={label} key={value}>
-              <GlassCard className="demo-pane" interactive={false} styles={paneGlass}>
-                <div className="demo-spread">
-                  <h2>{label}</h2>
-                  <span className="demo-muted">{items.length}</span>
-                </div>
-                {items.length === 0 && <p className="demo-empty">No tasks</p>}
-                <ul className="demo-list board-tasks">
+            <li className="roadmap-milestone" key={id}>
+              <div className="roadmap-date">
+                <h2>{label}</h2>
+                <span className="demo-muted">{date}</span>
+              </div>
+              {items.length === 0 ? (
+                <p className="demo-empty">No matching tasks.</p>
+              ) : (
+                <LiquidList aria-label={label} className="roadmap-list" styles={paneGlass}>
                   {items.map((task) => (
-                    <li key={task.id}>
-                      <strong>{task.title}</strong>
-                      {task.detail && <p className="demo-muted">{task.detail}</p>}
-                      <LiquidSelect
-                        aria-label={`Status for ${task.title}`}
-                        onValueChange={(status) => update((current) => current.map((item) => item.id === task.id ? { ...item, status } : item))}
-                        options={statuses}
-                        value={task.status}
-                      />
-                    </li>
+                    <LiquidListItem
+                      description={task.team}
+                      end={(
+                        <LiquidSelect
+                          aria-label={`Status for ${task.title}`}
+                          onValueChange={(status) => setTasks((current) => current.map((item) => item.id === task.id ? { ...item, status } : item))}
+                          options={statuses}
+                          value={task.status}
+                        />
+                      )}
+                      key={task.id}
+                    >
+                      {task.title}
+                    </LiquidListItem>
                   ))}
-                </ul>
-              </GlassCard>
-            </section>
+                </LiquidList>
+              )}
+            </li>
           )
         })}
-      </div>
+      </ol>
     </div>
   )
 }
