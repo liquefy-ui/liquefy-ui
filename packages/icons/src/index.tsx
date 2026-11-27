@@ -367,6 +367,14 @@ export const ShareIcon = (props: IconProps): ReactElement => (
   </IconBase>
 )
 
+export const ShoppingCartIcon = (props: IconProps): ReactElement => (
+  <IconBase {...props}>
+    <path d="M3 4h2.2l2.1 10.2a1.8 1.8 0 0 0 1.8 1.4h7.6a1.8 1.8 0 0 0 1.75-1.38L20 8H6.1" />
+    <circle cx="9.5" cy="19.5" r="1.2" />
+    <circle cx="17" cy="19.5" r="1.2" />
+  </IconBase>
+)
+
 export const StarIcon = (props: IconProps): ReactElement => (
   <IconBase {...props}>
     <path d="m12 3.6 2.5 5.2 5.7.7-4.2 3.9 1.1 5.6L12 16.2 6.9 19l1.1-5.6-4.2-3.9 5.7-.7L12 3.6Z" />

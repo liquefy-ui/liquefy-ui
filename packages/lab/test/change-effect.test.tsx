@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ChangeEffect, type ChangeEffectHandle } from '../src/change-effect'
 import { GLOW_MS, JUMP_MS, SHINE_MS } from '../src/change-effect-motion'
 import { fakeCanvas, frames } from './canvas-fakes'
+import { translateOf } from './css-values'
 
 const inProvider = (node: ReactNode, motion = true) => (
   <LiquefyProvider motion={motion} theme="dark" webgl={false}>{node}</LiquefyProvider>
@@ -76,7 +77,10 @@ describe('ChangeEffect', () => {
     clock.play(14)
     const wrapper = wrapperOf(container)
     // Its own transform first, then the jump: well off the floor by now.
-    expect(wrapper.style.transform).toMatch(/^rotate\(2deg\) translate\(0\.00px, -\d+\.\d+px\)/)
+    expect(wrapper.style.transform).toMatch(/^rotate\(2deg\) translate\(/)
+    const jump = translateOf(wrapper.style.transform)
+    expect(jump.x).toBeCloseTo(0)
+    expect(jump.y).toBeLessThan(0)
     expect(wrapper.style.transformOrigin).toBe('50% 100%')
     clock.play(framesFor(JUMP_MS))
     expect(wrapper.style.transform).toBe('rotate(2deg)')
@@ -90,7 +94,10 @@ describe('ChangeEffect', () => {
     const { container } = mount(<ChangeEffect effect="shake" ref={handle}><input aria-label="Passcode" /></ChangeEffect>)
     handle.current!.play()
     clock.play(2)
-    expect(wrapperOf(container).style.transform).toMatch(/^translate\(-\d+\.\d+px, 0\.00px\)/)
+    expect(wrapperOf(container).style.transform).toMatch(/^translate\(/)
+    const shake = translateOf(wrapperOf(container).style.transform)
+    expect(shake.x).toBeLessThan(0)
+    expect(shake.y).toBeCloseTo(0)
   })
 
   it('plays nothing under a provider with motion off', () => {

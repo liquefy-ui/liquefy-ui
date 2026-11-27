@@ -54,12 +54,15 @@ jobs:
 
       # A squash merge writes the pull request title as the subject line, so a
       # title nobody checked is a way for a bad subject to reach main regardless
-      # of how well every commit behind it was worded.
+      # of how well every commit behind it was worded. The author is passed so a
+      # bot's title — whose length the bumped packages decide — skips the length
+      # limit and nothing else.
       - name: The pull request title
         if: ${{ github.event_name == 'pull_request' }}
         env:
           TITLE: ${{ github.event.pull_request.title }}
-        run: node scripts/check-commit-msg.mjs --text "$TITLE"
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: node scripts/check-commit-msg.mjs --text "$TITLE" --author "$AUTHOR"
 
   # The gate: types, tests, builds and the client-directive check, in the order
   # the repository's own `pnpm check` runs them.

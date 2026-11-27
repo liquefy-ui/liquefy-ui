@@ -301,13 +301,22 @@ describe('LiquidContextMenu', () => {
     // Acting on the choice closes the menu from inside a frame. The close must
     // not end up with two frame loops stepping the motion, which would play it
     // at double speed: no two of the component's frames may share a timestamp.
+    // Base UI's frame scheduler names its callback `tick` as well, and on a
+    // slow run its frame from the opening lands in the count, so a frame is
+    // told apart by who asked for it: the first caller outside the test.
     it('steps the motion once a frame while it closes after a choice', async () => {
       const request = window.requestAnimationFrame.bind(window)
       const stamps: number[] = []
-      const spy = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => request((time) => {
-        if (callback.name === 'tick') stamps.push(time)
-        callback(time)
-      }))
+      const askedByMenu = () => new Error().stack?.split('\n').slice(1)
+        .find((line) => !/[\\/](test|vitest)[\\/]/.test(line))
+        ?.includes('liquid-context-menu.tsx') ?? false
+      const spy = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+        const counted = callback.name === 'tick' && askedByMenu()
+        return request((time) => {
+          if (counted) stamps.push(time)
+          callback(time)
+        })
+      })
       try {
         mount(<LiquidContextMenu items={items()} stagger={0}><Photo /></LiquidContextMenu>, true)
         fireEvent.contextMenu(preview())

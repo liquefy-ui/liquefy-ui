@@ -176,7 +176,31 @@ const getLensContext = (): LensContext | null => {
 
 export const isLensRenderingSupported = (): boolean => getLensContext() !== null
 
+// A lens map depends only on its geometry, and a list repeats the same
+// geometry row after row. Encoding a PNG per element is the slow part of waking
+// a lens up, so maps are kept by shape, most recently used last.
+const cacheLimit = 64
+const mapCache = new Map<string, LensMap>()
+
 export const createLensMap = (options: LensMapOptions): LensMap | null => {
+  const key = [options.width, options.height, options.radius, options.bezel, options.curve, options.strength]
+    .map((value) => (value === undefined ? '' : Math.round(value * 100) / 100))
+    .join(',')
+  const cached = mapCache.get(key)
+  if (cached) {
+    mapCache.delete(key)
+    mapCache.set(key, cached)
+    return cached
+  }
+
+  const map = drawLensMap(options)
+  if (!map) return null
+  mapCache.set(key, map)
+  if (mapCache.size > cacheLimit) mapCache.delete(mapCache.keys().next().value as string)
+  return map
+}
+
+const drawLensMap = (options: LensMapOptions): LensMap | null => {
   const context = getLensContext()
   const width = Math.max(2, Math.round(options.width))
   const height = Math.max(2, Math.round(options.height))

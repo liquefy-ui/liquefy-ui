@@ -25,7 +25,9 @@ export const TYPES = [
 // need a commit to this file first — but they must look like the ones here.
 export const CONVENTIONAL_SCOPES = ['core', 'icons', 'react', 'lab', 'mcp', 'docs', 'registry', 'deps', 'release']
 
-export const MAX_HEADER_LENGTH = 72
+// commitlint's default header-max-length. 72 was too tight for Dependabot's
+// grouped updates, whose titles name the package, both versions and the group.
+export const MAX_HEADER_LENGTH = 100
 
 const HEADER = /^(?<type>[a-z]+)(?:\((?<scope>[^()]*)\))?(?<breaking>!)?: (?<subject>.*)$/
 const SCOPE = /^[a-z0-9][a-z0-9-]*(?:[/,][a-z0-9][a-z0-9-]*)*$/
@@ -45,6 +47,9 @@ const GENERATED = [/^Merge /, /^Revert "/, /^fixup! /, /^squash! /, /^amend! /]
  */
 export const BOT_AUTHOR = /\[bot\]@/i
 
+/** The same apps by login, as a pull request reports its author: `dependabot[bot]`. */
+export const BOT_LOGIN = /\[bot\]$/i
+
 // The trailers that make a commit look like someone else wrote it. The point of
 // the convention is that `git shortlog` names the people who are accountable for
 // the change, so an assistant's byline is a defect, not a courtesy.
@@ -57,9 +62,11 @@ const BANNED_LINES = [
 
 /**
  * @param {string} message a full commit message, or a pull request title
+ * @param {{ checkLength?: boolean }} [options] `checkLength: false` keeps every
+ *   rule but the length limit — for titles a bot writes, see `--author` below
  * @returns {string[]} one line per rule broken; empty means the message is valid
  */
-export function checkCommitMessage(message) {
+export function checkCommitMessage(message, { checkLength = true } = {}) {
   // Strip what git itself strips, in git's order: the diff `commit --verbose`
   // appends below the scissors line first — cutting the comments first would
   // erase the scissors and leave the diff behind — then the comments.
@@ -99,7 +106,7 @@ export function checkCommitMessage(message) {
       problems.push('the summary must not end with a full stop')
     }
     const measuredHeader = header.replace(PULL_REQUEST_SUFFIX, '')
-    if (measuredHeader.length > MAX_HEADER_LENGTH) {
+    if (checkLength && measuredHeader.length > MAX_HEADER_LENGTH) {
       problems.push(`the subject is ${measuredHeader.length} characters; the limit is ${MAX_HEADER_LENGTH}`)
     }
   }
@@ -129,8 +136,8 @@ export function checkCommitMessage(message) {
   return [...new Set(problems)]
 }
 
-function report(label, message) {
-  const problems = checkCommitMessage(message)
+function report(label, message, options) {
+  const problems = checkCommitMessage(message, options)
   if (problems.length === 0) return true
   console.error(`\n✖ ${label}\n  ${message.split('\n')[0]}\n`)
   for (const problem of problems) console.error(`  - ${problem}`)
@@ -138,19 +145,30 @@ function report(label, message) {
 }
 
 function usage() {
-  console.error('usage: check-commit-msg.mjs <file> | --range <base>..<head> | --text "<message>"')
+  console.error('usage: check-commit-msg.mjs <file> | --range <base>..<head> | --text "<message>" [--author <login>]')
   process.exit(2)
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const [flag, value] = process.argv.slice(2)
+  const [flag, value, ...rest] = process.argv.slice(2)
   if (!flag) usage()
 
   let ok = true
 
   if (flag === '--text') {
     if (value === undefined) usage()
-    ok = report('pull request title', value)
+    let author = ''
+    if (rest.length > 0) {
+      if (rest[0] !== '--author' || rest.length !== 2) usage()
+      author = rest[1]
+    }
+    // Dependabot builds its titles from the group, the package and both
+    // versions, so their length is set by whatever it is bumping — raising the
+    // limit only moves the line it crosses next. The format still applies: the
+    // `commit-message` prefix in .github/dependabot.yml is what produces it.
+    const bot = BOT_LOGIN.test(author)
+    ok = report('pull request title', value, { checkLength: !bot })
+    if (ok && bot) console.log(`Pull request title passed; length not checked for ${author}`)
     if (!ok) {
       console.error(
         '\n  A squash merge uses this title as the commit subject, so it follows the same rule.\n' +

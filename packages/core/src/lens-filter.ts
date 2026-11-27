@@ -1,6 +1,7 @@
 import { clamp } from './math'
 import { createLensMap } from './lens'
 import { mediaQuery } from './media'
+import { observeVisibility } from './visibility'
 import type { LensFilterController, LensFilterOptions } from './types'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
@@ -146,9 +147,12 @@ export const attachLiquidLens = (
 
   let destroyed = false
   let refreshFrame = 0
+  // Asleep while out of sight (see visibility.ts): no refraction is applied and
+  // no lens map is drawn until the element comes back within reach.
+  let visible = false
 
   const refresh = (): void => {
-    if (destroyed || !element.isConnected) return
+    if (destroyed || !visible || !element.isConnected) return
 
     const width = element.offsetWidth
     const height = element.offsetHeight
@@ -200,13 +204,24 @@ export const attachLiquidLens = (
     ? null
     : new ResizeObserver(scheduleRefresh)
   resizeObserver?.observe(element)
-  scheduleRefresh()
+
+  const sleep = (): void => {
+    cancelAnimationFrame(refreshFrame)
+    element.style.removeProperty('--lq-lens')
+    delete element.dataset.liquidLens
+  }
+  const stopObserving = observeVisibility(element, (next) => {
+    visible = next
+    if (next) scheduleRefresh()
+    else sleep()
+  })
 
   return {
     destroy: () => {
       destroyed = true
       cancelAnimationFrame(refreshFrame)
       resizeObserver?.disconnect()
+      stopObserving()
       filter.remove()
       element.style.removeProperty('--lq-lens')
       delete element.dataset.liquidLens

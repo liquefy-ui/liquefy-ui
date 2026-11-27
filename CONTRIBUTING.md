@@ -141,7 +141,7 @@ where it stays readable and can be answered.
 | Scope | Optional, lowercase, in parentheses. In use: `core` `icons` `react` `lab` `mcp` `docs` `registry` `deps` `release`. Several: `fix(core,react): …` |
 | Breaking | A `!` before the colon: `feat(react)!: rename LiquidGlass to LiquidSurface` |
 | Summary | Imperative, no full stop at the end |
-| Length | The authored subject line, 72 characters or fewer. GitHub's generated trailing ` (#123)` on a squash commit does not count. |
+| Length | The authored subject line, 100 characters or fewer. GitHub's generated trailing ` (#123)` on a squash commit does not count. Pull requests from Dependabot are exempt — see below. |
 | Body | None. Only trailers may follow a blank line — `Refs: #12`, a human `Co-authored-by:` |
 
 `feat` and `fix` are the two types that change a published package, so they are
@@ -192,6 +192,12 @@ request title to the rule instead. Squash merges here are configured to take the
 pull request title and **discard the body**, which is what makes that safe — on
 GitHub's default a squash concatenates every message it replaces, so the bot's
 body would land regardless of how well the title reads.
+
+The title of a pull request a bot opened (`dependabot[bot]`) is held to every
+rule except the length limit. Dependabot builds it from the group, the package
+and both versions, so its length is decided by what it bumps and no limit stays
+ahead of it. The type and scope still come from the `commit-message` prefixes in
+`.github/dependabot.yml`. A person's subject stays at 100 characters.
 
 ## Continuous integration
 
