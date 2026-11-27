@@ -1,5 +1,13 @@
 # @liquefy-ui/icons
 
+## 1.3.0
+
+### Minor Changes
+
+- 6a5be54: `ShoppingCartIcon`: a cart with two wheels, for a shopping list, a basket or a
+  checkout. Drawn like the rest of the set — 24 × 24, a 1.8 stroke, round caps
+  and joins.
+
 ## 1.2.0
 
 ### Minor Changes
